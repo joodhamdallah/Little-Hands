@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/login_page.dart';
 import 'package:flutter_app/pages/register_page.dart';
+import 'package:flutter_app/pages/Firstpage.dart'; // Onboarding screen
 
 void main() {
   runApp(const MyApp());
@@ -9,16 +10,18 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Little Hands',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        fontFamily: 'NotoSansArabic',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
+      home: const FirstPage(), 
       routes: {
-        '/': (context) => const LoginPage(),
+        '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
       },
     );
