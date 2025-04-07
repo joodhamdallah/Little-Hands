@@ -1,44 +1,50 @@
+require("dotenv").config();
 const UserModel = require("../models/User"); // Go up two levels
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
+const sendEmail = require("../utils/sendEmail");
+const getVerificationEmailTemplate = require("../utils/emailTemplates/verificationTemplate");
+const getResetPasswordEmailTemplate = require("../utils/emailTemplates/resetPasswordTemplate");
 
 class UserServices {
     
     // ✅ Register a new user with validation and password hashing
-    static async registerUser(firstName, lastName, email, password, phone, role, dateOfBirth, address) {
+    static async registerUser(firstName, lastName, email, password, phone, role, dateOfBirth, address, city, zipCode) {
         try {
             console.log("----- User Registration Attempt -----", email);
-            
-            // Check if the user already exists
+    
             const existingUser = await UserModel.findOne({ email });
             if (existingUser) throw new Error("User already exists with this email!");
-
-            // Hash the password
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            // Create a new user instance
+    
             const newUser = new UserModel({
                 firstName,
                 lastName,
                 email,
-                password: password,
+                password,
                 phone,
                 role,
                 dateOfBirth,
-                address
+                address,
+                city,
+                zipCode
             });
-
-            // Generate email verification token
+    
             const emailToken = newUser.createEmailVerificationToken();
-
-            // Save user to database
             await newUser.save();
-
-            // Return user data (excluding password)
+    
+            const verificationURL = `http://localhost:3000/api/verifyEmail?token=${emailToken}`;
+            const htmlContent = getVerificationEmailTemplate(verificationURL);
+            
+            await sendEmail({
+              to: newUser.email,
+              subject: "Verify your email",
+              html: htmlContent
+            });
+            
             return {
                 message: "User registered successfully!",
-                emailToken, // Send this token for email verification
+                emailToken,
                 user: {
                     id: newUser._id,
                     firstName: newUser.firstName,
@@ -51,7 +57,7 @@ class UserServices {
             throw err;
         }
     }
-
+    
     // ✅ Find a user by email
     static async getUserByEmail(email) {
         try {
@@ -110,6 +116,16 @@ class UserServices {
             // Generate password reset token
             const resetToken = user.createPasswordResetToken();
             await user.save();
+            
+            const resetURL = `http://localhost:3000/reset-password?token=${resetToken}`; // frontend link
+            const htmlContent = getResetPasswordEmailTemplate(resetURL);
+            
+            await sendEmail({
+              to: user.email,
+              subject: "Reset your password",
+              html: htmlContent,
+            });
+            
 
             return { message: "Password reset token generated!", resetToken };
         } catch (error) {
@@ -131,7 +147,7 @@ class UserServices {
             if (!user) throw new Error("Invalid or expired password reset token");
 
             // Hash new password and update user
-            user.password = await bcrypt.hash(newPassword, 10);
+            user.password = newPassword; // ✅ Let model pre('save') hash it
             user.passwordResetToken = null;
             user.passwordResetExpires = null;
             await user.save();

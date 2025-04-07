@@ -1,11 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
-const crypto = require("crypto"); // For generating secure tokens
+const crypto = require("crypto");
 
-// Email validation regex
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-
-// Strong password validation regex
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
 const userSchema = new mongoose.Schema({
@@ -32,57 +29,55 @@ const userSchema = new mongoose.Schema({
     phone: { type: String, required: true, trim: true },
     role: { 
         type: String, 
-        enum: ["admin", "parent", "expert", "specialist"], 
+        enum: ["admin", "parent", "expert", "specialist", "sitter"], 
         default: "parent" 
     },
     dateOfBirth: { type: Date, required: true },
     address: { type: String, required: true },
 
-    // ✅ Email Verification Fields
+    city: { 
+        type: String, 
+        required: true, 
+        enum: ["طولكرم", "نابلس", "جنين", "رام الله", "الخليل", "غزة", "بيت لحم"]
+    },
+
+    zipCode: { 
+        type: String, 
+        default: null, 
+        trim: true 
+    },
+
     isVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String, default: null },
     emailVerificationExpires: { type: Date, default: null },
 
-    // ✅ Password Reset Fields
     passwordResetToken: { type: String, default: null },
     passwordResetExpires: { type: Date, default: null },
 
-}, { timestamps: true }); // Adds createdAt and updatedAt fields
+}, { timestamps: true });
 
-// ✅ Hash password before saving
 userSchema.pre("save", async function (next) {
-    console.log("you got here ");  // Log the plain password provided by the user
-
     if (!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
 
-// ✅ Compare passwords for login
 userSchema.methods.comparePassword = async function (password) {
-    console.log("Plain Password: ", password);  // Log the plain password provided by the user
-    console.log("Hashed Password: ", this.password);  // Log the stored hashed password in the database
-    
-    const match = await bcrypt.compare(password, this.password);
-    console.log("Password Match Status: ", match);  // Log if the password matched
-    
-    return match;
+    return await bcrypt.compare(password, this.password);
 };
 
-// ✅ Generate Email Verification Token
 userSchema.methods.createEmailVerificationToken = function () {
     const token = crypto.randomBytes(32).toString("hex");
     this.emailVerificationToken = crypto.createHash("sha256").update(token).digest("hex");
-    this.emailVerificationExpires = Date.now() + 10 * 60 * 1000; // Expires in 10 minutes
-    return token; // Return raw token to send via email
+    this.emailVerificationExpires = Date.now() + 5 * 60 * 1000;
+    return token;
 };
 
-// ✅ Generate Password Reset Token
 userSchema.methods.createPasswordResetToken = function () {
     const token = crypto.randomBytes(32).toString("hex");
     this.passwordResetToken = crypto.createHash("sha256").update(token).digest("hex");
-    this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // Expires in 10 minutes
-    return token; // Return raw token to send via email
+    this.passwordResetExpires = Date.now() + 3 * 60 * 1000;
+    return token;
 };
 
 module.exports = mongoose.model("User", userSchema);

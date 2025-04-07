@@ -3,10 +3,22 @@ const UserServices = require("../services/userServices");
 exports.register = async (req, res, next) => {
     try {
         console.log("--- User Registration Request ---", req.body);
-        const { firstName, lastName, email, password, phone, role, dateOfBirth, address } = req.body;
 
-        if (!firstName || !lastName || !email || !password || !phone || !role || !dateOfBirth || !address) {
-            throw new Error("All fields are required for registration!");
+        const {
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            role,
+            dateOfBirth,
+            address,
+            city,
+            zipCode // optional
+        } = req.body;
+
+        if (!firstName || !lastName || !email || !password || !phone || !role || !dateOfBirth || !address || !city) {
+            throw new Error("All required fields must be provided!");
         }
 
         // Check if the user already exists
@@ -16,12 +28,23 @@ exports.register = async (req, res, next) => {
         }
 
         // Register the user
-        const response = await UserServices.registerUser(firstName, lastName, email, password, phone, role, dateOfBirth, address);
+        const response = await UserServices.registerUser(
+            firstName,
+            lastName,
+            email,
+            password,
+            phone,
+            role,
+            dateOfBirth,
+            address,
+            city,
+            zipCode
+        );
 
         res.status(201).json({
             status: true,
             message: "User registered successfully! Please verify your email.",
-            emailToken: response.emailToken, // Send this token for email verification
+            emailToken: response.emailToken,
             user: response.user
         });
 
@@ -34,37 +57,35 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
     try {
         console.log("--- User Login Request ---", req.body);
-        const { email, password } = req.body;
+        const { email, password, rememberMe } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({ status: false, message: "Email and password are required!" });
         }
 
-        // Find user
         const user = await UserServices.checkUser(email);
         if (!user) {
             return res.status(404).json({ status: false, message: "User does not exist!" });
         }
 
-        // Validate password
         const isPasswordCorrect = await user.comparePassword(password);
         if (!isPasswordCorrect) {
             return res.status(401).json({ status: false, message: "Incorrect email or password!" });
         }
 
-        // Check if email is verified
         if (!user.isVerified) {
-            return res.status(403).json({ status: false, message: "Email not verified. Please verify your email." });
+            return res.status(403).json({ status: false, message: "Email not verified. Please check your inbox." });
         }
 
-        // Generate JWT token
+        const expiresIn = rememberMe ? "7d" : "1h";
         const tokenData = { _id: user._id, email: user.email, role: user.role };
-        const token = await UserServices.generateAccessToken(tokenData, "secret", "1h");
+        const token = await UserServices.generateAccessToken(tokenData, "secret", expiresIn);
 
         res.status(200).json({ 
             status: true, 
             message: "Login successful!", 
             token: token,
+            expiresIn: expiresIn,
             user: {
                 id: user._id,
                 firstName: user.firstName,
@@ -82,7 +103,7 @@ exports.login = async (req, res, next) => {
 
 exports.verifyEmail = async (req, res, next) => {
     try {
-        const { token } = req.body;
+        const token = req.query.token || req.body.token;
         if (!token) {
             return res.status(400).json({ status: false, message: "Verification token is required!" });
         }

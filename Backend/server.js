@@ -11,7 +11,7 @@ const port = process.env.PORT || 3000; // Use environment variable for port
 app.use(express.json()); // Parse JSON requests
 
 // Routes (Import and use API routes)
-
+app.use('/public', express.static('public'));
 app.use('/api', userRoutes); 
 
 // Connect to DB & Start Server
