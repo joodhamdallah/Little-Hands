@@ -19,7 +19,7 @@ module.exports = function getResetPasswordEmailTemplate(resetURL) {
   
         <hr style="margin:30px 0; border-color:#ddd;" />
         <div style="font-size:12px; color:#aaa;">
-          This link will expire in 10 minutes.<br>
+          This link will expire in 3 minutes.<br>
           If you didn't request a password reset, you can safely ignore this email.
         </div>
       </div>

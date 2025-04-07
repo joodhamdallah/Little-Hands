@@ -27,7 +27,8 @@ class _FirstPageState extends State<FirstPage> {
     {
       'image': 'assets/images/im1.jpeg',
       'title': 'نَصِلُك مع مقدم الرعاية المناسب',
-      'desc': 'انشر وظيفة، قارن الملفات الشخصية واقرأ التقييمات والأبحاث من ذوي الخبرات.',
+      'desc':
+          'انشر وظيفة، قارن الملفات الشخصية واقرأ التقييمات والأبحاث من ذوي الخبرات.',
     },
   ];
 
@@ -74,10 +75,7 @@ class _FirstPageState extends State<FirstPage> {
                 return Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.asset(
-                      _pages[index]['image']!,
-                      fit: BoxFit.cover,
-                    ),
+                    Image.asset(_pages[index]['image']!, fit: BoxFit.cover),
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -153,14 +151,22 @@ class _FirstPageState extends State<FirstPage> {
                             children: List.generate(
                               _pages.length,
                               (dotIndex) => Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 4),
+                                margin: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                ),
                                 width: _currentPage == dotIndex ? 12 : 8,
                                 height: _currentPage == dotIndex ? 12 : 8,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: _currentPage == dotIndex
-                                      ? const Color.fromARGB(255, 255, 96, 10)
-                                      : Colors.white54,
+                                  color:
+                                      _currentPage == dotIndex
+                                          ? const Color.fromARGB(
+                                            255,
+                                            255,
+                                            96,
+                                            10,
+                                          )
+                                          : Colors.white54,
                                 ),
                               ),
                             ),
@@ -171,9 +177,16 @@ class _FirstPageState extends State<FirstPage> {
                               Navigator.pushNamed(context, '/register');
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 255, 96, 10),
+                              backgroundColor: const Color.fromARGB(
+                                255,
+                                255,
+                                96,
+                                10,
+                              ),
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 60),
+                                vertical: 14,
+                                horizontal: 60,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -194,9 +207,13 @@ class _FirstPageState extends State<FirstPage> {
                             },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 60),
+                                vertical: 14,
+                                horizontal: 60,
+                              ),
                               side: const BorderSide(
-                                  color: Color.fromARGB(255, 255, 96, 10), width: 2),
+                                color: Color.fromARGB(255, 255, 96, 10),
+                                width: 2,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),

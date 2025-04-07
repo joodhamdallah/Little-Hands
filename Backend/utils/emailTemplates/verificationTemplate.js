@@ -22,7 +22,7 @@ module.exports = function getVerificationEmailTemplate(verificationURL) {
         </a>
   
         <p style="font-size: 14px; margin-top: 30px;">
-          This link will expire in 10 minutes.<br>
+          This link will expire in 5 minutes.<br>
           If the button doesn't work, copy and paste this URL into your browser:<br>
           <a href="${verificationURL}">${verificationURL}</a>
         </p>
