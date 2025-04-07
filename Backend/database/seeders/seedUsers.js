@@ -1,14 +1,15 @@
 require("dotenv").config();
-const bcrypt = require("bcrypt");
 const { faker } = require("@faker-js/faker");
-const connectDB = require("../connection"); // Import Mongoose connection
-const User = require("../../models/User"); // Go up two levels
+const connectDB = require("../connection");
+const User = require("../../models/User");
+
+const cities = ["طولكرم", "نابلس", "جنين", "رام الله", "الخليل", "غزة"];
+const roles = ["parent", "expert", "specialist", "sitter"];
 
 async function seedUsers() {
     try {
-        await connectDB(); // Connect to MongoDB using Mongoose
+        await connectDB();
 
-        // Check if users already exist
         const userCount = await User.countDocuments();
         if (userCount > 0) {
             console.log("ℹ️ Users already exist in the database. Skipping seeding.");
@@ -17,33 +18,41 @@ async function seedUsers() {
 
         const users = [];
 
-        // Create an admin user
+        // Admin user
         users.push(new User({
             firstName: "Admin",
             lastName: "User",
             email: "admin@example.com",
-            password: await bcrypt.hash("admin123", 10), // Hashed password
+            password: "Admin123!", // will be hashed automatically
             phone: "1234567890",
             role: "admin",
             dateOfBirth: "1990-01-01",
-            address: "Admin Street, City, Country"
+            address: "Admin Street",
+            city: "رام الله",
+            zipCode: "00970"
         }));
 
-        // Generate 10 fake users
+        // 10 random users
         for (let i = 0; i < 10; i++) {
+            const role = faker.helpers.arrayElement(roles);
+            const city = faker.helpers.arrayElement(cities);
+            const firstName = faker.person.firstName();
+            const lastName = faker.person.lastName();
+
             users.push(new User({
-                firstName: faker.person.firstName(),
-                lastName: faker.person.lastName(),
-                email: faker.internet.email(),
-                password: await bcrypt.hash("password123", 10),
-                phone: faker.phone.number(),
-                role: faker.helpers.arrayElement(["parent", "expert", "specialist"]),
-                dateOfBirth: faker.date.birthdate({ min: 18, max: 60, mode: "age" }).toISOString().split("T")[0],
-                address: faker.location.streetAddress()
+                firstName,
+                lastName,
+                email: faker.internet.email({ firstName, lastName }),
+                password: "Password123!", // must match validation
+                phone: faker.phone.number("059########"),
+                role,
+                dateOfBirth: faker.date.birthdate({ min: 18, max: 60, mode: "age" }),
+                address: faker.location.streetAddress(),
+                city,
+                zipCode: faker.location.zipCode()
             }));
         }
 
-        // Insert users into the database
         await User.insertMany(users);
         console.log("✅ Users seeded successfully!");
         process.exit(0);
@@ -53,5 +62,4 @@ async function seedUsers() {
     }
 }
 
-// Run the script
 seedUsers();
