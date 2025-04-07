@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'NotoSansArabic',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const FirstPage(), 
+      home: const FirstPage(),
       routes: {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),

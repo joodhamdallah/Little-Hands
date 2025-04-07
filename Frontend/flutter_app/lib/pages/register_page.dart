@@ -1,9 +1,8 @@
-import 'dart:convert';
+import 'package:flutter/material.dart' as flutter;
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/gestures.dart';
-import 'package:snippet_coder_utils/FormHelper.dart';
-import 'package:snippet_coder_utils/ProgressHUD.dart';
-import 'package:snippet_coder_utils/hex_color.dart';
+import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'config.dart';
 
@@ -15,29 +14,49 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  bool isAPIcallProcess = false;
+  final _formKey = GlobalKey<FormState>();
   bool hidePassword = true;
-  GlobalKey<FormState> globalFormKey = GlobalKey<FormState>();
-  final GlobalKey progressHUDKey = GlobalKey();
+  bool agreedToTerms = false; // <-- Add this inside your _RegisterPageState
 
   String? firstName;
   String? lastName;
   String? email;
   String? password;
-  String? phone;
-  String? role;
   String? dateOfBirth;
+  String? city;
+  String? zipCode;
   String? address;
 
-  String passwordStrengthMessage = "";
+  String passwordStrengthMessage = '';
   Color passwordStrengthColor = Colors.red;
 
-  final List<Map<String, String>> roles = [
-    {"id": "admin", "label": "Admin"},
-    {"id": "parent", "label": "Parent"},
-    {"id": "expert", "label": "Expert"},
-    {"id": "specialist", "label": "Specialist"},
+  final List<String> cities = [
+    "طولكرم",
+    "نابلس",
+    "جنين",
+    "رام الله",
+    "الخليل",
+    "غزة",
+    "بيت لحم",
   ];
+
+  final TextEditingController _dobController = TextEditingController();
+  late TapGestureRecognizer _tapGestureRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _tapGestureRecognizer =
+        TapGestureRecognizer()
+          ..onTap = () => Navigator.pushNamed(context, '/login');
+  }
+
+  @override
+  void dispose() {
+    _tapGestureRecognizer.dispose();
+    _dobController.dispose();
+    super.dispose();
+  }
 
   void checkPasswordStrength(String value) {
     final hasUpper = RegExp(r'[A-Z]');
@@ -47,22 +66,22 @@ class _RegisterPageState extends State<RegisterPage> {
     final hasMinLength = value.length >= 8;
 
     if (!hasMinLength) {
-      passwordStrengthMessage = "❌ Must be at least 8 characters";
+      passwordStrengthMessage = "❌ يجب أن تكون 8 أحرف على الأقل";
       passwordStrengthColor = Colors.red;
     } else if (!hasUpper.hasMatch(value)) {
-      passwordStrengthMessage = "❌ Add an uppercase letter";
+      passwordStrengthMessage = "❌ أضف حرفًا كبيرًا";
       passwordStrengthColor = Colors.orange;
     } else if (!hasLower.hasMatch(value)) {
-      passwordStrengthMessage = "❌ Add a lowercase letter";
+      passwordStrengthMessage = "❌ أضف حرفًا صغيرًا";
       passwordStrengthColor = Colors.orange;
     } else if (!hasDigit.hasMatch(value)) {
-      passwordStrengthMessage = "❌ Add a number";
+      passwordStrengthMessage = "❌ أضف رقمًا";
       passwordStrengthColor = Colors.orange;
     } else if (!hasSpecial.hasMatch(value)) {
-      passwordStrengthMessage = "❌ Add a special character";
+      passwordStrengthMessage = "❌ أضف رمزًا خاصًا";
       passwordStrengthColor = Colors.orange;
     } else {
-      passwordStrengthMessage = "✅ Strong password!";
+      passwordStrengthMessage = "✅ كلمة مرور قوية!";
       passwordStrengthColor = Colors.green;
     }
 
@@ -71,259 +90,156 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
+    return Directionality(
+      textDirection: flutter.TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: HexColor("F9C74F"),
-        body: ProgressHUD(
-          key: progressHUDKey,
-          inAsyncCall: isAPIcallProcess,
-          opacity: 0.3,
-          child: Form(key: globalFormKey, child: _registerUI(context)),
-        ),
-      ),
-    );
-  }
-
-  Widget _registerUI(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _headerSection(),
-          _formFields(),
-          _submitButton(),
-          _footerLinks(),
-        ],
-      ),
-    );
-  }
-
-  Widget _headerSection() {
-    return Container(
-      width: double.infinity,
-      height: 150,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.white, Colors.white]),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(100),
-          bottomRight: Radius.circular(100),
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            "assets/images/littlehandslogo.png",
-            width: 200,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            "Register",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 25,
-              color: Colors.black,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _formFields() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          _buildInputField("First Name", (val) => firstName = val),
-          _buildInputField("Last Name", (val) => lastName = val),
-          _buildInputField("Email", (val) => email = val, isEmail: true),
-          _buildPasswordField(),
-          if (passwordStrengthMessage.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Text(
-                passwordStrengthMessage,
-                style: TextStyle(color: passwordStrengthColor),
-              ),
-            ),
-          _buildInputField("Phone", (val) => phone = val),
-          _buildDatePickerField(),
-          _buildInputField("Address", (val) => address = val),
-          FormHelper.dropDownWidgetWithLabel(
-            context,
-            "Role",
-            "Select Role",
-            role,
-            roles,
-            (onChangedVal) => setState(() => role = onChangedVal),
-            (onValidateVal) => null,
-            borderColor: Colors.white,
-            borderRadius: 10,
-            optionValue: "id",
-            optionLabel: "label",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInputField(
-    String label,
-    Function(String) onSave, {
-    bool isEmail = false,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: FormHelper.inputFieldWidget(
-        context,
-        label,
-        label,
-        (val) {
-          if (val.isEmpty) return "$label can't be empty.";
-          if (isEmail &&
-              !RegExp(
-                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-              ).hasMatch(val)) {
-            return "Invalid email format.";
-          }
-          return null;
-        },
-        (val) => onSave(val),
-        borderFocusColor: Colors.white,
-        borderColor: Colors.white,
-        textColor: Colors.white,
-        hintColor: Colors.white,
-        borderRadius: 10,
-      ),
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextFormField(
-        obscureText: hidePassword,
-        style: const TextStyle(color: Colors.white),
-        decoration: InputDecoration(
-          labelText: "Password",
-          labelStyle: const TextStyle(color: Colors.white),
-          hintText: "Enter your password",
-          hintStyle: const TextStyle(color: Colors.white54),
-          filled: true,
-          fillColor: Colors.transparent,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Colors.white),
-          ),
-          suffixIcon: IconButton(
-            onPressed: () => setState(() => hidePassword = !hidePassword),
-            icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility),
-            color: Colors.white,
-          ),
-        ),
-        validator: (val) {
-          if (val == null || val.isEmpty) return "Password can't be empty.";
-          final passwordRegex = RegExp(
-            r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$',
-          );
-          if (!passwordRegex.hasMatch(val)) {
-            return "Must include uppercase, lowercase, number, symbol & min 8 chars.";
-          }
-          return null;
-        },
-        onChanged: (val) => checkPasswordStrength(val),
-        onSaved: (val) => password = val,
-      ),
-    );
-  }
-
-  Widget _buildDatePickerField() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: GestureDetector(
-        onTap: () async {
-          final DateTime? picked = await showDatePicker(
-            context: context,
-            initialDate: DateTime(2000),
-            firstDate: DateTime(1900),
-            lastDate: DateTime.now(),
-          );
-          if (picked != null) {
-            setState(() {
-              dateOfBirth = picked.toIso8601String();
-            });
-          }
-        },
-        child: AbsorbPointer(
-          child: FormHelper.inputFieldWidget(
-            context,
-            "Date of Birth",
-            dateOfBirth != null
-                ? dateOfBirth!.split("T").first
-                : "Select your birthdate",
-            (val) {
-              if (dateOfBirth == null || dateOfBirth!.isEmpty) {
-                return "Date of Birth can't be empty.";
-              }
-              return null;
-            },
-            (val) {},
-            borderFocusColor: Colors.white,
-            borderColor: Colors.white,
-            textColor: Colors.white,
-            hintColor: Colors.white,
-            borderRadius: 10,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _submitButton() {
-    return Center(
-      child: FormHelper.submitButton(
-        "Register",
-        () {
-          if (globalFormKey.currentState!.validate()) {
-            globalFormKey.currentState!.save();
-            setState(() => isAPIcallProcess = true);
-            registerUser();
-          }
-        },
-        btnColor: HexColor("#FFB3BA"),
-        borderColor: Colors.white,
-        txtColor: Colors.white,
-        borderRadius: 10,
-      ),
-    );
-  }
-
-  Widget _footerLinks() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 20),
-      child: Center(
-        child: RichText(
-          text: TextSpan(
-            style: const TextStyle(color: Colors.grey, fontSize: 14.0),
-            children: <TextSpan>[
-              const TextSpan(text: "Already have an account? "),
-              TextSpan(
-                text: 'Login',
-                style: const TextStyle(
-                  color: Colors.white,
-                  decoration: TextDecoration.underline,
+        resizeToAvoidBottomInset: true,
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              _headerSection(),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 5,
                 ),
-                recognizer:
-                    TapGestureRecognizer()
-                      ..onTap = () {
-                        Navigator.pushNamed(context, "/login");
-                      },
+                child: _welcomeMessage(),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(25),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      buildTextField("الاسم الأول", (val) => firstName = val),
+                      buildTextField("اسم العائلة", (val) => lastName = val),
+                      buildTextField(
+                        "البريد الإلكتروني",
+                        (val) => email = val,
+                        isEmail: true,
+                      ),
+                      buildPasswordField(),
+                      if (passwordStrengthMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            passwordStrengthMessage,
+                            style: TextStyle(color: passwordStrengthColor),
+                          ),
+                        ),
+                      buildDatePickerField(),
+                      buildCityDropdown(),
+                      buildTextField(
+                        "الرمز البريدي (اختياري)",
+                        (val) => zipCode = val,
+                        isOptional: true,
+                      ),
+                      buildTextField("العنوان", (val) => address = val),
+                      const SizedBox(height: 18),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Checkbox(
+                            value: agreedToTerms,
+                            onChanged: (val) {
+                              setState(() {
+                                agreedToTerms = val!;
+                              });
+                            },
+                          ),
+                          Expanded(
+                            child: Text(
+                              "أوافق على شروط الاستخدام. لمزيد من التفاصيل حول جمع معلوماتك واستخدامها، راجع سياسة الخصوصية الخاصة بنا.",
+                              style: const TextStyle(fontSize: 15),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ), // 👈 smaller gap before the submit button
+
+                      ElevatedButton(
+                        onPressed: () {
+                          if (!agreedToTerms) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "يجب الموافقة على شروط الاستخدام أولًا.",
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            registerUser(); // Call the API method here
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            255,
+                            96,
+                            10,
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 60,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          'إنشاء حساب',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.black,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: "هل ترغب في الانضمام إلى فريقنا؟ ",
+                              ),
+                              TextSpan(
+                                text: "سجّل الآن!",
+                                style: const TextStyle(
+                                  color: Color.fromARGB(255, 255, 96, 10),
+                                  fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                recognizer:
+                                    TapGestureRecognizer()
+                                      ..onTap = () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/recruit',
+                                        );
+                                      },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -332,63 +248,247 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void registerUser() async {
-    try {
-      final url = Uri.parse(registeration);
-      final headers = {"Content-Type": "application/json"};
-      final requestBody = {
-        "firstName": firstName,
-        "lastName": lastName,
-        "email": email,
-        "password": password,
-        "phone": phone,
-        "role": role,
-        "dateOfBirth": dateOfBirth,
-        "address": address,
-      }.map((key, value) => MapEntry(key, value ?? ""));
+  Widget _headerSection() {
+    return Container(
+      width: double.infinity,
+      height: 190, // Smaller height
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(100),
+          bottomRight: Radius.circular(100),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            "assets/images/littlehandslogo.png",
+            width: 190, // 👈 Slightly bigger logo
+            fit: BoxFit.contain,
+          ),
+          const SizedBox(height: 6), // 👈 Less space under the logo
+          const Text(
+            "إنشاء حساب جديد",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      debugPrint("🚀 Sending POST to $url");
-      debugPrint("📤 Body: ${jsonEncode(requestBody)}");
+  Widget _welcomeMessage() {
+    return RichText(
+      textAlign: TextAlign.right,
+      text: TextSpan(
+        style: const TextStyle(color: Colors.black, fontSize: 22),
+        children: [
+          const TextSpan(
+            text: "مرحبًا بكل الآباء والأمهات الأعزاء.\nهل لديك حساب بالفعل؟ ",
+          ),
+          TextSpan(
+            text: "تسجيل الدخول",
+            style: const TextStyle(
+              color: Color.fromARGB(255, 255, 96, 10),
+              fontWeight: FontWeight.w900,
+              decoration: TextDecoration.underline,
+            ),
+            recognizer: _tapGestureRecognizer,
+          ),
+          const TextSpan(text: " ."),
+        ],
+      ),
+    );
+  }
 
-      final response = await http.post(
-        url,
-        headers: headers,
-        body: jsonEncode(requestBody),
+  Widget buildTextField(
+    String label,
+    Function(String) onSaved, {
+    bool isEmail = false,
+    bool isOptional = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(fontSize: 16),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: 16,
+          ),
+        ),
+        keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+        validator: (val) {
+          if (!isOptional && (val == null || val.isEmpty)) {
+            return 'الرجاء تعبئة هذا الحقل';
+          }
+          if (isEmail &&
+              !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val!)) {
+            return 'البريد الإلكتروني غير صالح';
+          }
+          return null;
+        },
+        onSaved: (val) => onSaved(val!),
+      ),
+    );
+  }
+
+  Widget buildPasswordField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        obscureText: hidePassword,
+        decoration: InputDecoration(
+          labelText: 'كلمة المرور',
+          labelStyle: const TextStyle(fontSize: 16),
+          suffixIcon: IconButton(
+            icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility),
+            onPressed: () => setState(() => hidePassword = !hidePassword),
+          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: 16,
+          ),
+        ),
+        validator: (val) {
+          if (val == null || val.isEmpty) return 'كلمة المرور مطلوبة';
+          if (!RegExp(
+            r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$',
+          ).hasMatch(val)) {
+            return 'كلمة المرور ضعيفة';
+          }
+          return null;
+        },
+        onChanged: checkPasswordStrength,
+        onSaved: (val) => password = val!,
+      ),
+    );
+  }
+
+  Widget buildDatePickerField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: _dobController,
+        readOnly: true,
+        decoration: InputDecoration(
+          labelText: 'تاريخ الميلاد',
+          hintText: 'اختر تاريخ ميلادك',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: 16,
+          ),
+        ),
+        onTap: () async {
+          DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime(2000),
+            firstDate: DateTime(1900),
+            lastDate: DateTime.now(),
+            builder: (context, child) {
+              return Directionality(
+                textDirection: flutter.TextDirection.rtl,
+                child: child!,
+              );
+            },
+          );
+          if (picked != null) {
+            setState(() {
+              dateOfBirth = DateFormat('yyyy-MM-dd').format(picked);
+              _dobController.text = dateOfBirth!;
+            });
+          }
+        },
+        validator: (_) {
+          if (dateOfBirth == null || dateOfBirth!.isEmpty) {
+            return 'الرجاء اختيار تاريخ الميلاد';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget buildCityDropdown() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: DropdownButtonFormField<String>(
+        value: city,
+        decoration: InputDecoration(
+          labelText: 'المدينة',
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: 16,
+          ),
+        ),
+        items:
+            cities.map((c) {
+              return DropdownMenuItem(
+                value: c,
+                child: Text(c, textDirection: flutter.TextDirection.rtl),
+              );
+            }).toList(),
+        onChanged: (val) => setState(() => city = val),
+        validator: (val) => val == null ? 'الرجاء اختيار مدينة' : null,
+      ),
+    );
+  }
+
+  Future<void> registerUser() async {
+    final Uri url = Uri.parse(
+      registration,
+    ); // Your backend API URL from config.dart
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'firstName': firstName,
+        'lastName': lastName,
+        'email': email,
+        'password': password,
+        'dateOfBirth': dateOfBirth,
+        'city': city,
+        'zipCode': zipCode,
+        'address': address,
+      }),
+    );
+
+    // Check if the widget is still mounted before using `context`
+    if (!mounted) return;
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني."),
+          backgroundColor: Colors.green,
+        ),
       );
 
-      debugPrint("✅ Response Code: ${response.statusCode}");
-      debugPrint("📨 Response Body: ${response.body}");
-
-      if (!mounted) return;
-      setState(() => isAPIcallProcess = false);
-
-      if (response.statusCode == 201) {
-        FormHelper.showSimpleAlertDialog(
-          context,
-          "Success",
-          "Registration successful! Please check your email.",
-          "OK",
-          () => Navigator.pushNamed(context, "/login"),
-        );
-      } else {
-        FormHelper.showSimpleAlertDialog(
-          context,
-          "Failed",
-          "Registration failed: ${response.body}",
-          "OK",
-          () => Navigator.pop(context),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => isAPIcallProcess = false);
-      debugPrint("🔥 Exception: $e");
-      FormHelper.showSimpleAlertDialog(
-        context,
-        "Error",
-        "Something went wrong. Please try again.",
-        "OK",
-        () => Navigator.pop(context),
+      // Navigator.pushNamed(context, '/verify-email');
+    } else {
+      final responseData = jsonDecode(response.body);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(responseData['message'] ?? "حدث خطأ أثناء التسجيل"),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
