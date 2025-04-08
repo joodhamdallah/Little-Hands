@@ -1,23 +1,23 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
-import 'config.dart'; // Your config with login = "${url}login";
+import 'config.dart'; // يحتوي على متغيرات الرابط
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class ResetPassPage extends StatefulWidget {
+  const ResetPassPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<ResetPassPage> createState() => _ResetPassPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  bool hidePassword = true;
+class _ResetPassPageState extends State<ResetPassPage> {
   final _formKey = GlobalKey<FormState>();
   String? email;
-  String? password;
-
+  String? token;
+  String? newPassword;
   bool isLoading = false;
+  bool hidePassword = true;
+  bool isStepOne = true;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +34,13 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 25),
-                    child: _welcomeMessage(),
+                    child: Text(
+                      isStepOne
+                          ? "يرجى إدخال بريدك الإلكتروني لاستلام رمز التحقق."
+                          : "أدخل الرمز وكلمة المرور الجديدة لإعادة التعيين.",
+                      style: const TextStyle(fontSize: 18, color: Colors.black87),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.all(25),
@@ -42,32 +48,19 @@ class _LoginPageState extends State<LoginPage> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          _buildInputField("البريد الإلكتروني", (val) => email = val),
-                          const SizedBox(height: 14),
-                          _buildPasswordField(),
-                          const SizedBox(height: 16),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.pushNamed(context, "/resetPassword");
-                              },
-                              child: const Text(
-                                "هل نسيت كلمة المرور؟",
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  decoration: TextDecoration.underline,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ),
-                          ),
+                          if (isStepOne)
+                            _buildTextField("البريد الإلكتروني", (val) => email = val, isEmail: true),
+                          if (!isStepOne) ...[
+                            _buildTextField("رمز التحقق", (val) => token = val),
+                            const SizedBox(height: 14),
+                            _buildPasswordField()
+                          ],
                           const SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                loginUser();
+                                isStepOne ? sendResetRequest() : confirmNewPassword();
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -80,35 +73,13 @@ class _LoginPageState extends State<LoginPage> {
                                 borderRadius: BorderRadius.circular(30),
                               ),
                             ),
-                            child: const Text(
-                              'تسجيل الدخول',
-                              style: TextStyle(
+                            child: Text(
+                              isStepOne ? 'إرسال الرمز' : 'إعادة تعيين كلمة المرور',
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
                                 color: Colors.white,
                               ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          RichText(
-                            textAlign: TextAlign.center,
-                            text: TextSpan(
-                              style: const TextStyle(fontSize: 16, color: Colors.black),
-                              children: [
-                                const TextSpan(text: "ليس لديك حساب؟ "),
-                                TextSpan(
-                                  text: "سجل الآن",
-                                  style: const TextStyle(
-                                    color: Color(0xFFFF600A),
-                                    decoration: TextDecoration.underline,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.pushNamed(context, "/register");
-                                    },
-                                ),
-                              ],
                             ),
                           ),
                         ],
@@ -119,9 +90,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
             if (isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
-              ),
+              const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),
@@ -156,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const SizedBox(height: 10),
           const Text(
-            "تسجيل الدخول",
+            "إعادة تعيين كلمة المرور",
             style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 24,
@@ -168,15 +137,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _welcomeMessage() {
-    return const Text(
-      "مرحبًا بعودتك! الرجاء تسجيل الدخول للمتابعة.",
-      style: TextStyle(fontSize: 20, color: Colors.black87),
-      textAlign: TextAlign.center,
-    );
-  }
-
-  Widget _buildInputField(String label, Function(String) onSaved) {
+  Widget _buildTextField(String label, Function(String) onSaved, {bool isEmail = false}) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: label,
@@ -191,10 +152,10 @@ class _LoginPageState extends State<LoginPage> {
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       ),
-      keyboardType: TextInputType.emailAddress,
+      keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
       validator: (val) {
-        if (val == null || val.isEmpty) return 'الرجاء تعبئة هذا الحقل';
-        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+        if (val == null || val.isEmpty) return 'هذا الحقل مطلوب';
+        if (isEmail && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
           return 'البريد الإلكتروني غير صالح';
         }
         return null;
@@ -207,7 +168,7 @@ class _LoginPageState extends State<LoginPage> {
     return TextFormField(
       obscureText: hidePassword,
       decoration: InputDecoration(
-        labelText: 'كلمة المرور',
+        labelText: 'كلمة المرور الجديدة',
         labelStyle: const TextStyle(fontSize: 16),
         suffixIcon: IconButton(
           icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility),
@@ -223,53 +184,70 @@ class _LoginPageState extends State<LoginPage> {
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       ),
-      validator: (val) {
-        if (val == null || val.isEmpty) return 'كلمة المرور مطلوبة';
-        return null;
-      },
-      onSaved: (val) => password = val!,
+      validator: (val) => val == null || val.isEmpty ? 'كلمة المرور مطلوبة' : null,
+      onSaved: (val) => newPassword = val!,
     );
   }
 
-  void loginUser() async {
+  void sendResetRequest() async {
     setState(() => isLoading = true);
     try {
-      final url = Uri.parse(login); // from config.dart
-      final headers = {"Content-Type": "application/json"};
-      final requestBody = jsonEncode({
-        "email": email,
-        "password": password,
-        "rememberMe": false,
-      });
+      final response = await http.post(
+        Uri.parse(initiateReset),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email}),
+      );
 
-      final response = await http.post(url, headers: headers, body: requestBody);
+      final data = jsonDecode(response.body);
       setState(() => isLoading = false);
 
-      final jsonData = jsonDecode(response.body);
-      if (response.statusCode == 200 && jsonData["status"] == true) {
-        // Handle successful login and save token if needed
+      if (response.statusCode == 200 && data["status"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("تم تسجيل الدخول بنجاح 🎉"),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text("تم إرسال الرمز إلى بريدك الإلكتروني ✅")),
         );
-        Navigator.pushReplacementNamed(context, '/home');
+        setState(() => isStepOne = false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(jsonData["message"] ?? "فشل تسجيل الدخول"),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(data["message"] ?? "حدث خطأ"), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("حدث خطأ أثناء تسجيل الدخول"),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text("فشل إرسال الطلب"), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  void confirmNewPassword() async {
+    setState(() => isLoading = true);
+    try {
+      final response = await http.post(
+       Uri.parse(resetPassword),
+         headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "token": token,
+          "newPassword": newPassword,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+      setState(() => isLoading = false);
+
+      if (response.statusCode == 200 && data["status"] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("تم تغيير كلمة المرور بنجاح 🎉")),
+        );
+        Navigator.pushReplacementNamed(context, "/login");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data["message"] ?? "حدث خطأ"), backgroundColor: Colors.red),
+        );
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("حدث خطأ أثناء العملية"), backgroundColor: Colors.red),
       );
     }
   }

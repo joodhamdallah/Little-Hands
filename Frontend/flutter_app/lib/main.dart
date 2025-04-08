@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/pages/login_page.dart';
 import 'package:flutter_app/pages/register_page.dart';
-import 'package:flutter_app/pages/Firstpage.dart'; // Onboarding screen
+import 'package:flutter_app/pages/Firstpage.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -19,10 +20,11 @@ class MyApp extends StatelessWidget {
         fontFamily: 'NotoSansArabic',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const FirstPage(), 
+      home: const FirstPage(),
       routes: {
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
+         "/resetPassword": (context) => const ResetPassPage(),
       },
     );
   }
