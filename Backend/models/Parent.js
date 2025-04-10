@@ -5,7 +5,7 @@ const crypto = require("crypto");
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
 
-const userSchema = new mongoose.Schema({
+const parentSchema  = new mongoose.Schema({
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
     email: { 
@@ -27,11 +27,6 @@ const userSchema = new mongoose.Schema({
         }
     },
     phone: { type: String, required: true, trim: true },
-    role: { 
-        type: String, 
-        enum: ["admin", "parent", "expert", "specialist", "sitter"], 
-        default: "parent" 
-    },
     dateOfBirth: { type: Date, required: true },
     address: { type: String, required: true },
 
@@ -48,6 +43,7 @@ const userSchema = new mongoose.Schema({
     },
 
     isVerified: { type: Boolean, default: false },
+    isResettingPassword: { type: Boolean, default: false },
     emailVerificationToken: { type: String, default: null },
     emailVerificationExpires: { type: Date, default: null },
 
@@ -56,28 +52,28 @@ const userSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-userSchema.pre("save", async function (next) {
+parentSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
     this.password = await bcrypt.hash(this.password, 10);
     next();
 });
 
-userSchema.methods.comparePassword = async function (password) {
+parentSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.password);
 };
 
-userSchema.methods.createEmailVerificationToken = function () {
+parentSchema.methods.createEmailVerificationToken = function () {
     const token = crypto.randomBytes(32).toString("hex");
     this.emailVerificationToken = crypto.createHash("sha256").update(token).digest("hex");
     this.emailVerificationExpires = Date.now() + 5 * 60 * 1000;
     return token;
 };
 
-userSchema.methods.createPasswordResetToken = function () {
+parentSchema.methods.createPasswordResetToken = function () {
     const token = crypto.randomBytes(32).toString("hex");
     this.passwordResetToken = crypto.createHash("sha256").update(token).digest("hex");
     this.passwordResetExpires = Date.now() + 3 * 60 * 1000;
     return token;
 };
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("Parent", parentSchema);

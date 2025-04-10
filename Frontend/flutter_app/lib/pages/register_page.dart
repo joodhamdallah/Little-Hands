@@ -348,7 +348,6 @@ class _RegisterPageState extends State<RegisterPage> {
         'email': email,
         'password': password,
         'phone': phone,
-        'role': 'parent',
         'dateOfBirth': dateOfBirth,
         'city': city,
         'zipCode': zipCode,
@@ -358,7 +357,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (!mounted) return;
 
-    if (response.statusCode == 201) {
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني."),
@@ -366,12 +367,16 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       );
     } else {
-      final responseData = jsonDecode(response.body);
+      // ✅ Check for specific backend message
+      String errorMessage = responseData['message'] ?? "حدث خطأ أثناء التسجيل";
+
+      if (errorMessage.contains("already exists")) {
+        errorMessage =
+            "البريد الإلكتروني مستخدم بالفعل. يرجى استخدام بريد آخر.";
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(responseData['message'] ?? "حدث خطأ أثناء التسجيل"),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
       );
     }
   }
