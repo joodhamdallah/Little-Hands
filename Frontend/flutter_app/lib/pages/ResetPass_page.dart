@@ -12,6 +12,8 @@ class ResetPassPage extends StatefulWidget {
 
 class _ResetPassPageState extends State<ResetPassPage> {
   final _formKey = GlobalKey<FormState>();
+  final TextEditingController emailController = TextEditingController();
+
   String? email;
   String? token;
   String? newPassword;
@@ -37,8 +39,11 @@ class _ResetPassPageState extends State<ResetPassPage> {
                     child: Text(
                       isStepOne
                           ? "يرجى إدخال بريدك الإلكتروني لاستلام رمز التحقق."
-                          : "أدخل الرمز وكلمة المرور الجديدة لإعادة التعيين.",
-                      style: const TextStyle(fontSize: 18, color: Colors.black87),
+                          : "أدخل كلمة المرور الجديدة لإعادة التعيين.",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -49,18 +54,21 @@ class _ResetPassPageState extends State<ResetPassPage> {
                       child: Column(
                         children: [
                           if (isStepOne)
-                            _buildTextField("البريد الإلكتروني", (val) => email = val, isEmail: true),
-                          if (!isStepOne) ...[
-                            _buildTextField("رمز التحقق", (val) => token = val),
-                            const SizedBox(height: 14),
-                            _buildPasswordField()
-                          ],
+                            _buildTextField(
+                              "البريد الإلكتروني",
+                              (val) => email = val,
+                              isEmail: true,
+                              controller: emailController,
+                            ),
+                          if (!isStepOne) ...[_buildPasswordField()],
                           const SizedBox(height: 20),
                           ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
                                 _formKey.currentState!.save();
-                                isStepOne ? sendResetRequest() : confirmNewPassword();
+                                isStepOne
+                                    ? sendResetRequest()
+                                    : confirmNewPassword();
                               }
                             },
                             style: ElevatedButton.styleFrom(
@@ -74,7 +82,9 @@ class _ResetPassPageState extends State<ResetPassPage> {
                               ),
                             ),
                             child: Text(
-                              isStepOne ? 'إرسال الرمز' : 'إعادة تعيين كلمة المرور',
+                              isStepOne
+                                  ? 'إرسال الرمز'
+                                  : 'إعادة تعيين كلمة المرور',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
@@ -89,8 +99,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
                 ],
               ),
             ),
-            if (isLoading)
-              const Center(child: CircularProgressIndicator()),
+            if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),
@@ -137,8 +146,14 @@ class _ResetPassPageState extends State<ResetPassPage> {
     );
   }
 
-  Widget _buildTextField(String label, Function(String) onSaved, {bool isEmail = false}) {
+  Widget _buildTextField(
+    String label,
+    Function(String) onSaved, {
+    bool isEmail = false,
+    TextEditingController? controller,
+  }) {
     return TextFormField(
+      controller: controller,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(fontSize: 16),
@@ -150,12 +165,16 @@ class _ResetPassPageState extends State<ResetPassPage> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.black),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 16,
+        ),
       ),
       keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
       validator: (val) {
         if (val == null || val.isEmpty) return 'هذا الحقل مطلوب';
-        if (isEmail && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
+        if (isEmail &&
+            !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val)) {
           return 'البريد الإلكتروني غير صالح';
         }
         return null;
@@ -165,27 +184,54 @@ class _ResetPassPageState extends State<ResetPassPage> {
   }
 
   Widget _buildPasswordField() {
-    return TextFormField(
-      obscureText: hidePassword,
-      decoration: InputDecoration(
-        labelText: 'كلمة المرور الجديدة',
-        labelStyle: const TextStyle(fontSize: 16),
-        suffixIcon: IconButton(
-          icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility),
-          onPressed: () => setState(() => hidePassword = !hidePassword),
+    return Theme(
+      data: Theme.of(context).copyWith(
+        inputDecorationTheme: InputDecorationTheme(
+          errorMaxLines: 3,
+          errorStyle: TextStyle(
+            fontSize: 14, // 🔸 Make font bigger here
+            color: Colors.red[800], // optional: slightly darker red
+            fontWeight: FontWeight.bold, // optional: bold
+          ),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black),
-        ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
       ),
-      validator: (val) => val == null || val.isEmpty ? 'كلمة المرور مطلوبة' : null,
-      onSaved: (val) => newPassword = val!,
+      child: TextFormField(
+        obscureText: hidePassword,
+        decoration: InputDecoration(
+          labelText: 'كلمة المرور الجديدة',
+          labelStyle: const TextStyle(fontSize: 20),
+          suffixIcon: IconButton(
+            icon: Icon(hidePassword ? Icons.visibility_off : Icons.visibility),
+            onPressed: () => setState(() => hidePassword = !hidePassword),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.black),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.black),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 20,
+            horizontal: 16,
+          ),
+        ),
+        validator: (val) {
+          if (val == null || val.isEmpty) return 'كلمة المرور مطلوبة';
+
+          final passwordPattern =
+              r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$';
+          final regex = RegExp(passwordPattern);
+
+          if (!regex.hasMatch(val)) {
+            return 'كلمة المرور ضعيفة! يجب أن تحتوي على 8 أحرف على الأقل، حرف كبير، حرف صغير، رقم، ورمز خاص.';
+          }
+
+          return null;
+        },
+        onSaved: (val) => newPassword = val!,
+      ),
     );
   }
 
@@ -205,16 +251,23 @@ class _ResetPassPageState extends State<ResetPassPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("تم إرسال الرمز إلى بريدك الإلكتروني ✅")),
         );
+        emailController.clear(); // 💥 clear the field
         setState(() => isStepOne = false);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "حدث خطأ"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(data["message"] ?? "حدث خطأ"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("فشل إرسال الطلب"), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text("فشل إرسال الطلب"),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -223,12 +276,9 @@ class _ResetPassPageState extends State<ResetPassPage> {
     setState(() => isLoading = true);
     try {
       final response = await http.post(
-       Uri.parse(resetPassword),
-         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "token": token,
-          "newPassword": newPassword,
-        }),
+        Uri.parse(resetPassword),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"email": email, "newPassword": newPassword}),
       );
 
       final data = jsonDecode(response.body);
@@ -236,18 +286,29 @@ class _ResetPassPageState extends State<ResetPassPage> {
 
       if (response.statusCode == 200 && data["status"] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("تم تغيير كلمة المرور بنجاح 🎉")),
+          const SnackBar(content: Text("تم تغيير كلمة المرور بنجاح 🎉")),
         );
         Navigator.pushReplacementNamed(context, "/login");
       } else {
+        String errorMessage = data["message"] ?? "حدث خطأ";
+
+        if (errorMessage.contains(
+          "Password reset not authorized or expired.",
+        )) {
+          errorMessage = "يرجى التحقق من بريدك الإلكتروني أولاً.";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "حدث خطأ"), backgroundColor: Colors.red),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("حدث خطأ أثناء العملية"), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text("حدث خطأ أثناء العملية"),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

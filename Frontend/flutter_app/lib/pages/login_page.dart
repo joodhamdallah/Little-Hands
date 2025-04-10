@@ -42,7 +42,10 @@ class _LoginPageState extends State<LoginPage> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          _buildInputField("البريد الإلكتروني", (val) => email = val),
+                          _buildInputField(
+                            "البريد الإلكتروني",
+                            (val) => email = val,
+                          ),
                           const SizedBox(height: 14),
                           _buildPasswordField(),
                           const SizedBox(height: 16),
@@ -93,7 +96,10 @@ class _LoginPageState extends State<LoginPage> {
                           RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: const TextStyle(fontSize: 16, color: Colors.black),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
                               children: [
                                 const TextSpan(text: "ليس لديك حساب؟ "),
                                 TextSpan(
@@ -103,10 +109,14 @@ class _LoginPageState extends State<LoginPage> {
                                     decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.pushNamed(context, "/register");
-                                    },
+                                  recognizer:
+                                      TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            "/register",
+                                          );
+                                        },
                                 ),
                               ],
                             ),
@@ -118,10 +128,7 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
             ),
-            if (isLoading)
-              const Center(
-                child: CircularProgressIndicator(),
-              ),
+            if (isLoading) const Center(child: CircularProgressIndicator()),
           ],
         ),
       ),
@@ -189,7 +196,10 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.black),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 16,
+        ),
       ),
       keyboardType: TextInputType.emailAddress,
       validator: (val) {
@@ -221,7 +231,10 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.black),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 16,
+        ),
       ),
       validator: (val) {
         if (val == null || val.isEmpty) return 'كلمة المرور مطلوبة';
@@ -242,12 +255,17 @@ class _LoginPageState extends State<LoginPage> {
         "rememberMe": false,
       });
 
-      final response = await http.post(url, headers: headers, body: requestBody);
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: requestBody,
+      );
       setState(() => isLoading = false);
 
       final jsonData = jsonDecode(response.body);
+      String message = jsonData["message"] ?? "فشل تسجيل الدخول";
+
       if (response.statusCode == 200 && jsonData["status"] == true) {
-        // Handle successful login and save token if needed
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("تم تسجيل الدخول بنجاح 🎉"),
@@ -256,11 +274,19 @@ class _LoginPageState extends State<LoginPage> {
         );
         Navigator.pushReplacementNamed(context, '/home');
       } else {
+        // ✅ Translate backend messages
+        if (message.toLowerCase().contains("user does not exist")) {
+          message = "لا يوجد حساب بهذا البريد الإلكتروني، سجّل الآن.";
+        } else if (message.toLowerCase().contains(
+          "incorrect email or password",
+        )) {
+          message = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+        } else if (message.toLowerCase().contains("not verified")) {
+          message = "يجب تفعيل البريد الإلكتروني أولاً.";
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(jsonData["message"] ?? "فشل تسجيل الدخول"),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(message), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
