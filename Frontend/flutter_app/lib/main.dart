@@ -30,8 +30,6 @@ class MyApp extends StatelessWidget {
          "/resetPassword": (context) => const ResetPassPage(),
          '/onboarding': (context) => const OnboardingRoadmapPage(),
          '/caregiverCategory': (context) => const CaregiverCategorySelection(), 
-
-
       },
     );
   }
