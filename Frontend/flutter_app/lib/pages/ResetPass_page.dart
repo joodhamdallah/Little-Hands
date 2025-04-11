@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'config.dart'; // يحتوي على متغيرات الرابط
+import 'config.dart'; 
 
 class ResetPassPage extends StatefulWidget {
   const ResetPassPage({super.key});
