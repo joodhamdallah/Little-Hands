@@ -1,30 +1,37 @@
 require("dotenv").config(); // Load environment variables
 const express = require("express");
-const mongoose = require("mongoose"); // Import mongoose to close connection properly
-const connectDB = require("./database/connection"); // Import database connection
-const parentRoutes = require("./routes/parentRoutes"); 
+const mongoose = require("mongoose");
+const connectDB = require("./database/connection");
+
+// Routes
+const parentRoutes = require("./routes/parentRoutes");
 const caregiverRoutes = require("./routes/caregiverRoutes");
 const authRoutes = require("./routes/authRoutes");
+const identityRoutes = require("./routes/identityRoutes"); 
 
 const app = express();
-const port = process.env.PORT || 3000; // Use environment variable for port
+const port = process.env.PORT || 3000;
 
-// Middleware
-app.use(express.json()); // Parse JSON requests
+// ✅ Middleware with increased body size limits
+app.use(express.json({ limit: '30mb' }));
+app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
-// Routes (Import and use API routes)
-app.use('/api', parentRoutes); 
+// ✅ Route mounts
+app.use("/api", parentRoutes);
 app.use("/api/caregiver", caregiverRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api", identityRoutes);
+console.log("✅ identityRoutes linked at /api/verify-id");
 
-// Connect to DB & Start Server
+
+// ✅ Connect to MongoDB then start the server
 connectDB()
     .then(() => {
         const server = app.listen(port, () => {
             console.log(`🚀 Server running on http://localhost:${port}`);
         });
 
-        // Graceful shutdown: Handle process termination
+        // ✅ Graceful shutdown
         process.on("SIGINT", async () => {
             console.log("\n🛑 Server shutting down...");
             await mongoose.disconnect();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/pages/caregiver_categories_page.dart';
+import 'package:flutter_app/pages/id_verify_api.dart';
 import 'package:flutter_app/pages/login_page.dart';
 import 'package:flutter_app/pages/register_caregivers_page.dart';
 import 'package:flutter_app/pages/register_page.dart';
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
          '/onboarding': (context) => const OnboardingRoadmapPage(),
          '/caregiverCategory': (context) => const CaregiverCategorySelection(), 
         '/registerCaregivers': (context) => const RegisterCaregiversPage(),
+        '/idverifyapi': (context) => const IDVerificationPage(),
       },
     );
   }
