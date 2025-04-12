@@ -247,7 +247,7 @@ class _LoginPageState extends State<LoginPage> {
   void loginUser() async {
     setState(() => isLoading = true);
     try {
-      final url = Uri.parse(login); // from config.dart
+      final url = Uri.parse(loginUsers); // should point to /api/auth/login
       final headers = {"Content-Type": "application/json"};
       final requestBody = jsonEncode({
         "email": email,
@@ -260,6 +260,8 @@ class _LoginPageState extends State<LoginPage> {
         headers: headers,
         body: requestBody,
       );
+
+      if (!mounted) return; // prevent context use after dispose
       setState(() => isLoading = false);
 
       final jsonData = jsonDecode(response.body);
@@ -274,7 +276,6 @@ class _LoginPageState extends State<LoginPage> {
         );
         Navigator.pushReplacementNamed(context, '/home');
       } else {
-        // ✅ Translate backend messages
         if (message.toLowerCase().contains("user does not exist")) {
           message = "لا يوجد حساب بهذا البريد الإلكتروني، سجّل الآن.";
         } else if (message.toLowerCase().contains(
@@ -290,6 +291,7 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
