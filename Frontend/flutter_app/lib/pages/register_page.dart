@@ -505,10 +505,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             children: [
                               const TextSpan(
-                                text: "هل ترغب في الانضمام إلى فريقنا؟ ",
+                                text: "  هل أنت مقدّم رعاية وتبحث عن فرصة عمل؟",
                               ),
                               TextSpan(
-                                text: "سجّل الآن!",
+                                text: "سجّل الآن! ",
                                 style: const TextStyle(
                                   color: Color.fromARGB(255, 255, 96, 10),
                                   fontWeight: FontWeight.bold,
@@ -519,7 +519,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ..onTap = () {
                                         Navigator.pushNamed(
                                           context,
-                                          '/recruit',
+                                          '/registerCaregivers',
                                         );
                                       },
                               ),
