@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/subcategories_page.dart';
 
 class CaregiverCategorySelection extends StatefulWidget {
   const CaregiverCategorySelection({super.key});
@@ -12,6 +11,12 @@ class CaregiverCategorySelection extends StatefulWidget {
 class _CaregiverCategorySelectionState
     extends State<CaregiverCategorySelection> {
   String? selectedCategory;
+  final Map<String, String> categoryRoutes = {
+    'جليسة أطفال': '/babysitter',
+    'إستشاري رعاية الطفل': '/childConsult',
+    'مساعدة الأطفال ذوي الاحتياجات': '/specialNeeds',
+    'مدرس خصوصي': '/tutor',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -94,17 +99,13 @@ class _CaregiverCategorySelectionState
                 onPressed:
                     selectedCategory != null
                         ? () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => SubcategoryScreen(
-                                    category: selectedCategory!,
-                                  ),
-                            ),
-                          );
+                          final route = categoryRoutes[selectedCategory!];
+                          if (route != null) {
+                            Navigator.pushNamed(context, route);
+                          }
                         }
                         : null,
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFF600A),
                   padding: const EdgeInsets.symmetric(vertical: 16),

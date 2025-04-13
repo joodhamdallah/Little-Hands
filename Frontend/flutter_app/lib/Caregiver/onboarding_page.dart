@@ -224,10 +224,7 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage>
         return Positioned(
           left: offsetX + movement,
           top: offsetY + movement,
-          child: CircleAvatar(
-            radius: radius,
-            backgroundColor: color,
-          ),
+          child: CircleAvatar(radius: radius, backgroundColor: color),
         );
       },
     );
