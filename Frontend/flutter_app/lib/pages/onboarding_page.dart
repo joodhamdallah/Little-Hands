@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class OnboardingRoadmapPage extends StatefulWidget {
   const OnboardingRoadmapPage({super.key});
@@ -8,8 +10,10 @@ class OnboardingRoadmapPage extends StatefulWidget {
   State<OnboardingRoadmapPage> createState() => _OnboardingRoadmapPageState();
 }
 
-class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with SingleTickerProviderStateMixin {
+class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  String? userEmail;
 
   @override
   void initState() {
@@ -18,6 +22,14 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
       vsync: this,
       duration: const Duration(seconds: 5),
     )..repeat(reverse: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      if (args != null && args['email'] != null) {
+        setState(() {
+          userEmail = args['email'];
+        });
+      }
+    });
   }
 
   @override
@@ -54,10 +66,30 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                     height: 120,
                     child: Stack(
                       children: [
-                        _animatedBackgroundBubble(offsetX: 30, offsetY: 10, radius: 25, color: const Color.fromARGB(255, 94, 255, 99)),
-                        _animatedBackgroundBubble(offsetX: 100, offsetY: 40, radius: 15, color: const Color.fromARGB(255, 255, 98, 151)),
-                        _animatedBackgroundBubble(offsetX: 200, offsetY: 20, radius: 35, color: const Color.fromARGB(255, 255, 136, 38)),
-                        _animatedBackgroundBubble(offsetX: 280, offsetY: 5, radius: 20, color: const Color.fromARGB(255, 255, 237, 79)),
+                        _animatedBackgroundBubble(
+                          offsetX: 30,
+                          offsetY: 10,
+                          radius: 25,
+                          color: const Color.fromARGB(255, 94, 255, 99),
+                        ),
+                        _animatedBackgroundBubble(
+                          offsetX: 100,
+                          offsetY: 40,
+                          radius: 15,
+                          color: const Color.fromARGB(255, 255, 98, 151),
+                        ),
+                        _animatedBackgroundBubble(
+                          offsetX: 200,
+                          offsetY: 20,
+                          radius: 35,
+                          color: const Color.fromARGB(255, 255, 136, 38),
+                        ),
+                        _animatedBackgroundBubble(
+                          offsetX: 280,
+                          offsetY: 5,
+                          radius: 20,
+                          color: const Color.fromARGB(255, 255, 237, 79),
+                        ),
                       ],
                     ),
                   ),
@@ -66,7 +98,9 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                     top: 20,
                     child: CircleAvatar(
                       radius: 50,
-                      backgroundImage: AssetImage('assets/images/onboarding3.png'),
+                      backgroundImage: AssetImage(
+                        'assets/images/onboarding3.png',
+                      ),
                     ),
                   ),
                 ],
@@ -91,7 +125,8 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                       _buildStep(
                         context,
                         title: 'تم إنشاء الحساب',
-                        description: 'عمل ممتاز! لن تظهر للعائلات حتى تقوم بالخطوتين 2 و 3',
+                        description:
+                            'عمل ممتاز! لن تظهر للعائلات حتى تقوم بالخطوتين 2 و 3',
                         icon: Icons.verified_user,
                         color: Colors.green,
                       ),
@@ -99,7 +134,8 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                       _buildStep(
                         context,
                         title: 'اكمل ملفك الشخصي',
-                        description: 'أضف معلومات عن مهاراتك وخبراتك السابقة التي تستخدمها للتقديم على الوظائف.',
+                        description:
+                            'أضف معلومات عن مهاراتك وخبراتك السابقة التي تستخدمها للتقديم على الوظائف.',
                         icon: Icons.person_outline,
                         color: Colors.orange,
                       ),
@@ -107,7 +143,8 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                       _buildStep(
                         context,
                         title: 'تحقق من هويتك',
-                        description: ' سلامتك هي أولويتنا القصوى. سوف تحتاج إلى بطاقة هوية حكومية وهاتف ذكي لتنطلق في رحلة العمل معنا .',
+                        description:
+                            ' سلامتك هي أولويتنا القصوى. سوف تحتاج إلى بطاقة هوية حكومية وهاتف ذكي لتنطلق في رحلة العمل معنا .',
                         icon: Icons.verified,
                         color: Colors.blue,
                       ),
@@ -116,10 +153,38 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    if (userEmail == null) return;
+
+                    final url = Uri.parse(
+                      "http://10.0.2.2:3000/api/caregiver/checkVerificationStatus",
+                    );
+                    final response = await http.post(
+                      url,
+                      headers: {"Content-Type": "application/json"},
+                      body: jsonEncode({"email": userEmail}),
+                    );
+
+                    final json = jsonDecode(response.body);
+
+                    if (response.statusCode == 200 &&
+                        json["isVerified"] == true) {
                       Navigator.pushNamed(context, '/caregiverCategory');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "يرجى التحقق من بريدك الإلكتروني وتفعيل الحساب أولًا.",
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
@@ -138,7 +203,7 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ),
@@ -146,7 +211,12 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
     );
   }
 
-  Widget _animatedBackgroundBubble({required double offsetX, required double offsetY, required double radius, required Color color}) {
+  Widget _animatedBackgroundBubble({
+    required double offsetX,
+    required double offsetY,
+    required double radius,
+    required Color color,
+  }) {
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {
@@ -163,11 +233,13 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
     );
   }
 
-  Widget _buildStep(BuildContext context,
-      {required String title,
-      required String description,
-      required IconData icon,
-      required Color color}) {
+  Widget _buildStep(
+    BuildContext context, {
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -196,7 +268,7 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage> with Sing
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

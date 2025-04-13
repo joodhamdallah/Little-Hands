@@ -71,6 +71,16 @@ class CaregiverServices {
             throw error;
         }
     }
+    
+    static async checkVerificationStatus(email) {
+        try {
+            const result = await CareGiverModel.checkVerificationStatus(email);
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    }
+    
 }
 
 module.exports = CaregiverServices;

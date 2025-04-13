@@ -87,4 +87,10 @@ careGiverSchema.methods.createPasswordResetToken = function () {
   return token;
 };
 
+careGiverSchema.statics.checkVerificationStatus = async function(email) {
+  const user = await this.findOne({ email });
+  if (!user) return { found: false, isVerified: false };
+  return { found: true, isVerified: user.isVerified };
+};
+
 module.exports = mongoose.model("CareGiver", careGiverSchema);

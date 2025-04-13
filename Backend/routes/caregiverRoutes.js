@@ -9,5 +9,6 @@ router.post("/register", upload.single("image"), caregiverController.register);
 
 // 🟢 Verify email via token (from link)
 router.get("/verifyEmail", caregiverController.verifyEmail);
+router.post('/checkVerificationStatus', caregiverController.checkVerificationStatus);
 
 module.exports = router;

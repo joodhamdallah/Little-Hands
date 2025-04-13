@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/subcategories_page.dart';
 
-class CaregiverCategorySelection extends StatelessWidget {
+class CaregiverCategorySelection extends StatefulWidget {
   const CaregiverCategorySelection({super.key});
+
+  @override
+  State<CaregiverCategorySelection> createState() =>
+      _CaregiverCategorySelectionState();
+}
+
+class _CaregiverCategorySelectionState
+    extends State<CaregiverCategorySelection> {
+  String? selectedCategory;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +62,8 @@ class CaregiverCategorySelection extends StatelessWidget {
                     _buildCategoryCard(
                       context,
                       title: 'إستشاري رعاية الطفل',
-                      subtitle: 'تقديم الإستشارات التربوية والنفسية للأهل والأطفال.',
+                      subtitle:
+                          'تقديم الإستشارات التربوية والنفسية للأهل والأطفال.',
                       icon: Icons.psychology_alt,
                     ),
                     _buildCategoryCard(
@@ -63,17 +74,52 @@ class CaregiverCategorySelection extends StatelessWidget {
                     ),
                     _buildCategoryCard(
                       context,
-                      title: ' مساعدة الأطفال ذوي الاحتياجات',
-                      subtitle: 'مساعدة الأطفال من ذوي الاحتياجات داخل المدرسة .',
+                      title: 'مساعدة الأطفال ذوي الاحتياجات',
+                      subtitle:
+                          'مساعدة الأطفال من ذوي الاحتياجات داخل المدرسة .',
                       icon: Icons.accessibility_new,
                     ),
                     _buildCategoryCard(
                       context,
                       title: 'مدرس خصوصي',
-                      subtitle: 'دروس تعليمية خاصة في العديد من مواد المنهج الفلسطني لمختلف الأعمار.',
+                      subtitle:
+                          'دروس تعليمية خاصة في العديد من مواد المنهج الفلسطني لمختلف الأعمار.',
                       icon: Icons.menu_book,
                     ),
                   ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed:
+                    selectedCategory != null
+                        ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => SubcategoryScreen(
+                                    category: selectedCategory!,
+                                  ),
+                            ),
+                          );
+                        }
+                        : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF600A),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'التالي',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontFamily: 'NotoSansArabic',
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -83,21 +129,33 @@ class CaregiverCategorySelection extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryCard(BuildContext context,
-      {required String title, required String subtitle, required IconData icon}) {
+  Widget _buildCategoryCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+  }) {
+    final isSelected = selectedCategory == title;
     return InkWell(
       onTap: () {
-        // Handle navigation to detail or confirmation
+        setState(() {
+          selectedCategory = title;
+        });
       },
       child: Container(
+        height: 110,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isSelected ? const Color(0xFFFFF3ED) : Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border:
+              isSelected
+                  ? Border.all(color: const Color(0xFFFF600A), width: 2)
+                  : null,
           boxShadow: [
             BoxShadow(
               color: Colors.black12,
               blurRadius: 8,
-              offset: Offset(0, 4),
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -117,18 +175,18 @@ class CaregiverCategorySelection extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-             Text(
-                subtitle,
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Colors.black54,
-                  fontFamily: 'NotoSansArabic',
-                ),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.black54,
+                fontFamily: 'NotoSansArabic',
               ),
-           ],
+            ),
+          ],
         ),
       ),
     );
