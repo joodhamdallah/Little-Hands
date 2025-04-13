@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Babysitter/address_page.dart';
 import 'package:flutter_app/Caregiver/Babysitter/baby_sitter_page.dart';
+import 'package:flutter_app/Caregiver/Babysitter/bio_page.dart';
+import 'package:flutter_app/Caregiver/Babysitter/rate_page.dart';
+import 'package:flutter_app/Caregiver/Babysitter/skilles_page.dart';
 import 'package:flutter_app/Caregiver/Expert/child_consult_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/special_needs_category.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
@@ -39,6 +43,12 @@ class MyApp extends StatelessWidget {
         '/babysitter': (context) => const BabySitterPage(),
         '/childConsult': (context) => const ChildConsultPage(),
         '/specialNeeds': (context) => const SpecialNeedsPage(),
+        '/babysitteraddresspage': (context) => const BabySitterCityPage(),
+        '/babysitterskillespage': (context) => const BabySitterSkillsPage(),
+        '/babysitterbiopage': (context) => const BabySitterBioPage(),
+        '/babysitterratepage': (context) => const BabySitterRatePage(),
+
+
       },
     );
   }
