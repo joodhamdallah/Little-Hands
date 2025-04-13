@@ -515,7 +515,11 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushReplacementNamed(context, '/onboarding');
+        Navigator.pushReplacementNamed(
+          context,
+          '/onboarding',
+          arguments: {'email': email},
+        );
       } else {
         String errorMessage =
             responseData['message'] ?? "حدث خطأ أثناء التسجيل";
