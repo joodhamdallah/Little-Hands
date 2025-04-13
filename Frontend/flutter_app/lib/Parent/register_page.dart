@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/gestures.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'config.dart';
+import '../pages/config.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
