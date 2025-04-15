@@ -15,8 +15,37 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
     '13+',
   ];
 
+  final List<String> daysOfWeek = [
+    'السبت',
+    'الأحد',
+    'الاثنين',
+    'الثلاثاء',
+    'الأربعاء',
+    'الخميس',
+    'الجمعة',
+  ];
+
   String? selectedAgeGroup;
   bool? canAccompany;
+  Map<String, Set<String>> availability = {}; // {'السبت': {'صباح', 'مساء'}}
+
+  @override
+  void initState() {
+    super.initState();
+    for (var day in daysOfWeek) {
+      availability[day] = {};
+    }
+  }
+
+  void toggleAvailability(String day, String period) {
+    setState(() {
+      if (availability[day]!.contains(period)) {
+        availability[day]!.remove(period);
+      } else {
+        availability[day]!.add(period);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +123,7 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
                     ),
 
                     const SizedBox(height: 24),
-                    const Divider(thickness: 1, height: 24),
+                    const Divider(thickness: 1),
 
                     // Question 2
                     const Text(
@@ -145,6 +174,77 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
                         );
                       }).toList(),
                     ),
+
+                    const SizedBox(height: 24),
+                    const Divider(thickness: 1),
+
+                    // Question 3
+                    const Text(
+                      'حدد الأوقات التي تكون متاحًا فيها للعمل:',
+                      style: TextStyle(
+                        fontFamily: 'NotoSansArabic',
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...daysOfWeek.map((day) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              day,
+                              style: const TextStyle(
+                                fontFamily: 'NotoSansArabic',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: ['صباح', 'مساء'].map((period) {
+                                final isSelected =
+                                    availability[day]!.contains(period);
+                                return Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => toggleAvailability(day, period),
+                                    child: Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 6),
+                                      padding:
+                                          const EdgeInsets.symmetric(vertical: 10),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? const Color(0xFFFFEEE5)
+                                            : Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? const Color(0xFFFF600A)
+                                              : Colors.grey.shade300,
+                                          width: isSelected ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          period,
+                                          style: const TextStyle(
+                                            fontFamily: 'NotoSansArabic',
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+
                     const SizedBox(height: 24),
                   ],
                 ),
@@ -157,9 +257,11 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: selectedAgeGroup != null && canAccompany != null
+                  onPressed: (selectedAgeGroup != null &&
+                          canAccompany != null &&
+                          availability.values.any((set) => set.isNotEmpty))
                       ? () {
-                          // Handle next step
+                          // Handle next
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -170,15 +272,15 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
-                    'التالي',
-                    style: TextStyle(
-                      fontFamily: 'NotoSansArabic',
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                child: const Text(
+                      'التالي',
+                      style: TextStyle(
+                        fontFamily: 'NotoSansArabic',
+                        fontSize: 17,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
                 ),
               ),
             ),
