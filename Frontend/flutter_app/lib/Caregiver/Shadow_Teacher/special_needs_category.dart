@@ -43,7 +43,7 @@ class _DisabilityExperiencePageState extends State<DisabilityExperiencePage> {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: LinearProgressIndicator(
-              value: 0.1,
+              value: 0.16,
               minHeight: 8,
               backgroundColor: Colors.grey.shade300,
               valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF600A)),

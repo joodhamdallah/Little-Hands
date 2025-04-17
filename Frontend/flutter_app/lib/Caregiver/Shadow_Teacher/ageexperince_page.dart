@@ -69,7 +69,7 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
-                  value: 0.4,
+                  value: 0.64,
                   minHeight: 8,
                   backgroundColor: Colors.grey.shade300,
                   valueColor: const AlwaysStoppedAnimation(Color(0xFFFF600A)),
@@ -261,7 +261,7 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
                           canAccompany != null &&
                           availability.values.any((set) => set.isNotEmpty))
                       ? () {
-                          // Handle next
+                    Navigator.pushNamed(context, '/shadowteacherbio'); 
                         }
                       : null,
                   style: ElevatedButton.styleFrom(

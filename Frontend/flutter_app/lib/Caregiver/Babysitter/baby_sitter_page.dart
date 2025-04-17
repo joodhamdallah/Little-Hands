@@ -176,13 +176,14 @@ List<int> selectedIndices = [];
                     ),
                   ),
                   child: const Text(
-                    'التالي',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontFamily: 'NotoSansArabic',
+                      'التالي',
+                      style: TextStyle(
+                        fontFamily: 'NotoSansArabic',
+                        fontSize: 17,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
-                  ),
                 ),
               ),
             ),
