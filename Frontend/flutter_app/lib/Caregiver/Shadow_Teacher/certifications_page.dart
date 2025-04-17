@@ -40,7 +40,7 @@ class _ShadowTeacherStep3State extends State<ShadowTeacherStep3> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(
-                  value: 0.3,
+                  value: 0.48,
                   minHeight: 8,
                   backgroundColor: Colors.grey.shade300,
                   valueColor: const AlwaysStoppedAnimation(Color(0xFFFF600A)),

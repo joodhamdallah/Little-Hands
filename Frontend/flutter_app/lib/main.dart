@@ -7,7 +7,9 @@ import 'package:flutter_app/Caregiver/Babysitter/skilles_page.dart';
 import 'package:flutter_app/Caregiver/Expert/child_consult_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/academic_qualifications_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/ageexperince_page.dart';
+import 'package:flutter_app/Caregiver/Shadow_Teacher/bio_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/certifications_page.dart';
+import 'package:flutter_app/Caregiver/Shadow_Teacher/pricing_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/special_needs_category.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/Caregiver/caregiver_categories_page.dart';
@@ -36,6 +38,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const FirstPage(),
       routes: {
+        
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         "/resetPassword": (context) => const ResetPassPage(),
@@ -43,16 +46,24 @@ class MyApp extends StatelessWidget {
         '/caregiverCategory': (context) => const CaregiverCategorySelection(),
         '/registerCaregivers': (context) => const RegisterCaregiversPage(),
         '/idverifyapi': (context) => const IDVerificationPage(),
+       
+       
         '/babysitter': (context) => const BabySitterPage(),
         '/childConsult': (context) => const ChildConsultPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
         '/babysitterskillespage': (context) => const BabySitterSkillsPage(),
         '/babysitterbiopage': (context) => const BabySitterBioPage(),
         '/babysitterratepage': (context) => const BabySitterRatePage(),
+        
+        
         '/specialNeeds': (context) => const DisabilityExperiencePage(),
         '/shadowteacherQ2': (context) => const ShadowTeacherStep2(),
         '/shadowteacherQ3': (context) => const ShadowTeacherStep3(),
         '/shadowteacherQ4': (context) => const ShadowTeacherStep4(),
+        '/shadowteacherbio': (context) => const ShadowTeacherBioPage(),
+        '/shadowteacherpricing': (context) => const ShadowTeacherPricingPage(),
+
+        
 
 
         
