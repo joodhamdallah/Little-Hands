@@ -2,21 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Caregiver/Babysitter/bio_page.dart';
 
 class BabySitterSkillsPage extends StatefulWidget {
-  final String selectedCity;
-// ignore: non_constant_identifier_names
-final int years_experience;
-  final List<String> certifications;
+  final Map<String, dynamic> previousData;
 
-  const BabySitterSkillsPage({
-    super.key,
-    required this.selectedCity,
-    required this.years_experience,
-    required this.certifications,
-  });
+  const BabySitterSkillsPage({super.key, required this.previousData});
 
   @override
   State<BabySitterSkillsPage> createState() => _BabySitterSkillsPageState();
 }
+
 
 class _BabySitterSkillsPageState extends State<BabySitterSkillsPage> {
   final List<Map<String, dynamic>> skills = [
@@ -131,19 +124,18 @@ class _BabySitterSkillsPageState extends State<BabySitterSkillsPage> {
                   onPressed: () {
                     final selectedSkills = getSelectedSkills();
 
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => BabySitterBioPage(
-                                      previousData: {
-                                        'selectedCity': widget.selectedCity,
-                                        'years_experience': widget.years_experience,
-                                        'certifications': widget.certifications,
-                                        'skills': selectedSkills,
-                                      },
-                                    ),
-                                  ),
-                                );
+                       Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BabySitterBioPage(
+                                previousData: {
+                                  ...widget.previousData,
+                                  'skills': selectedSkills,
+                                },
+                              ),
+                            ),
+                          );
+
 
                   },
                   style: ElevatedButton.styleFrom(

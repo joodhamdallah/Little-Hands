@@ -265,19 +265,20 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                             if (hasFirstAid) training.add('First Aid');
                             if (hasCPR) training.add('CPR');
 
-                         Navigator.push(
+                       Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => BabySitterSkillsPage(
-                                  selectedCity: selectedCity!,
-                                  years_experience: yearsOfExperience,
-                                  certifications: [
-                                    if (hasFirstAid) 'First Aid',
-                                    if (hasCPR) 'CPR',
-                                  ],
+                                  previousData: {
+                                    'age_experience': ageExperience, 
+                                    'selectedCity': selectedCity!,
+                                    'years_experience': yearsOfExperience,
+                                    'certifications': training, 
+                                  },
                                 ),
                               ),
                             );
+
 
                           }
                         : null,
