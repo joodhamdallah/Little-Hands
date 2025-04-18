@@ -8,7 +8,7 @@ class BabySitterPage extends StatefulWidget {
 }
 
 class _BabySitterPageState extends State<BabySitterPage> {
-List<int> selectedIndices = [];
+  List<int> selectedIndices = [];
 
   final List<Map<String, dynamic>> subcategories = [
     {
@@ -22,7 +22,7 @@ List<int> selectedIndices = [];
       'image': 'assets/images/icons/icons8-toddler-96.png',
     },
     {
-      'title': ' ما قبل المدرسة',
+      'title': 'ما قبل المدرسة',
       'subtitle': '(من 4 إلى 5 سنوات)',
       'image': 'assets/images/icons/icons8-child-safe-zone-100.png',
     },
@@ -32,7 +32,7 @@ List<int> selectedIndices = [];
       'image': 'assets/images/icons/icons8-students-100.png',
     },
     {
-      'title': ' ما قبل المراهقة',
+      'title': 'ما قبل المراهقة',
       'subtitle': '(11 سنة فأكثر)',
       'image': 'assets/images/icons/student.png',
     },
@@ -86,14 +86,13 @@ List<int> selectedIndices = [];
                     final isSelected = selectedIndices.contains(index);
                     return GestureDetector(
                       onTap: () {
-                      setState(() {
+                        setState(() {
                           if (selectedIndices.contains(index)) {
                             selectedIndices.remove(index);
                           } else {
                             selectedIndices.add(index);
                           }
                         });
-
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -164,9 +163,19 @@ List<int> selectedIndices = [];
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: selectedIndices.isNotEmpty ? () {
+                  onPressed: selectedIndices.isNotEmpty
+                      ? () {
+                          final selectedAges = selectedIndices
+                              .map((index) => subcategories[index]['title'] as String)
+                              .toList();
 
-                          Navigator.pushNamed(context, '/babysitteraddresspage');
+                          Navigator.pushNamed(
+                            context,
+                            '/babysitteraddresspage',
+                            arguments: {
+                              'age_experience': selectedAges,
+                            },
+                          );
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -176,14 +185,14 @@ List<int> selectedIndices = [];
                     ),
                   ),
                   child: const Text(
-                      'التالي',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansArabic',
-                        fontSize: 17,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    'التالي',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansArabic',
+                      fontSize: 17,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
+                  ),
                 ),
               ),
             ),

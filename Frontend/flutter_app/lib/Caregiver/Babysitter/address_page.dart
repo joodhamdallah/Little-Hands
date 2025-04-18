@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Babysitter/skilles_page.dart';
 
 class BabySitterCityPage extends StatefulWidget {
   const BabySitterCityPage({super.key});
@@ -12,6 +13,8 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
   int yearsOfExperience = 0;
   bool hasFirstAid = false;
   bool hasCPR = false;
+
+  late List<String> ageExperience = [];
 
   final List<String> cities = [
     "طولكرم",
@@ -29,6 +32,15 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
       );
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
+    if (args != null && args.containsKey('age_experience')) {
+      ageExperience = List<String>.from(args['age_experience']);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -39,9 +51,7 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => Navigator.pop(context),
           ),
         ),
         body: SingleChildScrollView(
@@ -83,10 +93,7 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                       value: selectedCity,
                       hint: const Text(
                         'اختر المدينة',
-                        style: TextStyle(
-                          fontFamily: 'NotoSansArabic',
-                          fontSize: 16,
-                        ),
+                        style: TextStyle(fontFamily: 'NotoSansArabic', fontSize: 16),
                       ),
                       icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFFFF600A)),
                       items: cities.map((city) {
@@ -197,11 +204,7 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                   children: [
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            hasFirstAid = !hasFirstAid;
-                          });
-                        },
+                        onTap: () => setState(() => hasFirstAid = !hasFirstAid),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           decoration: BoxDecoration(
@@ -212,17 +215,11 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                               width: 1.5,
                             ),
                           ),
-                          child: Column(
-                            children: const [
+                          child: const Column(
+                            children: [
                               Icon(Icons.medical_services_outlined, size: 36, color: Colors.grey),
                               SizedBox(height: 8),
-                              Text(
-                                'الإسعافات الأولية',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'NotoSansArabic',
-                                ),
-                              ),
+                              Text('الإسعافات الأولية', style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic')),
                             ],
                           ),
                         ),
@@ -231,11 +228,7 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            hasCPR = !hasCPR;
-                          });
-                        },
+                        onTap: () => setState(() => hasCPR = !hasCPR),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           decoration: BoxDecoration(
@@ -246,17 +239,11 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                               width: 1.5,
                             ),
                           ),
-                          child: Column(
-                            children: const [
+                          child: const Column(
+                            children: [
                               Icon(Icons.favorite_border, size: 36, color: Colors.grey),
                               SizedBox(height: 8),
-                              Text(
-                                'CPR الإنعاش القلبي',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'NotoSansArabic',
-                                ),
-                              ),
+                              Text('CPR الإنعاش القلبي', style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic')),
                             ],
                           ),
                         ),
@@ -274,7 +261,24 @@ class _BabySitterCityPageState extends State<BabySitterCityPage> {
                   child: ElevatedButton(
                     onPressed: selectedCity != null
                         ? () {
-                          Navigator.pushNamed(context, '/babysitterskillespage');
+                            final training = <String>[];
+                            if (hasFirstAid) training.add('First Aid');
+                            if (hasCPR) training.add('CPR');
+
+                         Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => BabySitterSkillsPage(
+                                  selectedCity: selectedCity!,
+                                  years_experience: yearsOfExperience,
+                                  certifications: [
+                                    if (hasFirstAid) 'First Aid',
+                                    if (hasCPR) 'CPR',
+                                  ],
+                                ),
+                              ),
+                            );
+
                           }
                         : null,
                     style: ElevatedButton.styleFrom(

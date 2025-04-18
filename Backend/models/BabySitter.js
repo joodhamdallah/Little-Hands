@@ -25,6 +25,11 @@ const babySitterSchema = new mongoose.Schema({
   },
   number_of_children: Number,
   is_smoker: Boolean,
+
+  city: {
+    type: String,  
+    required: true,
+  },
 }, {
   timestamps: true
 });

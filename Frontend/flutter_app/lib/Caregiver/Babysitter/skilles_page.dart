@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Babysitter/bio_page.dart';
 
 class BabySitterSkillsPage extends StatefulWidget {
-  const BabySitterSkillsPage({super.key});
+  final String selectedCity;
+// ignore: non_constant_identifier_names
+final int years_experience;
+  final List<String> certifications;
+
+  const BabySitterSkillsPage({
+    super.key,
+    required this.selectedCity,
+    required this.years_experience,
+    required this.certifications,
+  });
 
   @override
   State<BabySitterSkillsPage> createState() => _BabySitterSkillsPageState();
@@ -20,6 +31,10 @@ class _BabySitterSkillsPageState extends State<BabySitterSkillsPage> {
     {'label': 'رعاية المرضى', 'icon': Icons.healing, 'selected': false},
     {'label': 'رعاية التوائم', 'icon': Icons.group, 'selected': false},
   ];
+
+  List<String> getSelectedSkills() {
+    return skills.where((skill) => skill['selected'] == true).map((s) => s['label'] as String).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +129,22 @@ class _BabySitterSkillsPageState extends State<BabySitterSkillsPage> {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                          Navigator.pushNamed(context, '/babysitterbiopage');
+                    final selectedSkills = getSelectedSkills();
+
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => BabySitterBioPage(
+                                      previousData: {
+                                        'selectedCity': widget.selectedCity,
+                                        'years_experience': widget.years_experience,
+                                        'certifications': widget.certifications,
+                                        'skills': selectedSkills,
+                                      },
+                                    ),
+                                  ),
+                                );
+
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),

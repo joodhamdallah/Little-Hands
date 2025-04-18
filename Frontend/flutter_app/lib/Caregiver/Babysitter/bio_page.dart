@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Babysitter/rate_page.dart';
 
 class BabySitterBioPage extends StatefulWidget {
-  const BabySitterBioPage({super.key});
+  final Map<String, dynamic> previousData;
+
+  const BabySitterBioPage({super.key, required this.previousData});
 
   @override
   State<BabySitterBioPage> createState() => _BabySitterBioPageState();
@@ -31,7 +34,7 @@ class _BabySitterBioPageState extends State<BabySitterBioPage> {
             onPressed: () => Navigator.pop(context),
           ),
         ),
-              body: SafeArea(
+        body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
               return Stack(
@@ -105,13 +108,12 @@ class _BabySitterBioPageState extends State<BabySitterBioPage> {
                               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color.fromARGB(255, 190, 0, 0)),
                             ),
                             const Spacer(),
-                            const SizedBox(height: 100), // للـ scroll فقط
+                            const SizedBox(height: 100),
                           ],
                         ),
                       ),
                     ),
                   ),
-
                   Positioned(
                     bottom: 20 + MediaQuery.of(context).viewInsets.bottom,
                     left: 16,
@@ -120,9 +122,22 @@ class _BabySitterBioPageState extends State<BabySitterBioPage> {
                       width: double.infinity,
                       height: 48,
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/babysitterratepage');
-                        },
+                    onPressed: _bioController.text.length >= _minLength
+    ? () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => BabySitterRatePage(
+                                previousData: {
+                                  ...widget.previousData,
+                                  'bio': _bioController.text.trim(),
+                                },
+                              ),
+                            ),
+                          );
+                        }
+                      : null,
+
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFF600A),
                           shape: RoundedRectangleBorder(
