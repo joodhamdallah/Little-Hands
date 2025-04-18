@@ -5,6 +5,9 @@ import 'package:flutter_app/Caregiver/Babysitter/bio_page.dart';
 import 'package:flutter_app/Caregiver/Babysitter/rate_page.dart';
 import 'package:flutter_app/Caregiver/Babysitter/skilles_page.dart';
 import 'package:flutter_app/Caregiver/Expert/child_consult_page.dart';
+import 'package:flutter_app/Caregiver/Expert/expert_bio_wage_page.dart';
+import 'package:flutter_app/Caregiver/Expert/expert_experience_page.dart';
+import 'package:flutter_app/Caregiver/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/academic_qualifications_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/ageexperince_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/certifications_page.dart';
@@ -45,6 +48,9 @@ class MyApp extends StatelessWidget {
         '/idverifyapi': (context) => const IDVerificationPage(),
         '/babysitter': (context) => const BabySitterPage(),
         '/childConsult': (context) => const ChildConsultPage(),
+        '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
+        '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
+        '/expertBioQ5': (context) => const ExpertBioPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
         '/babysitterskillespage': (context) => const BabySitterSkillsPage(),
         '/babysitterbiopage': (context) => const BabySitterBioPage(),
@@ -53,11 +59,6 @@ class MyApp extends StatelessWidget {
         '/shadowteacherQ2': (context) => const ShadowTeacherStep2(),
         '/shadowteacherQ3': (context) => const ShadowTeacherStep3(),
         '/shadowteacherQ4': (context) => const ShadowTeacherStep4(),
-
-
-        
-
-
       },
     );
   }
