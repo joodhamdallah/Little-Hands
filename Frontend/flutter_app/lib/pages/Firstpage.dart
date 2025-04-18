@@ -203,7 +203,10 @@ class _FirstPageState extends State<FirstPage> {
                           const SizedBox(height: 10),
                           OutlinedButton(
                             onPressed: () {
-                              Navigator.pushNamed(context, '/specialNeeds');
+                              Navigator.pushNamed(
+                                context,
+                                '/caregiverCategory',
+                              );
                             },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(

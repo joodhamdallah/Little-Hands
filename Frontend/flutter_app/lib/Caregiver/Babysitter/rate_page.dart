@@ -21,9 +21,9 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
   }
 
   Widget buildDivider() => const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 0),
-        child: Divider(color: Colors.black12, thickness: 1),
-      );
+    padding: EdgeInsets.symmetric(horizontal: 0),
+    child: Divider(color: Colors.black12, thickness: 1),
+  );
 
   void _handleNext() {
     final minRate = int.tryParse(_minRateController.text);
@@ -45,7 +45,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: const TextStyle(fontFamily: 'NotoSansArabic')),
+        content: Text(
+          message,
+          style: const TextStyle(fontFamily: 'NotoSansArabic'),
+        ),
         backgroundColor: Colors.red,
       ),
     );
@@ -83,7 +86,11 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                 const SizedBox(height: 12),
                 const Text(
                   'أجركِ بالساعة لطفل واحد. يمكنكِ تحديثه لاحقًا في أي وقت.',
-                  style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic', color: Colors.black54),
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'NotoSansArabic',
+                    color: Colors.black54,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 Container(
@@ -97,7 +104,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                     children: const [
                       Text(
                         '💡 متوسط أجور المربيات المشابهات لكِ:',
-                        style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic'),
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontFamily: 'NotoSansArabic',
+                        ),
                       ),
                       Text(
                         '₪ 24 - 30 / ساعة',
@@ -115,16 +125,24 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'الحد الأدنى',
-                          labelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
+                          labelStyle: const TextStyle(
+                            fontFamily: 'NotoSansArabic',
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFFF600A), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFFF600A),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text('إلى', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                    const Text(
+                      'إلى',
+                      style: TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(
@@ -132,10 +150,15 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'الحد الأعلى',
-                          labelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
+                          labelStyle: const TextStyle(
+                            fontFamily: 'NotoSansArabic',
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFFFF600A), width: 1.5),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFFF600A),
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -166,7 +189,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                             });
                           }
                         },
-                        icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                        icon: const Icon(
+                          Icons.remove_circle_outline,
+                          color: Colors.grey,
+                        ),
                         iconSize: 30,
                       ),
                       Padding(
@@ -198,7 +224,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                             numberOfChildren++;
                           });
                         },
-                        icon: const Icon(Icons.add_circle_outline, color: Color(0xFFFF007A)),
+                        icon: const Icon(
+                          Icons.add_circle_outline,
+                          color: Color(0xFFFF007A),
+                        ),
                         iconSize: 30,
                       ),
                     ],
@@ -222,9 +251,12 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                     ChoiceChip(
                       label: Row(
                         children: const [
-                          Text('نعم', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                          Text(
+                            'نعم',
+                            style: TextStyle(fontFamily: 'NotoSansArabic'),
+                          ),
                           SizedBox(width: 6),
-                          Text('😞')
+                          Text('😞'),
                         ],
                       ),
                       selected: isSmoker == true,
@@ -239,9 +271,12 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                     ChoiceChip(
                       label: Row(
                         children: const [
-                          Text('لا', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                          Text(
+                            'لا',
+                            style: TextStyle(fontFamily: 'NotoSansArabic'),
+                          ),
                           SizedBox(width: 6),
-                          Text('😊')
+                          Text('😊'),
                         ],
                       ),
                       selected: isSmoker == false,
@@ -256,12 +291,18 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                 ),
                 const SizedBox(height: 32),
                 Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10, bottom: 35.0),
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    right: 10,
+                    bottom: 35.0,
+                  ),
                   child: SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: _handleNext,
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/idverifyapi');
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF600A),
                         shape: RoundedRectangleBorder(
