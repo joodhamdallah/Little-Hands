@@ -174,7 +174,7 @@ class _FirstPageState extends State<FirstPage> {
                           const SizedBox(height: 40),
                           ElevatedButton(
                             onPressed: () {
-                              Navigator.pushNamed(context, '/idverifyapi');
+                              Navigator.pushNamed(context, '/caregiverCategory');
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(
@@ -205,7 +205,7 @@ class _FirstPageState extends State<FirstPage> {
                             onPressed: () {
                               Navigator.pushNamed(
                                 context,
-                                '/caregiverCategory',
+                                '/login',
                               );
                             },
                             style: OutlinedButton.styleFrom(

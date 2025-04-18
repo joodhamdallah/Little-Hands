@@ -517,7 +517,7 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
         );
         Navigator.pushReplacementNamed(
           context,
-          '/onboarding',
+          '/login',
           arguments: {'email': email},
         );
       } else {
