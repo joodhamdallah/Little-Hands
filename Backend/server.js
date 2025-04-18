@@ -8,6 +8,8 @@ const parentRoutes = require("./routes/parentRoutes");
 const caregiverRoutes = require("./routes/caregiverRoutes");
 const authRoutes = require("./routes/authRoutes");
 const identityRoutes = require("./routes/identityRoutes"); 
+const babysitterRoutes = require('./routes/babysitterRoutes');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,6 +24,9 @@ app.use("/api/caregiver", caregiverRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", identityRoutes);
 console.log("✅ identityRoutes linked at /api/verify-id");
+
+app.use('/api/babysitter', babysitterRoutes);
+
 
 
 // ✅ Connect to MongoDB then start the server
