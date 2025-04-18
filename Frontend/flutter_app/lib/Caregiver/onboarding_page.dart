@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+//import 'dart:convert';
+//import 'package:http/http.dart' as http;
 
 class OnboardingRoadmapPage extends StatefulWidget {
   const OnboardingRoadmapPage({super.key});
@@ -158,36 +158,9 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage>
                   vertical: 12.0,
                 ),
                 child: ElevatedButton(
-                  onPressed: () async {
-                    if (userEmail == null) return;
-
-                    final url = Uri.parse(
-                      "http://10.0.2.2:3000/api/caregiver/checkVerificationStatus",
-                    );
-                    final response = await http.post(
-                      url,
-                      headers: {"Content-Type": "application/json"},
-                      body: jsonEncode({"email": userEmail}),
-                    );
-
-                    final json = jsonDecode(response.body);
-
-                    if (response.statusCode == 200 &&
-                        json["isVerified"] == true) {
-                      // ignore: use_build_context_synchronously
-                      Navigator.pushNamed(context, '/caregiverCategory');
-                    } else {
-                      // ignore: use_build_context_synchronously
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "يرجى التحقق من بريدك الإلكتروني وتفعيل الحساب أولًا.",
-                          ),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
+                 onPressed: () {
+  Navigator.pushNamed(context, '/caregiverCategory');
+},
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
