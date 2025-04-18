@@ -83,6 +83,7 @@ class _FirstPageState extends State<FirstPage> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
+                            // ignore: deprecated_member_use
                             Colors.black.withOpacity(0.6),
                           ],
                         ),

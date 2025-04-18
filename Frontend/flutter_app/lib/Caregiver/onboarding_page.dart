@@ -174,8 +174,10 @@ class _OnboardingRoadmapPageState extends State<OnboardingRoadmapPage>
 
                     if (response.statusCode == 200 &&
                         json["isVerified"] == true) {
+                      // ignore: use_build_context_synchronously
                       Navigator.pushNamed(context, '/caregiverCategory');
                     } else {
+                      // ignore: use_build_context_synchronously
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(

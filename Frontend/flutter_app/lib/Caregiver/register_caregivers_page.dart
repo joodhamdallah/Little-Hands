@@ -537,6 +537,7 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
         );
       }
     } catch (error) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("فشل الاتصال بالخادم: $error"),
