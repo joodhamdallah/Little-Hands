@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Babysitter/address_page.dart';
 
 class BabySitterPage extends StatefulWidget {
   const BabySitterPage({super.key});
@@ -169,13 +170,15 @@ class _BabySitterPageState extends State<BabySitterPage> {
                               .map((index) => subcategories[index]['title'] as String)
                               .toList();
 
-                          Navigator.pushNamed(
-                            context,
-                            '/babysitteraddresspage',
-                            arguments: {
-                              'age_experience': selectedAges,
-                            },
-                          );
+                       Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BabySitterCityPage(),
+                      settings: RouteSettings(arguments: {
+                        'age_experience': selectedAges,
+                      }),
+                    ),
+                  );
                         }
                       : null,
                   style: ElevatedButton.styleFrom(

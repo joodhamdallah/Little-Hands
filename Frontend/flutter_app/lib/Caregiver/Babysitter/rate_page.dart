@@ -56,11 +56,19 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
 
       final Map<String, dynamic> fullData = {
         ...widget.previousData,
-          "city": widget.previousData['selectedCity'],  
+        "city": widget.previousData['selectedCity'],  
+        "training_certification": widget.previousData['certifications'], 
+        "skills_and_services": widget.previousData['skills'], 
         "rate_per_hour": {"min": min, "max": max},
         "number_of_children": numberOfChildren,
         "is_smoker": isSmoker,
       };
+          fullData.remove("selectedCity");
+          fullData.remove("certifications");
+          fullData.remove("skills");
+          fullData.remove("selectedCity");
+
+// print("📦 Full Data Sent: ${jsonEncode(fullData)}"); 
 
       final response = await http.post(
         Uri.parse(babysitterDetails),
@@ -71,19 +79,21 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
         body: jsonEncode(fullData),
       );
 
-      print("📥 Status Code: ${response.statusCode}");
-      print("📥 Response Body: ${response.body}");
+      // print("📥 Status Code: ${response.statusCode}");
+      // print("📥 Response Body: ${response.body}");
 
 
       setState(() => isLoading = false);
 
       if (response.statusCode == 201) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("تم حفظ بياناتك بنجاح 🎉"),
             backgroundColor: Colors.green,
           ),
         );
+        // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, '/idverifyapi');
       } else {
         final json = jsonDecode(response.body);

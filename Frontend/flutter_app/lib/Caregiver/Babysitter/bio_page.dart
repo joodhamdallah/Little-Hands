@@ -124,7 +124,7 @@ class _BabySitterBioPageState extends State<BabySitterBioPage> {
                       child: ElevatedButton(
                     onPressed: _bioController.text.length >= _minLength
     ? () {
-                          Navigator.push(
+                        Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (context) => BabySitterRatePage(
@@ -135,6 +135,7 @@ class _BabySitterBioPageState extends State<BabySitterBioPage> {
                               ),
                             ),
                           );
+
                         }
                       : null,
 
