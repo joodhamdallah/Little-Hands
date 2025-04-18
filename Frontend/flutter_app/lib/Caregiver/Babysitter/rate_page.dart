@@ -25,6 +25,7 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
     child: Divider(color: Colors.black12, thickness: 1),
   );
 
+  // ignore: unused_element
   void _handleNext() {
     final minRate = int.tryParse(_minRateController.text);
     final maxRate = int.tryParse(_maxRateController.text);
