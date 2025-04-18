@@ -243,7 +243,7 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
                           ],
                         ),
                       );
-                    }).toList(),
+                    }),
 
                     const SizedBox(height: 24),
                   ],

@@ -248,12 +248,14 @@ class _ResetPassPageState extends State<ResetPassPage> {
       setState(() => isLoading = false);
 
       if (response.statusCode == 200 && data["status"] == true) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("تم إرسال الرمز إلى بريدك الإلكتروني ✅")),
         );
         emailController.clear(); // 💥 clear the field
         setState(() => isStepOne = false);
       } else {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(data["message"] ?? "حدث خطأ"),
@@ -263,6 +265,7 @@ class _ResetPassPageState extends State<ResetPassPage> {
       }
     } catch (e) {
       setState(() => isLoading = false);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("فشل إرسال الطلب"),
@@ -285,9 +288,11 @@ class _ResetPassPageState extends State<ResetPassPage> {
       setState(() => isLoading = false);
 
       if (response.statusCode == 200 && data["status"] == true) {
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("تم تغيير كلمة المرور بنجاح 🎉")),
         );
+        // ignore: use_build_context_synchronously
         Navigator.pushReplacementNamed(context, "/login");
       } else {
         String errorMessage = data["message"] ?? "حدث خطأ";
@@ -298,12 +303,14 @@ class _ResetPassPageState extends State<ResetPassPage> {
           errorMessage = "يرجى التحقق من بريدك الإلكتروني أولاً.";
         }
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
       }
     } catch (e) {
       setState(() => isLoading = false);
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("حدث خطأ أثناء العملية"),

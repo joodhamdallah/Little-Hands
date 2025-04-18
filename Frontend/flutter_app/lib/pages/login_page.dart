@@ -237,13 +237,15 @@ class _LoginPageState extends State<LoginPage> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('accessToken', jsonData["token"]);
 
+        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("تم تسجيل الدخول بنجاح 🎉"),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushReplacementNamed(context, '/caregiverCategory');
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacementNamed(context, '/onboarding');
       } else {
         if (message.toLowerCase().contains("user does not exist")) {
           message = "لا يوجد حساب بهذا البريد الإلكتروني، سجّل الآن.";
