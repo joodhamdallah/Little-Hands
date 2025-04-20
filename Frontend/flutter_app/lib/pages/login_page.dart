@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; // ✅ 
+import 'package:shared_preferences/shared_preferences.dart'; // ✅
 import 'config.dart'; // loginUsers = "${url}auth/login";
 
 class LoginPage extends StatefulWidget {
@@ -42,7 +42,10 @@ class _LoginPageState extends State<LoginPage> {
                       key: _formKey,
                       child: Column(
                         children: [
-                          _buildInputField("البريد الإلكتروني", (val) => email = val),
+                          _buildInputField(
+                            "البريد الإلكتروني",
+                            (val) => email = val,
+                          ),
                           const SizedBox(height: 14),
                           _buildPasswordField(),
                           const SizedBox(height: 16),
@@ -72,7 +75,10 @@ class _LoginPageState extends State<LoginPage> {
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFF600A),
-                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 60),
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 16,
+                                horizontal: 60,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(30),
                               ),
@@ -90,7 +96,10 @@ class _LoginPageState extends State<LoginPage> {
                           RichText(
                             textAlign: TextAlign.center,
                             text: TextSpan(
-                              style: const TextStyle(fontSize: 16, color: Colors.black),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black,
+                              ),
                               children: [
                                 const TextSpan(text: "ليس لديك حساب؟ "),
                                 TextSpan(
@@ -100,10 +109,14 @@ class _LoginPageState extends State<LoginPage> {
                                     decoration: TextDecoration.underline,
                                     fontWeight: FontWeight.bold,
                                   ),
-                                  recognizer: TapGestureRecognizer()
-                                    ..onTap = () {
-                                      Navigator.pushNamed(context, "/register");
-                                    },
+                                  recognizer:
+                                      TapGestureRecognizer()
+                                        ..onTap = () {
+                                          Navigator.pushNamed(
+                                            context,
+                                            "/register",
+                                          );
+                                        },
                                 ),
                               ],
                             ),
@@ -143,11 +156,19 @@ class _LoginPageState extends State<LoginPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset("assets/images/littlehandslogo.png", width: 180, fit: BoxFit.contain),
+          Image.asset(
+            "assets/images/littlehandslogo.png",
+            width: 180,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(height: 10),
           const Text(
             "تسجيل الدخول",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24, color: Colors.black),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              color: Colors.black,
+            ),
           ),
         ],
       ),
@@ -175,7 +196,10 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.black),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 16,
+        ),
       ),
       keyboardType: TextInputType.emailAddress,
       validator: (val) {
@@ -207,9 +231,13 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Colors.black),
         ),
-        contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 20,
+          horizontal: 16,
+        ),
       ),
-      validator: (val) => val == null || val.isEmpty ? 'كلمة المرور مطلوبة' : null,
+      validator:
+          (val) => val == null || val.isEmpty ? 'كلمة المرور مطلوبة' : null,
       onSaved: (val) => password = val!,
     );
   }
@@ -225,7 +253,11 @@ class _LoginPageState extends State<LoginPage> {
         "rememberMe": false,
       });
 
-      final response = await http.post(url, headers: headers, body: requestBody);
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: requestBody,
+      );
       if (!mounted) return;
       setState(() => isLoading = false);
 
@@ -249,7 +281,9 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         if (message.toLowerCase().contains("user does not exist")) {
           message = "لا يوجد حساب بهذا البريد الإلكتروني، سجّل الآن.";
-        } else if (message.toLowerCase().contains("incorrect email or password")) {
+        } else if (message.toLowerCase().contains(
+          "incorrect email or password",
+        )) {
           message = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
         } else if (message.toLowerCase().contains("not verified")) {
           message = "يجب تفعيل البريد الإلكتروني أولاً.";
