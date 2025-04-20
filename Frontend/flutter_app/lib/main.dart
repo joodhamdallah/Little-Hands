@@ -11,6 +11,7 @@ import 'package:flutter_app/Caregiver/Shadow_Teacher/bio_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/certifications_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/pricing_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/special_needs_category.dart';
+import 'package:flutter_app/Parent/parent_home_page.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/Caregiver/caregiver_categories_page.dart';
 import 'package:flutter_app/Caregiver/id_verify_api.dart';
@@ -38,7 +39,6 @@ class MyApp extends StatelessWidget {
       ),
       home: const FirstPage(),
       routes: {
-        
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterPage(),
         "/resetPassword": (context) => const ResetPassPage(),
@@ -46,8 +46,7 @@ class MyApp extends StatelessWidget {
         '/caregiverCategory': (context) => const CaregiverCategorySelection(),
         '/registerCaregivers': (context) => const RegisterCaregiversPage(),
         '/idverifyapi': (context) => const IDVerificationPage(),
-       
-       
+
         '/childConsult': (context) => const ChildConsultPage(),
        // '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
         '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
@@ -64,12 +63,7 @@ class MyApp extends StatelessWidget {
         '/shadowteacherbio': (context) => const ShadowTeacherBioPage(),
         '/shadowteacherpricing': (context) => const ShadowTeacherPricingPage(),
 
-        
-
-
-        
-
-
+        '/parentHome': (context) => const ParentHomePage(),
       },
     );
   }
