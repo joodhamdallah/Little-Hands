@@ -9,10 +9,11 @@ exports.login = async (req, res, next) => {
             return res.status(400).json({ status: false, message: "Email and password are required!" });
         }
 
-        const user = await AuthService.checkUser(email);
-        if (!user) {
-            return res.status(404).json({ status: false, message: "User does not exist!, register now" });
+        const userResult = await AuthService.checkUser(email);
+        if (!userResult) {
+          return res.status(404).json({ status: false, message: "User does not exist!, register now" });
         }
+        const { user, type } = userResult;
 
         const isPasswordCorrect = await user.comparePassword(password);
         if (!isPasswordCorrect) {
@@ -35,7 +36,8 @@ exports.login = async (req, res, next) => {
             user: {
                 id: user._id,
                 email: user.email,
-                role: user.role,
+                role: user.role || null,
+                type,
                 firstName: user.firstName || user.first_name,
                 lastName: user.lastName || user.last_name,
             }

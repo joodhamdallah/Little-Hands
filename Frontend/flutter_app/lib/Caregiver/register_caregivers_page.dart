@@ -513,6 +513,7 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
           const SnackBar(
             content: Text("✅ تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني."),
             backgroundColor: Colors.green,
+            
           ),
         );
         Navigator.pushReplacementNamed(

@@ -81,6 +81,11 @@ class CaregiverServices {
         }
     }
     
+   static async updateRoleById(caregiverId, role) {
+    const caregiver = await CareGiverModel.findByIdAndUpdate(caregiverId, { role });
+    return caregiver;
+  }
+  
 }
 
 module.exports = CaregiverServices;

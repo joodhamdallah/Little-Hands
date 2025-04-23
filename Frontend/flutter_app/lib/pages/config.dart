@@ -5,3 +5,4 @@ final initiateReset = "${url}auth/initiatePasswordReset";
 final resetPassword = "${url}auth/resetPassword";
 final registerCaregiver = "${url}caregiver/register";
 final babysitterDetails = "${url}babysitter/details";
+final updateRole = "${url}caregiver/updateRole";

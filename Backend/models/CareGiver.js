@@ -41,7 +41,7 @@ const careGiverSchema = new mongoose.Schema({
 
   role: {
     type: String,
-    enum: ["babysitter", "shadow_teacher", "expert", null],
+    enum: ["babysitter", "expert", "special_needs", "tutor", null],
     default: null
   },
 

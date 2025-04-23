@@ -11,6 +11,9 @@ import 'package:flutter_app/Caregiver/Shadow_Teacher/bio_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/certifications_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/pricing_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/special_needs_category.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_address_parent1.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_info_page.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_type_parent2.dart';
 import 'package:flutter_app/Parent/parent_home_page.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/Caregiver/caregiver_categories_page.dart';
@@ -64,6 +67,10 @@ class MyApp extends StatelessWidget {
         '/shadowteacherpricing': (context) => const ShadowTeacherPricingPage(),
 
         '/parentHome': (context) => const ParentHomePage(),
+         '/parentBabysitterInfo': (context) => const BabysittingInfoPage(),
+         '/parentBabysitteraddress': (context) => const BabysitterSessionAddressPage(),
+         '/parentBabysitterType': (context) => const BabysitterTypeSelectionPage(),
+
       },
     );
   }

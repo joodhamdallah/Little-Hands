@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/config.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CaregiverCategorySelection extends StatefulWidget {
   const CaregiverCategorySelection({super.key});
@@ -98,9 +103,21 @@ class _CaregiverCategorySelectionState
               ElevatedButton(
                 onPressed:
                     selectedCategory != null
-                        ? () {
+                        ? () async {
                           final route = categoryRoutes[selectedCategory!];
                           if (route != null) {
+                            // 👇 استخرج الإيميل من SharedPreferences
+                            final prefs = await SharedPreferences.getInstance();
+                            final email = prefs.getString(
+                              'caregiverEmail',
+                            ); // تأكد إنك خزّنته وقت اللوج إن
+
+                            if (email != null) {
+                              await updateCaregiverRole(
+                                getRoleFromTitle(selectedCategory!),
+                              );
+                            }
+
                             Navigator.pushNamed(context, route);
                           }
                         }
@@ -191,5 +208,46 @@ class _CaregiverCategorySelectionState
         ),
       ),
     );
+  }
+
+  Future<void> updateCaregiverRole(String role) async {
+    final url = Uri.parse(updateRole);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+
+    if (token == null) {
+      print("❌ Token not found. User might not be logged in.");
+      return;
+    }
+
+    final response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token", // ✅ ضروري للباكند يتعرف عاليوزر
+      },
+      body: jsonEncode({"role": role}),
+    );
+
+    if (response.statusCode == 200) {
+      print("✅ Role updated successfully");
+    } else {
+      print("❌ Failed to update role: ${response.body}");
+    }
+  }
+
+  String getRoleFromTitle(String title) {
+    switch (title) {
+      case 'جليسة أطفال':
+        return 'babysitter';
+      case 'إستشاري رعاية الطفل':
+        return 'expert';
+      case 'مساعدة الأطفال ذوي الاحتياجات':
+        return 'special_needs';
+      case 'مدرس خصوصي':
+        return 'tutor'; // إذا عندك اسم تاني بالسيرفر غيّره
+      default:
+        return '';
+    }
   }
 }
