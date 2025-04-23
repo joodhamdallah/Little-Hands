@@ -269,15 +269,38 @@ class _LoginPageState extends State<LoginPage> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('accessToken', jsonData["token"]);
 
-        // ignore: use_build_context_synchronously
+        //by Jood
+        // ✅ Check role and save caregiver role if exists
+        final user = jsonData["user"];
+        final type = user["type"]; // "caregiver" or "parent"
+        final role = user["role"]; // ممكن تكون null أو String
+
+        // ✅ خزّن الرول فقط إذا كان موجود
+        if (type == "caregiver" && role != null) {
+          await prefs.setString('caregiverRole', role);
+        }
+
+        // ✅ إشعار نجاح
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("تم تسجيل الدخول بنجاح 🎉"),
             backgroundColor: Colors.green,
           ),
         );
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacementNamed(context, '/onboarding');
+
+        if (!mounted) return;
+
+        // ✅ تحديد الوجهة حسب النوع والحالة
+        if (type == "caregiver") {
+          if (role == null || role.isEmpty) {
+            await prefs.setString('caregiverEmail', email!);
+            Navigator.pushReplacementNamed(context, '/onboarding');
+          } else {
+            Navigator.pushReplacementNamed(context, '/caregiverHome');
+          }
+        } else {
+          Navigator.pushReplacementNamed(context, '/parentHome');
+        }
       } else {
         if (message.toLowerCase().contains("user does not exist")) {
           message = "لا يوجد حساب بهذا البريد الإلكتروني، سجّل الآن.";

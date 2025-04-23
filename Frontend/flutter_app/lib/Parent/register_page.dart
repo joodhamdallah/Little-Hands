@@ -364,8 +364,14 @@ class _RegisterPageState extends State<RegisterPage> {
         const SnackBar(
           content: Text("تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني."),
           backgroundColor: Colors.green,
+          duration: Duration(seconds: 3), // ⏱️ انتظري 3 ثوانٍ قبل التنقل
         ),
       );
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      });
     } else {
       // ✅ Check for specific backend message
       String errorMessage = responseData['message'] ?? "حدث خطأ أثناء التسجيل";

@@ -77,6 +77,27 @@ exports.checkVerificationStatus = async (req, res) => {
       res.status(500).json({ message: "Internal server error" });
     }
   };
+  exports.updateRole = async (req, res) => {
+    try {
+      const caregiverId = req.user._id;
+      const { role } = req.body;
+  
+      if (!role || !["babysitter", "special_needs", "expert", "tutor"].includes(role)) {
+        return res.status(400).json({ status: false, message: "Invalid role" });
+      }
+  
+      const caregiver = await CaregiverServices.updateRoleById(caregiverId, role);
+      if (!caregiver) {
+        return res.status(404).json({ status: false, message: "Caregiver not found" });
+      }
+  
+      res.status(200).json({ status: true, message: "Role updated successfully" });
+    } catch (err) {
+      console.error("❌ Update role error:", err);
+      res.status(500).json({ status: false, message: "Internal server error" });
+    }
+  };
+  
   
   
 

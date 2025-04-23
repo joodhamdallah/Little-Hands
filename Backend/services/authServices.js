@@ -10,14 +10,17 @@ class AuthService {
   static async checkUser(email) {
     try {
       let user = await ParentModel.findOne({ email });
-      if (!user) {
-        user = await CareGiverModel.findOne({ email });
-      }
-      return user;
+      if (user) return { user, type: "parent" };
+  
+      user = await CareGiverModel.findOne({ email });
+      if (user) return { user, type: "caregiver" };
+  
+      return null;
     } catch (error) {
       throw error;
     }
   }
+  
 
   // ✅ Fetch user by email (excluding password)
   static async getUserByEmail(email) {

@@ -65,7 +65,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
           elevation: 0.5,
           titleSpacing: 0,
           leading: Padding(
-            padding: const EdgeInsets.only(right: 2), // was left before
+            padding: const EdgeInsets.only(right: 2),
             child: Image.asset('assets/images/logo_without_bg.png', height: 10),
           ),
           actions: [
@@ -91,7 +91,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ✅ PageView slider
+              // ✅ Slider
               SizedBox(
                 height: 290,
                 child: PageView.builder(
@@ -109,7 +109,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
 
               const SizedBox(height: 12),
 
-              // ✅ Indicator
+              // ✅ Slider indicator
               Center(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -132,6 +132,8 @@ class _ParentHomePageState extends State<ParentHomePage> {
               ),
 
               const SizedBox(height: 30),
+
+              // ✅ Services section
               buildSectionTitle('اختر نوع الخدمة التي تحتاجها'),
               const SizedBox(height: 16),
               GridView.count(
@@ -161,30 +163,21 @@ class _ParentHomePageState extends State<ParentHomePage> {
                 ],
               ),
 
+              // ✅ Platform intro section
+              buildPlatformIntroSection(),
+
+              // ✅ Safety section
               const SizedBox(height: 30),
               buildSectionTitle('نحرص على أمان طفلك وخصوصيتك'),
               buildSafetySection(),
 
+              // ✅ Testimonials
               const SizedBox(height: 30),
               buildSectionTitle('تجارب الآباء والأمهات'),
               buildTestimonialsSection(),
-              const SizedBox(height: 12),
-              Center(
-                child: TextButton.icon(
-                  onPressed: () {
-                    // TODO: Navigate to "Add Testimonial" screen
-                  },
-                  icon: const Icon(Icons.edit, color: Color(0xFFFF600A)),
-                  label: const Text(
-                    'أضف تجربتك',
-                    style: TextStyle(
-                      color: Color(0xFFFF600A),
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'NotoSansArabic',
-                    ),
-                  ),
-                ),
-              ),
+
+              const SizedBox(height: 10),
+              buildCaregiversListSection(),
             ],
           ),
         ),
@@ -225,104 +218,161 @@ class _ParentHomePageState extends State<ParentHomePage> {
     final List<Map<String, String>> testimonials = [
       {
         'text':
-            'منصة رائعة! ساعدتني في إيجاد جليسة أطفال موثوقة لطفلي خلال وقت قصير.',
+            'كنت أبحث عن جليسة أطفال لطفلي الصغير وكانت التجربة مذهلة. وجدت جليسة من خلال المنصة بكل سهولة، وكانت متجاوبة جدًا ومحبة. شعرت أن طفلي بأيدٍ أمينة.',
         'name': 'رنا',
         'title': 'أم لطفلين',
-        'image': 'assets/images/homepage/mom1.png',
+        'image': 'assets/images/homepage/expert1.webp',
         'rating': '5',
       },
       {
-        'text': 'استفدت كثيرًا من الاستشارات التربوية، كان اللقاء مفيد جدًا.',
+        'text':
+            'حجزت استشارة تربوية حول مشاكل التركيز لابني، وكان التواصل مع الأخصائي سهل وسريع. شعرت أنهم فعلاً مهتمين يساعدوني، ونصائحه كانت عملية ومفيدة.',
         'name': 'خالد',
         'title': 'والد لطالب',
-        'image': 'assets/images/homepage/dad1.png',
+        'image': 'assets/images/homepage/expert1.webp',
         'rating': '4',
       },
       {
         'text':
-            'المرافقة التعليمية غيرت طريقة تعلم ابني وساعدته يندمج بشكل أفضل.',
+            'ابني من ذوي الاحتياجات الخاصة، وكنت مترددة كثيرًا. وجدت معلمة ظل عبر المنصة وكانت محترفة ومتعاونة. ابني اندمج في المدرسة بشكل رائع. شكرًا Little Hands.',
         'name': 'هبة',
         'title': 'أم لطفل توحدي',
-        'image': 'assets/images/homepage/mom2.png',
+        'image': 'assets/images/homepage/expert1.webp',
         'rating': '5',
       },
     ];
 
-    return SizedBox(
-      height: 220,
-      child: PageView.builder(
-        itemCount: testimonials.length,
-        controller: PageController(viewportFraction: 0.92),
-        itemBuilder: (context, index) {
-          final t = testimonials[index];
-          final int rating = int.parse(t['rating']!);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 220,
+          child: PageView.builder(
+            itemCount: testimonials.length,
+            controller: PageController(viewportFraction: 0.92),
+            itemBuilder: (context, index) {
+              final t = testimonials[index];
+              final int rating = int.parse(t['rating']!);
 
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFF3E8),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFF600A), width: 1),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 5,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ⭐ نجوم التقييم
-                Row(
-                  children: List.generate(
-                    5,
-                    (i) => Icon(
-                      i < rating ? Icons.star : Icons.star_border,
-                      color: const Color(0xFFFFC107),
-                      size: 18,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                // 💬 النص
-                Expanded(
-                  child: Text(
-                    '"${t['text']}"',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontFamily: 'NotoSansArabic',
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                // 👤 صورة واسم
-                Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: AssetImage(t['image']!),
-                      radius: 18,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '${t['name']} - ${t['title']}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black54,
-                        fontWeight: FontWeight.w500,
-                        fontFamily: 'NotoSansArabic',
-                      ),
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3E8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFFF600A), width: 1),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
                     ),
                   ],
                 ),
-              ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ⭐ نجوم التقييم
+                    Row(
+                      children: List.generate(
+                        5,
+                        (i) => Icon(
+                          i < rating ? Icons.star : Icons.star_border,
+                          color: const Color(0xFFFFC107),
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // 💬 النص
+                    Expanded(
+                      child: Text(
+                        '"${t['text']}"',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontFamily: 'NotoSansArabic',
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // 👤 صورة واسم
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          backgroundImage: AssetImage(t['image']!),
+                          radius: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${t['name']} - ${t['title']}',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w500,
+                            fontFamily: 'NotoSansArabic',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+
+        // 🧭 مؤشر "اسحب لرؤية المزيد"
+        const SizedBox(height: 8),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.swipe, color: Colors.grey, size: 20),
+              SizedBox(width: 6),
+              Text(
+                'اسحب لرؤية المزيد',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey,
+                  fontFamily: 'NotoSansArabic',
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // ✅ زر "أضف تجربتك"
+        const SizedBox(height: 12),
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: () {
+              // TODO: Navigate to "Add Testimonial" screen
+            },
+            icon: const Icon(Icons.edit, size: 18),
+            label: const Text(
+              'أضف تجربتك',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'NotoSansArabic',
+              ),
             ),
-          );
-        },
-      ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF600A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 9),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              textStyle: const TextStyle(
+                fontSize: 13,
+                fontFamily: 'NotoSansArabic',
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -462,72 +512,68 @@ class _ParentHomePageState extends State<ParentHomePage> {
   }
 
   Widget _buildServiceCard(String title, String imagePath) {
-    return GestureDetector(
-      onTap: () {
-        // TODO: Navigate or show more info
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF3E8),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: const Color(0xFFFF600A), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E8),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFFFF600A), width: 1),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 5, offset: Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Image.asset(imagePath, height: 70),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'NotoSansArabic',
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Image.asset(imagePath, height: 70), // ⬆️ Bigger icon
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (title == 'رعاية الأطفال في المنزل') {
+                Navigator.pushNamed(context, '/parentBabysitterInfo');
+              } else if (title == 'الاستشارات التربوية والنفسية') {
+                Navigator.pushNamed(context, '/counseling');
+              } else if (title == 'مساعدة الأطفال ذوي الاحتياجات') {
+                Navigator.pushNamed(context, '/specialNeeds');
+              } else if (title == 'التدريس والتعليم المنزلي') {
+                Navigator.pushNamed(context, '/tutoring');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF600A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              textStyle: const TextStyle(
+                fontSize: 14,
                 fontFamily: 'NotoSansArabic',
               ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                // navigate
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF600A),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 5,
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontFamily: 'NotoSansArabic',
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                minimumSize: Size.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Directionality(
-                textDirection: TextDirection.ltr, // force visual left-to-right
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.arrow_back_ios_new, size: 14),
-                    SizedBox(width: 6),
-                    Text('تعرّف على الخدمة'),
-                  ],
-                ),
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              minimumSize: Size.zero,
+            ),
+            child: Directionality(
+              textDirection: TextDirection.ltr,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.arrow_back_ios_new, size: 14),
+                  SizedBox(width: 6),
+                  Text('تعرّف على الخدمة'),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -551,6 +597,212 @@ class _ParentHomePageState extends State<ParentHomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildStepItem(int number, String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CircleAvatar(
+          backgroundColor: const Color(0xFFFF600A),
+          radius: 16,
+          child: Text(
+            '$number',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'NotoSansArabic',
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'NotoSansArabic',
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black87,
+                  height: 1.4,
+                  fontFamily: 'NotoSansArabic',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildPlatformIntroSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 30),
+        buildSectionTitle('كل ما يحتاجه طفلك في مكان واحد'),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF3E8),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFFF600A), width: 1),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 6,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'في منصة "Little Hands"، نربطك بأفضل مقدمي الرعاية والخبراء التربويين، لنقدم لك خدمات موثوقة تشمل جليسات الأطفال، الاستشارات، التعليم المنزلي، ومرافقة الأطفال ذوي الاحتياجات.',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontFamily: 'NotoSansArabic',
+                  height: 1.6,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'هدفنا دعمك في كل خطوة، وتوفير بيئة آمنة لطفلك... لأننا نعلم أن طفلك هو الأهم 🧡',
+                style: TextStyle(
+                  color: Color(0xFFFF600A),
+                  fontSize: 15,
+                  fontFamily: 'NotoSansArabic',
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildCaregiversListSection() {
+    final List<Map<String, String>> caregivers = [
+      {
+        'name': 'سارة أ.',
+        'role': 'جليسة أطفال معتمدة',
+        'image': 'assets/images/homepage/sarah_test_pic.jpg',
+        'rating': '5',
+      },
+      {
+        'name': 'مها ن.',
+        'role': 'مرافقة لطفل توحدي',
+        'image': 'assets/images/homepage/maha_test_pic.webp',
+        'rating': '4',
+      },
+      {
+        'name': 'نور ع.',
+        'role': 'خبيرة تربوية',
+        'image': 'assets/images/homepage/maha_test_pic.webp',
+        'rating': '5',
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildSectionTitle('تعرف على بعض مقدمي الرعاية'),
+        const SizedBox(height: 12),
+        Column(
+          children:
+              caregivers.map((c) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 14,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.shade300),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: AssetImage(c['image']!),
+                        radius: 28,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              c['name']!,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSansArabic',
+                              ),
+                            ),
+                            Text(
+                              c['role']!,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black54,
+                                fontFamily: 'NotoSansArabic',
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: List.generate(
+                                5,
+                                (i) => Icon(
+                                  i < int.parse(c['rating']!)
+                                      ? Icons.star
+                                      : Icons.star_border,
+                                  color: const Color(0xFFFFC107),
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          // TODO: Open caregiver profile
+                        },
+                        icon: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 18,
+                          color: Color(0xFFFF600A),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+        ),
+      ],
     );
   }
 }
