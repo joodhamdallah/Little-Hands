@@ -3,34 +3,30 @@ const express = require("express");
 const mongoose = require("mongoose");
 const connectDB = require("./database/connection");
 
-// Routes
-const parentRoutes = require("./routes/parentRoutes");
-const caregiverRoutes = require("./routes/caregiverRoutes");
-const authRoutes = require("./routes/authRoutes");
-const identityRoutes = require("./routes/identityRoutes"); 
-const babysitterRoutes = require('./routes/babysitterRoutes');
-const subscriptionRoutes = require('./routes/stripeRoutes');
-
-
-
 const app = express();
 const port = process.env.PORT || 3000;
 
-// ✅ Middleware with increased body size limits
+const parentRoutes = require("./routes/parentRoutes");
+const caregiverRoutes = require("./routes/caregiverRoutes");
+const authRoutes = require("./routes/authRoutes");
+const identityRoutes = require("./routes/identityRoutes");
+const babysitterRoutes = require('./routes/babysitterRoutes');
+const subscriptionRoutes = require('./routes/stripeRoutes');
+const stripeWebhookRoute = require('./routes/stripeWebhookRoute');
+
+app.use('/api/stripe', stripeWebhookRoute);
+
 app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
-// ✅ Route mounts
+// ✅ تفعيل باقي الراوتات
 app.use("/api", parentRoutes);
 app.use("/api/caregiver", caregiverRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api", identityRoutes);
 console.log("✅ identityRoutes linked at /api/verify-id");
-
 app.use('/api/babysitter', babysitterRoutes);
-
 app.use('/api', subscriptionRoutes);
-
 
 // ✅ Connect to MongoDB then start the server
 connectDB()
