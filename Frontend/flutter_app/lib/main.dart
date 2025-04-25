@@ -18,6 +18,7 @@ import 'package:flutter_app/Parent/parent_home_page.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/Caregiver/caregiver_categories_page.dart';
 import 'package:flutter_app/Caregiver/id_verify_api.dart';
+import 'package:flutter_app/pages/SubscriptionPlanPage.dart';
 import 'package:flutter_app/pages/login_page.dart';
 import 'package:flutter_app/Caregiver/register_caregivers_page.dart';
 import 'package:flutter_app/Parent/register_page.dart';
@@ -70,6 +71,11 @@ class MyApp extends StatelessWidget {
          '/parentBabysitterInfo': (context) => const BabysittingInfoPage(),
          '/parentBabysitteraddress': (context) => const BabysitterSessionAddressPage(),
          '/parentBabysitterType': (context) => const BabysitterTypeSelectionPage(),
+
+
+         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
+
+
 
       },
     );
