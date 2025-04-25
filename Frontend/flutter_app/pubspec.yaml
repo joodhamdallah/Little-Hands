@@ -37,6 +37,7 @@ dependencies:
   snippet_coder_utils: ^1.0.15
   http: ^0.13.5
   path_provider: ^2.1.1
+  webview_flutter: ^4.2.2
 
   cupertino_icons: ^1.0.8
   intl: ^0.18.1  
