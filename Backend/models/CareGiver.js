@@ -27,6 +27,7 @@ const careGiverSchema = new mongoose.Schema({
         "Password must be at least 8 characters long, include 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character."
     }
   },
+  
   phone_number: { type: String, required: true, trim: true },
   date_of_birth: { type: Date, required: true },
   address: { type: String, required: true },
@@ -44,6 +45,18 @@ const careGiverSchema = new mongoose.Schema({
     enum: ["babysitter", "expert", "special_needs", "tutor", null],
     default: null
   },
+  
+  subscription_status: {
+    type: String,
+    enum: ['unpaid', 'paid'],
+    default: 'unpaid',
+  },
+  subscription_type: {
+    type: String,
+    enum: ['monthly', 'quarterly', 'annual', null],
+    default: null,
+  },
+  
 
   isVerified: { type: Boolean, default: false },
   isResettingPassword: { type: Boolean, default: false },
@@ -92,5 +105,7 @@ careGiverSchema.statics.checkVerificationStatus = async function(email) {
   if (!user) return { found: false, isVerified: false };
   return { found: true, isVerified: user.isVerified };
 };
+
+
 
 module.exports = mongoose.model("CareGiver", careGiverSchema);
