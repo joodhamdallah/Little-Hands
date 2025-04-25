@@ -9,6 +9,8 @@ const caregiverRoutes = require("./routes/caregiverRoutes");
 const authRoutes = require("./routes/authRoutes");
 const identityRoutes = require("./routes/identityRoutes"); 
 const babysitterRoutes = require('./routes/babysitterRoutes');
+const subscriptionRoutes = require('./routes/stripeRoutes');
+
 
 
 const app = express();
@@ -27,6 +29,7 @@ console.log("✅ identityRoutes linked at /api/verify-id");
 
 app.use('/api/babysitter', babysitterRoutes);
 
+app.use('/api', subscriptionRoutes);
 
 
 // ✅ Connect to MongoDB then start the server

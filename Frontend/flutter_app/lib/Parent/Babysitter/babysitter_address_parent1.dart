@@ -237,8 +237,9 @@ class _BabysitterSessionAddressPageState
     if (selectedAddress == 'custom' &&
         (selectedCity == null ||
             neighborhoodController.text.trim().isEmpty ||
-            streetController.text.trim().isEmpty))
+            streetController.text.trim().isEmpty)) {
       return false;
+    }
     return true;
   }
 }
