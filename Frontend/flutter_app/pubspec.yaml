@@ -46,6 +46,7 @@ dependencies:
   # file_picker: ^6.1.1
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.2.4
+  flutter_xlider: ^3.5.0
   
 dev_dependencies:
   flutter_launcher_icons: ^0.13.1

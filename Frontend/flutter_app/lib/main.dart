@@ -13,7 +13,6 @@ import 'package:flutter_app/Caregiver/Shadow_Teacher/pricing_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/special_needs_category.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_address_parent1.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_info_page.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_type_parent2.dart';
 import 'package:flutter_app/Parent/parent_home_page.dart';
 import 'package:flutter_app/pages/ResetPass_page.dart';
 import 'package:flutter_app/Caregiver/caregiver_categories_page.dart';
@@ -52,14 +51,13 @@ class MyApp extends StatelessWidget {
         '/idverifyapi': (context) => const IDVerificationPage(),
 
         '/childConsult': (context) => const ChildConsultPage(),
-       // '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
+        // '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
         '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
         '/expertBioQ5': (context) => const ExpertBioPage(),
 
         '/babysitter': (context) => const BabySitterPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
-        
-        
+
         '/specialNeeds': (context) => const DisabilityExperiencePage(),
         '/shadowteacherQ2': (context) => const ShadowTeacherStep2(),
         '/shadowteacherQ3': (context) => const ShadowTeacherStep3(),
@@ -68,15 +66,11 @@ class MyApp extends StatelessWidget {
         '/shadowteacherpricing': (context) => const ShadowTeacherPricingPage(),
 
         '/parentHome': (context) => const ParentHomePage(),
-         '/parentBabysitterInfo': (context) => const BabysittingInfoPage(),
-         '/parentBabysitteraddress': (context) => const BabysitterSessionAddressPage(),
-         '/parentBabysitterType': (context) => const BabysitterTypeSelectionPage(),
+        '/parentBabysitterInfo': (context) => const BabysittingInfoPage(),
+        '/parentBabysitteraddress':
+            (context) => const BabysitterSessionAddressPage(),
 
-
-         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
-
-
-
+        '/subscriptionpage': (context) => const SubscriptionPlanPage(),
       },
     );
   }
