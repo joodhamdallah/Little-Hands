@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_type_parent2.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_summary_parent6.dart';
 
 class BabysitterSessionAddressPage extends StatefulWidget {
-  const BabysitterSessionAddressPage({super.key});
+  final Map<String, dynamic>? previousData;
+  final bool isEditing;
+
+  const BabysitterSessionAddressPage({
+    super.key,
+    this.previousData,
+    this.isEditing = false,
+  });
 
   @override
   State<BabysitterSessionAddressPage> createState() =>
@@ -12,7 +21,6 @@ class _BabysitterSessionAddressPageState
     extends State<BabysitterSessionAddressPage> {
   String? selectedAddress;
   String? selectedCity;
-  final TextEditingController customAddressController = TextEditingController();
   final TextEditingController neighborhoodController = TextEditingController();
   final TextEditingController streetController = TextEditingController();
   final TextEditingController buildingController = TextEditingController();
@@ -28,6 +36,18 @@ class _BabysitterSessionAddressPageState
   ];
 
   final String parentAddress = "843 Manor Close, بيت لحم";
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.previousData != null) {
+      selectedAddress = widget.previousData!['session_address'];
+      selectedCity = widget.previousData!['city'];
+      neighborhoodController.text = widget.previousData!['neighborhood'] ?? '';
+      streetController.text = widget.previousData!['street'] ?? '';
+      buildingController.text = widget.previousData!['building'] ?? '';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,22 +89,15 @@ class _BabysitterSessionAddressPageState
                 ),
               ),
               const SizedBox(height: 16),
-              _buildOption(
-                'home',
-                'في منزلي',
-                parentAddress,
-                selectedAddress,
-                (val) => setState(() => selectedAddress = val),
-              ),
+              _buildOption('home', 'في منزلي', parentAddress),
               const SizedBox(height: 12),
               _buildOption(
                 'custom',
                 'في عنوان آخر',
                 'اختر المدينة وأدخل تفاصيل العنوان',
-                selectedAddress,
-                (val) => setState(() => selectedAddress = val),
               ),
               const SizedBox(height: 12),
+
               if (selectedAddress == 'custom') ...[
                 DropdownButtonFormField<String>(
                   value: selectedCity,
@@ -107,6 +120,8 @@ class _BabysitterSessionAddressPageState
                 ),
                 const SizedBox(height: 12),
                 TextField(
+                  onChanged: (_) => setState(() {}), // ✅ أضف هذه
+
                   controller: neighborhoodController,
                   decoration: InputDecoration(
                     hintText: 'اسم الحي / البلدة',
@@ -117,6 +132,8 @@ class _BabysitterSessionAddressPageState
                 ),
                 const SizedBox(height: 12),
                 TextField(
+                  onChanged: (_) => setState(() {}), // ✅ أضف هذه
+
                   controller: streetController,
                   decoration: InputDecoration(
                     hintText: 'اسم الشارع',
@@ -127,6 +144,8 @@ class _BabysitterSessionAddressPageState
                 ),
                 const SizedBox(height: 12),
                 TextField(
+                  onChanged: (_) => setState(() {}), // ✅ أضف هذه
+
                   controller: buildingController,
                   decoration: InputDecoration(
                     hintText: 'رقم المبنى أو الطابق (اختياري)',
@@ -140,15 +159,7 @@ class _BabysitterSessionAddressPageState
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
-                  onPressed:
-                      _canProceed()
-                          ? () {
-                            Navigator.pushNamed(
-                              context,
-                              '/parentBabysitterType',
-                            );
-                          }
-                          : null,
+                  onPressed: _canProceed() ? _onNextPressed : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     padding: const EdgeInsets.symmetric(
@@ -177,16 +188,40 @@ class _BabysitterSessionAddressPageState
     );
   }
 
-  Widget _buildOption(
-    String value,
-    String title,
-    String subtitle,
-    String? groupValue,
-    Function(String) onChanged,
-  ) {
-    final bool isSelected = value == groupValue;
+  void _onNextPressed() {
+    final updatedJobDetails = {
+      ...?widget.previousData,
+      'session_address': selectedAddress,
+      'city': selectedCity,
+      'neighborhood': neighborhoodController.text.trim(),
+      'street': streetController.text.trim(),
+      'building': buildingController.text.trim(),
+    };
+
+    if (widget.isEditing) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => BabysitterSummaryPage(jobDetails: updatedJobDetails),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  BabysitterTypeSelectionPage(previousData: updatedJobDetails),
+        ),
+      );
+    }
+  }
+
+  Widget _buildOption(String value, String title, String subtitle) {
+    final bool isSelected = value == selectedAddress;
     return GestureDetector(
-      onTap: () => onChanged(value),
+      onTap: () => setState(() => selectedAddress = value),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(

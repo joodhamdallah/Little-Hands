@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_childdage_parent3.dart';
 
 class BabysitterTypeSelectionPage extends StatefulWidget {
-  const BabysitterTypeSelectionPage({super.key});
+  final Map<String, dynamic> previousData;
+
+  const BabysitterTypeSelectionPage({super.key, required this.previousData});
 
   @override
   State<BabysitterTypeSelectionPage> createState() =>
@@ -16,6 +19,9 @@ class _BabysitterTypeSelectionPageState
   TimeOfDay? selectedStartTime;
   TimeOfDay? selectedEndTime;
   bool flexibleTime = false;
+  DateTime? endDate;
+  bool noEndDate = false;
+  List<String> selectedDays = [];
 
   final List<Map<String, dynamic>> sessionTypes = [
     {
@@ -29,15 +35,8 @@ class _BabysitterTypeSelectionPageState
       'value': 'once',
       'title': 'جليسة لمرة واحدة',
       'subtitle':
-          'جليسة تُطلب لمناسبة واحدة أو حالة طارئة، مثل حفلة أو موعد في المستشفى أو سفر ليوم واحد.',
+          'جليسة تُطلب لمناسبة واحدة أو حالة طارئة، مثل حفلة أو موعد أو سفر ليوم واحد.',
       'icon': Icons.event,
-    },
-    {
-      'value': 'occasional',
-      'title': 'جليسة حسب الحاجة',
-      'subtitle':
-          'جليسة يمكن طلبها عند الحاجة فقط، دون مواعيد محددة أو جدول منتظم، بناءً على الظروف.',
-      'icon': Icons.access_time,
     },
     {
       'value': 'nanny',
@@ -79,7 +78,7 @@ class _BabysitterTypeSelectionPageState
               ),
               const SizedBox(height: 24),
               const Text(
-                'اختر نوع جليسة الأطفال التي تحتاجها لطفلك:',
+                'اختر نوع جليسة الأطفال التي تحتاجها :',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -150,18 +149,40 @@ class _BabysitterTypeSelectionPageState
               Center(
                 child: ElevatedButton(
                   onPressed:
-                      selectedType != null
+                      isFormValid()
                           ? () {
                             if (showExtraFields) {
-                              Navigator.pushNamed(
+                              final updatedJobDetails = {
+                                ...widget.previousData,
+                                'session_type': selectedType,
+                                'session_start_date': selectedDate,
+                                'session_start_time': selectedStartTime?.format(
+                                  context,
+                                ),
+                                'session_end_time': selectedEndTime?.format(
+                                  context,
+                                ),
+                                'session_days': selectedDays,
+                                'session_end_date':
+                                    noEndDate ? 'إلى إشعار آخر' : endDate,
+                                'is_flexible_time': flexibleTime,
+                              };
+
+                              Navigator.push(
                                 context,
-                                '/parentBabysitterSummary',
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => AddChildrenAgePage(
+                                        previousData: updatedJobDetails,
+                                      ),
+                                ),
                               );
                             } else {
                               setState(() => showExtraFields = true);
                             }
                           }
                           : null,
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     padding: const EdgeInsets.symmetric(
@@ -249,6 +270,15 @@ class _BabysitterTypeSelectionPageState
   }
 
   Widget _buildRegularFields() {
+    final days = [
+      'الأحد',
+      'الاثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -261,24 +291,76 @@ class _BabysitterTypeSelectionPageState
         Wrap(
           spacing: 8,
           children: List.generate(7, (index) {
-            final days = [
-              'الأحد',
-              'الاثنين',
-              'الثلاثاء',
-              'الأربعاء',
-              'الخميس',
-              'الجمعة',
-              'السبت',
-            ];
             return FilterChip(
               label: Text(days[index]),
-              selected: false,
-              onSelected: (val) {},
+              selected: selectedDays.contains(days[index]),
+              onSelected: (val) {
+                setState(() {
+                  if (val) {
+                    selectedDays.add(days[index]);
+                  } else {
+                    selectedDays.remove(days[index]);
+                  }
+                });
+              },
             );
           }),
         ),
         const SizedBox(height: 20),
         _buildTimeSection(),
+        const SizedBox(height: 20),
+
+        // ✅ الجملة اللي طلبتها
+        const Text(
+          'حدد إلى متى ترغب في استمرار هذه الجلسات المنتظمة:',
+          style: TextStyle(fontSize: 15, fontFamily: 'NotoSansArabic'),
+        ),
+        const SizedBox(height: 8),
+
+        const Text(
+          '📅 مدة استمرار الجلسات',
+          style: TextStyle(fontSize: 16, fontFamily: 'NotoSansArabic'),
+        ),
+        const SizedBox(height: 10),
+        ElevatedButton.icon(
+          icon: const Icon(Icons.date_range),
+          label: Text(
+            endDate == null
+                ? 'اختر تاريخ الانتهاء'
+                : '${endDate!.day}/${endDate!.month}/${endDate!.year}',
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFFF3E8),
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          onPressed:
+              noEndDate
+                  ? null
+                  : () async {
+                    DateTime? picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now().add(const Duration(days: 7)),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (picked != null) {
+                      setState(() => endDate = picked);
+                    }
+                  },
+        ),
+        CheckboxListTile(
+          value: noEndDate,
+          onChanged: (val) {
+            setState(() {
+              noEndDate = val ?? false;
+              if (noEndDate) endDate = null;
+            });
+          },
+          title: const Text('إلى إشعار آخر'),
+        ),
       ],
     );
   }
@@ -290,17 +372,6 @@ class _BabysitterTypeSelectionPageState
         _buildCalendarSection(),
         const SizedBox(height: 20),
         _buildTimeSection(),
-      ],
-    );
-  }
-
-  Widget _buildOccasionalFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildCalendarSection(),
-        const SizedBox(height: 10),
-        _buildFlexibleCheckbox(),
       ],
     );
   }
@@ -372,7 +443,7 @@ class _BabysitterTypeSelectionPageState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          '📅 التاريخ المتوقع للجلسة',
+          '📅 تاريخ بدء الجلسات',
           style: TextStyle(fontSize: 16, fontFamily: 'NotoSansArabic'),
         ),
         const SizedBox(height: 10),
@@ -472,7 +543,6 @@ class _BabysitterTypeSelectionPageState
   Widget _buildExtraFields(String type) {
     if (type == 'regular') return _buildRegularFields();
     if (type == 'once') return _buildOneTimeFields();
-    if (type == 'occasional') return _buildOccasionalFields();
     if (type == 'nanny') return _buildNannyFields();
     return const SizedBox();
   }
@@ -490,5 +560,32 @@ class _BabysitterTypeSelectionPageState
         ),
       ],
     );
+  }
+
+  bool isFormValid() {
+    if (selectedType == null) return false;
+
+    if (!showExtraFields) return true;
+
+    if (selectedType == 'regular') {
+      return selectedDate != null &&
+          selectedStartTime != null &&
+          selectedEndTime != null &&
+          (noEndDate || endDate != null) &&
+          selectedDays.isNotEmpty;
+    }
+
+    if (selectedType == 'once') {
+      return selectedDate != null &&
+          selectedStartTime != null &&
+          selectedEndTime != null;
+    }
+
+    if (selectedType == 'nanny') {
+      return selectedDate !=
+          null; // 👈 اضف هنا شروط التحقق لباقي الحقول إذا لزم
+    }
+
+    return false;
   }
 }
