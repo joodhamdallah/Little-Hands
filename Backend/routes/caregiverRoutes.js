@@ -14,4 +14,7 @@ router.post('/checkVerificationStatus', caregiverController.checkVerificationSta
 
 router.post("/updateRole", authMiddleware, caregiverController.updateRole);
 
+
+router.get('/profile', authMiddleware, caregiverController.getProfile);
+
 module.exports = router;
