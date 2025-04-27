@@ -175,7 +175,7 @@ class _FirstPageState extends State<FirstPage> {
                           const SizedBox(height: 40),
                           ElevatedButton(
                             onPressed: () {
-                              Navigator.pushNamed(context, '/parentHome');
+                              Navigator.pushNamed(context, '/register');
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color.fromARGB(

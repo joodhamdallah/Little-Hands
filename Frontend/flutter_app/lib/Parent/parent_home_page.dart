@@ -578,73 +578,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
     );
   }
 
-  Widget _buildSafetyItem(IconData icon, String title) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: const Color(0xFFFF600A), size: 20),
-          const SizedBox(width: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic'),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildStepItem(int number, String title, String description) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          backgroundColor: const Color(0xFFFF600A),
-          radius: 16,
-          child: Text(
-            '$number',
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'NotoSansArabic',
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 15.5,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'NotoSansArabic',
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                  height: 1.4,
-                  fontFamily: 'NotoSansArabic',
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget buildPlatformIntroSection() {
     return Column(

@@ -252,14 +252,4 @@ class BabysitterSummaryPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        fontFamily: 'NotoSansArabic',
-      ),
-    );
-  }
 }

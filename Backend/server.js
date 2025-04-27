@@ -13,6 +13,8 @@ const identityRoutes = require("./routes/identityRoutes");
 const babysitterRoutes = require('./routes/babysitterRoutes');
 const subscriptionRoutes = require('./routes/stripeRoutes');
 const stripeWebhookRoute = require('./routes/stripeWebhookRoute');
+const workScheduleRoutes = require('./routes/workScheduleRoutes');
+
 
 app.use('/api/stripe', stripeWebhookRoute);
 
@@ -27,6 +29,8 @@ app.use("/api", identityRoutes);
 console.log("✅ identityRoutes linked at /api/verify-id");
 app.use('/api/babysitter', babysitterRoutes);
 app.use('/api', subscriptionRoutes);
+app.use('/api/schedule', workScheduleRoutes);
+
 
 // ✅ Connect to MongoDB then start the server
 connectDB()
