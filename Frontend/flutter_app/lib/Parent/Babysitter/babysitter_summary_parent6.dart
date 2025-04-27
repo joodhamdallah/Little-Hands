@@ -10,6 +10,18 @@ class BabysitterSummaryPage extends StatelessWidget {
   final Map<String, dynamic> jobDetails;
 
   const BabysitterSummaryPage({super.key, required this.jobDetails});
+  List<String> normalizeAges(List<String?> ages) {
+    return ages.map((age) {
+      if (age == null) return ''; // لو في null خليه سترينغ فاضي مثلا
+      if (age.contains('رضيع')) return 'رضيع';
+      if (age.contains('طفل صغير')) return 'طفل صغير';
+      if (age.contains('ما قبل المدرسة')) return 'ما قبل المدرسة';
+      if (age.contains('ابتدائي')) return 'المرحلة الابتدائية';
+      if (age.contains('إعدادي')) return 'ما قبل المراهقة';
+
+      return age;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {

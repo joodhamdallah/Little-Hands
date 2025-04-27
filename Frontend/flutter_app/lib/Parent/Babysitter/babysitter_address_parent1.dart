@@ -25,7 +25,8 @@ class BabysitterSessionAddressPage extends StatefulWidget {
 class _BabysitterSessionAddressPageState
     extends State<BabysitterSessionAddressPage> {
   String parentAddress = "جارٍ التحميل..."; // Initially loading text
-  String? selectedCity; // It will come from backend
+  String? selectedCity; // لعنوان آخر (custom)
+  String? parentCity; // لعنوان المنزل
   String? selectedAddress;
   final TextEditingController neighborhoodController = TextEditingController();
   final TextEditingController streetController = TextEditingController();
