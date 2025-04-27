@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_type_parent2.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_summary_parent6.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_app/pages/config.dart'; // loginUsers = "${url}auth/login";
 
 class BabysitterSessionAddressPage extends StatefulWidget {
   final Map<String, dynamic>? previousData;
@@ -19,8 +24,10 @@ class BabysitterSessionAddressPage extends StatefulWidget {
 
 class _BabysitterSessionAddressPageState
     extends State<BabysitterSessionAddressPage> {
+  String parentAddress = "جارٍ التحميل..."; // Initially loading text
+  String? selectedCity; // لعنوان آخر (custom)
+  String? parentCity; // لعنوان المنزل
   String? selectedAddress;
-  String? selectedCity;
   final TextEditingController neighborhoodController = TextEditingController();
   final TextEditingController streetController = TextEditingController();
   final TextEditingController buildingController = TextEditingController();
@@ -35,11 +42,10 @@ class _BabysitterSessionAddressPageState
     "بيت لحم",
   ];
 
-  final String parentAddress = "843 Manor Close, بيت لحم";
-
   @override
   void initState() {
     super.initState();
+    _fetchParentProfile();
     if (widget.previousData != null) {
       selectedAddress = widget.previousData!['session_address'];
       selectedCity = widget.previousData!['city'];
@@ -89,7 +95,7 @@ class _BabysitterSessionAddressPageState
                 ),
               ),
               const SizedBox(height: 16),
-              _buildOption('home', 'في منزلي', parentAddress),
+              _buildOption('home', 'في منزلي', "$parentCity - $parentAddress"),
               const SizedBox(height: 12),
               _buildOption(
                 'custom',
@@ -188,6 +194,40 @@ class _BabysitterSessionAddressPageState
     );
   }
 
+  void _fetchParentProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+
+    if (accessToken == null) {
+      print('No token found');
+      return;
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse(fetchParent), // change url if needed
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final parentData = jsonData['data'];
+
+        setState(() {
+          parentAddress = parentData['address'] ?? "لم يتم العثور على العنوان";
+          parentCity = parentData['city'] ?? "";
+        });
+      } else {
+        print('Failed to load parent profile. Status: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching parent profile: $e');
+    }
+  }
+
   void _onNextPressed() {
     final updatedJobDetails = {
       ...?widget.previousData,
@@ -245,7 +285,7 @@ class _BabysitterSessionAddressPageState
                   Text(
                     title,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 18,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'NotoSansArabic',
                     ),
@@ -253,7 +293,7 @@ class _BabysitterSessionAddressPageState
                   Text(
                     subtitle,
                     style: const TextStyle(
-                      fontSize: 13,
+                      fontSize: 15,
                       color: Colors.black54,
                       fontFamily: 'NotoSansArabic',
                     ),

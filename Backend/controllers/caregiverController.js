@@ -2,7 +2,6 @@ const CaregiverServices = require("../services/caregiverServices");
 const CareGiver = require('../models/CareGiver');
 const BabySitter = require('../models/BabySitter');
 
-
 exports.register = async (req, res, next) => {
     try {
         const {
@@ -100,7 +99,7 @@ exports.checkVerificationStatus = async (req, res) => {
       res.status(500).json({ status: false, message: "Internal server error" });
     }
   };
-
+  
   exports.getProfile = async (req, res) => {
     try {
       const userId = req.user._id;

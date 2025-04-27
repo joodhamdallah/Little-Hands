@@ -54,6 +54,7 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
 
   late TapGestureRecognizer _tapGestureRecognizer;
 
@@ -74,6 +75,8 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
     emailController.dispose();
     phoneController.dispose();
     passwordController.dispose();
+    addressController.dispose(); // ✅
+
     super.dispose();
   }
 
@@ -513,7 +516,6 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
           const SnackBar(
             content: Text("✅ تم إنشاء الحساب بنجاح! تحقق من بريدك الإلكتروني."),
             backgroundColor: Colors.green,
-            
           ),
         );
         Navigator.pushReplacementNamed(
@@ -647,7 +649,12 @@ class _RegisterCaregiversState extends State<RegisterCaregiversPage> {
                           (val) => zipCode = val,
                           isOptional: true,
                         ),
-                        buildTextField("عنوان السكن", (val) => address = val),
+                        buildTextField(
+                          "عنوان السكن",
+                          (val) => address = val,
+                          controller:
+                              addressController, // ✅ استخدم الكنترولر الجديد
+                        ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [

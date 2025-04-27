@@ -55,6 +55,21 @@ class ParentServices {
             throw error;
         }
     }
+
+    // ✅ Get Parent Profile by ID
+static async getProfile(parentId) {
+    try {
+    // console.log("user id="+parentId);
+        const parent = await ParentModel.findById(parentId);
+        if (!parent) {
+            throw new Error("Parent not found");
+        }
+        return parent;
+    } catch (error) {
+        throw error;
+    }
+}
+
 }
 
 module.exports = ParentServices;

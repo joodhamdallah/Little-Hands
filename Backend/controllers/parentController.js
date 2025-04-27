@@ -52,3 +52,26 @@ exports.verifyEmail = async (req, res, next) => {
     }
 };
 
+exports.getMe = async (req, res, next) => {
+    try {
+        const parent = await ParentServices.getProfile(req.user._id);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                firstName: parent.firstName,
+                lastName: parent.lastName,
+                email: parent.email,
+                city: parent.city,
+                address: parent.address,
+                phone: parent.phone,
+            }
+        });
+    } catch (error) {
+        console.error("GetMe Error:", error);
+        if (error.message === "Parent not found") {
+            return res.status(404).json({ success: false, message: "Parent not found" });
+        }
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
+    }
+};
