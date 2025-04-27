@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_address_parent1.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_animation.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_childdage_parent3.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_rate_parent4.dart';
 import 'package:flutter_app/Parent/Babysitter/babysitter_requirments_parent5.dart';
@@ -9,6 +10,18 @@ class BabysitterSummaryPage extends StatelessWidget {
   final Map<String, dynamic> jobDetails;
 
   const BabysitterSummaryPage({super.key, required this.jobDetails});
+  List<String> normalizeAges(List<String?> ages) {
+    return ages.map((age) {
+      if (age == null) return ''; // لو في null خليه سترينغ فاضي مثلا
+      if (age.contains('رضيع')) return 'رضيع';
+      if (age.contains('طفل صغير')) return 'طفل صغير';
+      if (age.contains('ما قبل المدرسة')) return 'ما قبل المدرسة';
+      if (age.contains('ابتدائي')) return 'المرحلة الابتدائية';
+      if (age.contains('إعدادي')) return 'ما قبل المراهقة';
+
+      return age;
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,13 +140,18 @@ class BabysitterSummaryPage extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          '✅ تم حفظ المتطلبات بنجاح!',
-                          style: TextStyle(fontFamily: 'NotoSansArabic'),
-                        ),
-                        backgroundColor: Colors.green,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => BabysitterSearchAnimationPage(
+                              jobDetails: {
+                                ...jobDetails,
+                                "children_ages": normalizeAges(
+                                  jobDetails["children_ages"] ?? [],
+                                ),
+                              },
+                            ),
                       ),
                     );
                   },
