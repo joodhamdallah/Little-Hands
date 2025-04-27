@@ -65,7 +65,6 @@ class CaregiverProfilePage extends StatelessWidget {
     );
   }
 
-  // ➡️ كارد معلومات أساسية
   Widget _buildInfoCard() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

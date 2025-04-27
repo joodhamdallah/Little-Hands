@@ -1,7 +1,4 @@
 const CaregiverServices = require("../services/caregiverServices");
-const CareGiver = require('../models/CareGiver');
-const BabySitter = require('../models/BabySitter');
-
 
 exports.register = async (req, res, next) => {
     try {
@@ -100,42 +97,7 @@ exports.checkVerificationStatus = async (req, res) => {
       res.status(500).json({ status: false, message: "Internal server error" });
     }
   };
-
-  exports.getProfile = async (req, res) => {
-    try {
-      const userId = req.user._id;
   
-      // ✅ Fetch caregiver basic info
-      const caregiver = await CareGiver.findById(userId).select('first_name last_name image');
-      if (!caregiver) {
-        return res.status(404).json({ status: false, message: "Caregiver not found" });
-      }
   
-      // ✅ Fetch babysitter profile details
-      const babysitter = await BabySitter.findOne({ user_id: userId }).select('bio city years_experience skills_and_services training_certification is_smoker');
-      if (!babysitter) {
-        return res.status(404).json({ status: false, message: "Babysitter profile not found" });
-      }
-  
-      // ✅ Combine the data
-      const profile = {
-        first_name: caregiver.first_name,
-        last_name: caregiver.last_name,
-        image: caregiver.image,
-        bio: babysitter.bio,
-        city: babysitter.city,
-        years_experience: babysitter.years_experience,
-        skills_and_services: babysitter.skills_and_services || [],
-        training_certification: babysitter.training_certification || [],
-        is_smoker: babysitter.is_smoker || false,
-      };
-  
-      res.status(200).json({ status: true, profile });
-  
-    } catch (error) {
-      console.error('❌ Error fetching profile:', error.message);
-      res.status(500).json({ status: false, message: "Server error" });
-    }
-  };
   
 
