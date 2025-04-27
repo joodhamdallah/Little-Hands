@@ -200,26 +200,3 @@ class _BabysitterSearchAnimationPageState
     );
   }
 }
-
-// هذه صفحة نتائج البحث المؤقتة
-class BabysitterResultsPage extends StatelessWidget {
-  final Map<String, dynamic> jobDetails;
-
-  const BabysitterResultsPage({super.key, required this.jobDetails});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("نتائج البحث"),
-        backgroundColor: const Color(0xFFFF600A),
-      ),
-      body: const Center(
-        child: Text(
-          "تم العثور على الجليسات المناسبة! ✨",
-          style: TextStyle(fontFamily: 'NotoSansArabic', fontSize: 20),
-        ),
-      ),
-    );
-  }
-}

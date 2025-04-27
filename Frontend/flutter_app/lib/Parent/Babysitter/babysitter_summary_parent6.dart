@@ -140,12 +140,18 @@ class BabysitterSummaryPage extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BabysitterSearchAnimationPage(
-          jobDetails: jobDetails,
-                        ),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => BabysitterSearchAnimationPage(
+                              jobDetails: {
+                                ...jobDetails,
+                                "children_ages": normalizeAges(
+                                  jobDetails["children_ages"] ?? [],
+                                ),
+                              },
+                            ),
                       ),
                     );
                   },
@@ -165,7 +171,6 @@ class BabysitterSummaryPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
               ),
             ],
           ),

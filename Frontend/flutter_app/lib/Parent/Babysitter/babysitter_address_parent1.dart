@@ -95,11 +95,7 @@ class _BabysitterSessionAddressPageState
                 ),
               ),
               const SizedBox(height: 16),
-              _buildOption(
-                'home',
-                'في منزلي',
-                "$selectedCity - $parentAddress",
-              ),
+              _buildOption('home', 'في منزلي', "$parentCity - $parentAddress"),
               const SizedBox(height: 12),
               _buildOption(
                 'custom',
@@ -222,7 +218,7 @@ class _BabysitterSessionAddressPageState
 
         setState(() {
           parentAddress = parentData['address'] ?? "لم يتم العثور على العنوان";
-          selectedCity = parentData['city'] ?? "";
+          parentCity = parentData['city'] ?? "";
         });
       } else {
         print('Failed to load parent profile. Status: ${response.statusCode}');
