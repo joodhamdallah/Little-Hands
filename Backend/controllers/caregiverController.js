@@ -136,6 +136,7 @@ exports.checkVerificationStatus = async (req, res) => {
       console.error('❌ Error fetching profile:', error.message);
       res.status(500).json({ status: false, message: "Server error" });
     }
+    
   };
   
 
