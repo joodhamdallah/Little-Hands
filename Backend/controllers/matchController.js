@@ -2,7 +2,7 @@ const MatchService = require('../services/matchService');
 
 exports.matchBabysitters = async (req, res) => {
   try {
-    const { city, childrenAges, rateMin, rateMax, additionalRequirements } = req.body;
+    const { city, childrenAges, rateMin, rateMax, additionalRequirements, isNegotiable } = req.body;
 
     // // ✅ أطبع الداتا اللي واصلة من الفرونت
     // console.log("🚀 Incoming Matching Request:", {
@@ -18,7 +18,8 @@ exports.matchBabysitters = async (req, res) => {
       childrenAges,
       rateMin,
       rateMax,
-      additionalRequirements
+      additionalRequirements,
+      isNegotiable
     });
 
     // // ✅ أطبع النتيجة اللي طلعت بعد الماتشنج

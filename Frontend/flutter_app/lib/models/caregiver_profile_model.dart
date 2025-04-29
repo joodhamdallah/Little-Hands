@@ -6,8 +6,9 @@ class CaregiverProfileModel {
   final int yearsExperience;
   final bool? isSmoker;
   final List<String> skillsAndServices;
-  final List<String> trainingCertification; 
+  final List<String> trainingCertification;
   final String bio;
+  final String rateText; // ✅ أضفنا الحقل الجديد
 
   CaregiverProfileModel({
     required this.firstName,
@@ -19,6 +20,7 @@ class CaregiverProfileModel {
     required this.skillsAndServices,
     required this.trainingCertification,
     required this.bio,
+    required this.rateText, // ✅ أضفناه هنا أيضاً
   });
 
   factory CaregiverProfileModel.fromJson(Map<String, dynamic> json) {
@@ -28,10 +30,14 @@ class CaregiverProfileModel {
       image: json['image'],
       city: json['city'] ?? '',
       yearsExperience: json['years_experience'] ?? 0,
-      isSmoker: json['is_smoker'], 
+      isSmoker: json['is_smoker'],
       skillsAndServices: List<String>.from(json['skills_and_services'] ?? []),
-      trainingCertification: List<String>.from(json['training_certification'] ?? []),
+      trainingCertification: List<String>.from(
+        json['training_certification'] ?? [],
+      ),
       bio: json['bio'] ?? '',
+      rateText:
+          json['rate_text'] ?? 'لم يتم تحديد الأجر', // ✅ وهنا نقرأه من الـ JSON
     );
   }
 }

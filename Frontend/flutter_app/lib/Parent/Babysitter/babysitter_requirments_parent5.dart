@@ -80,7 +80,35 @@ class _ParentOtherRequirementsPageState
                   fontFamily: 'NotoSansArabic',
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 12),
+              Card(
+                color: Color(0xFFFFF3E8),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(12)),
+                  side: BorderSide(color: Color(0xFFFFCBA4)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Color(0xFFFF600A)),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'بعض المسؤوليات والمتطلبات الإضافية  تؤثر على السعر النهائي للجلسة، وسيتم تحديد ذلك لاحقًا بالتفاهم مع الجليسة.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: 'NotoSansArabic',
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
               Expanded(
                 child: ListView(
                   children:
