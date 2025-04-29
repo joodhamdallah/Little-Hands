@@ -232,7 +232,7 @@ class _BabysitterSessionAddressPageState
     final updatedJobDetails = {
       ...?widget.previousData,
       'session_address': selectedAddress,
-      'city': selectedCity,
+      'city': selectedAddress == 'home' ? parentCity : selectedCity,
       'neighborhood': neighborhoodController.text.trim(),
       'street': streetController.text.trim(),
       'building': buildingController.text.trim(),

@@ -16,31 +16,52 @@ class BabySitterRatePage extends StatefulWidget {
 class _BabySitterRatePageState extends State<BabySitterRatePage> {
   final TextEditingController _minRateController = TextEditingController();
   final TextEditingController _maxRateController = TextEditingController();
+  final TextEditingController _fixedRateController = TextEditingController();
   int numberOfChildren = 1;
   bool? isSmoker;
   bool isLoading = false;
+  String rateOption = 'range'; // ✅ جديد: لتحديد الخيار
 
   @override
   void dispose() {
     _minRateController.dispose();
     _maxRateController.dispose();
+    _fixedRateController.dispose();
     super.dispose();
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: const TextStyle(fontFamily: 'NotoSansArabic')),
-      backgroundColor: Colors.red,
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(fontFamily: 'NotoSansArabic'),
+        ),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   Future<void> _handleSubmit() async {
     final min = int.tryParse(_minRateController.text);
     final max = int.tryParse(_maxRateController.text);
+    final fixed = int.tryParse(_fixedRateController.text);
 
-    if (min == null || max == null || min > max || isSmoker == null) {
-      _showError("يرجى التأكد من صحة البيانات المدخلة.");
+    if (isSmoker == null) {
+      _showError("يرجى الإجابة عن سؤال التدخين.");
       return;
+    }
+
+    if (rateOption == 'range') {
+      if (min == null || max == null || min > max) {
+        _showError("يرجى إدخال نطاق سعر صحيح.");
+        return;
+      }
+    } else if (rateOption == 'fixed') {
+      if (fixed == null) {
+        _showError("يرجى إدخال سعر ثابت صحيح.");
+        return;
+      }
     }
 
     setState(() => isLoading = true);
@@ -56,44 +77,38 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
 
       final Map<String, dynamic> fullData = {
         ...widget.previousData,
-        "city": widget.previousData['selectedCity'],  
-        "training_certification": widget.previousData['certifications'], 
-        "skills_and_services": widget.previousData['skills'], 
-        "rate_per_hour": {"min": min, "max": max},
+        "city": widget.previousData['selectedCity'],
+        "training_certification": widget.previousData['certifications'],
+        "skills_and_services": widget.previousData['skills'],
+        "rate_per_hour":
+            rateOption == 'range'
+                ? {"min": min, "max": max}
+                : {"min": fixed, "max": fixed},
         "number_of_children": numberOfChildren,
         "is_smoker": isSmoker,
       };
-          fullData.remove("selectedCity");
-          fullData.remove("certifications");
-          fullData.remove("skills");
-          fullData.remove("selectedCity");
-
-// print("📦 Full Data Sent: ${jsonEncode(fullData)}"); 
+      fullData.remove("selectedCity");
+      fullData.remove("certifications");
+      fullData.remove("skills");
 
       final response = await http.post(
         Uri.parse(babysitterDetails),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $token"
+          "Authorization": "Bearer $token",
         },
         body: jsonEncode(fullData),
       );
 
-      // print("📥 Status Code: ${response.statusCode}");
-      // print("📥 Response Body: ${response.body}");
-
-
       setState(() => isLoading = false);
 
       if (response.statusCode == 201) {
-        // ignore: use_build_context_synchronously
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("تم حفظ بياناتك بنجاح 🎉"),
             backgroundColor: Colors.green,
           ),
         );
-        // ignore: use_build_context_synchronously
         Navigator.pushNamed(context, '/idverifyapi');
       } else {
         final json = jsonDecode(response.body);
@@ -135,12 +150,20 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                   children: [
                     const Text(
                       'حددي أجركِ لكل ساعة',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, fontFamily: 'NotoSansArabic'),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSansArabic',
+                      ),
                     ),
                     const SizedBox(height: 12),
                     const Text(
                       'أجركِ بالساعة لطفل واحد. يمكنكِ تحديثه لاحقًا في أي وقت.',
-                      style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic', color: Colors.black54),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontFamily: 'NotoSansArabic',
+                        color: Colors.black54,
+                      ),
                     ),
                     const SizedBox(height: 20),
                     Container(
@@ -152,47 +175,116 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: const [
-                          Text('💡 متوسط أجور المربيات المشابهات لكِ:', style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic')),
-                          Text('₪ 24 - 30 / ساعة', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            '💡 متوسط أجور المربيات المشابهات لكِ:',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'NotoSansArabic',
+                            ),
+                          ),
+                          Text(
+                            '₪ 24 - 30 / ساعة',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _minRateController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'الحد الأدنى',
-                              labelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        const Text('إلى', style: TextStyle(fontFamily: 'NotoSansArabic')),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextField(
-                            controller: _maxRateController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              labelText: 'الحد الأعلى',
-                              labelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                        ),
-                      ],
+
+                    // ✅ الإضافة الجديدة هنا:
+                    RadioListTile<String>(
+                      value: 'range',
+                      groupValue: rateOption,
+                      onChanged: (value) {
+                        setState(() => rateOption = value!);
+                      },
+                      title: const Text(
+                        'تحديد نطاق سعر',
+                        style: TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
+                      activeColor: Color(0xFFFF600A),
                     ),
+                    if (rateOption == 'range') ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _minRateController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'الحد الأدنى',
+                                labelStyle: const TextStyle(
+                                  fontFamily: 'NotoSansArabic',
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'إلى',
+                            style: TextStyle(fontFamily: 'NotoSansArabic'),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _maxRateController,
+                              keyboardType: TextInputType.number,
+                              decoration: InputDecoration(
+                                labelText: 'الحد الأعلى',
+                                labelStyle: const TextStyle(
+                                  fontFamily: 'NotoSansArabic',
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+
+                    RadioListTile<String>(
+                      value: 'fixed',
+                      groupValue: rateOption,
+                      onChanged: (value) {
+                        setState(() => rateOption = value!);
+                      },
+                      title: const Text(
+                        'تحديد سعر ثابت',
+                        style: TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
+                      activeColor: Color(0xFFFF600A),
+                    ),
+                    if (rateOption == 'fixed') ...[
+                      TextField(
+                        controller: _fixedRateController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'السعر الثابت (₪)',
+                          labelStyle: const TextStyle(
+                            fontFamily: 'NotoSansArabic',
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+
                     const SizedBox(height: 32),
                     buildDivider(),
                     const SizedBox(height: 32),
                     const Text(
                       'عدد الأطفال الذين يمكنكِ العناية بهم:',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSansArabic'),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSansArabic',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -204,7 +296,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                               setState(() => numberOfChildren--);
                             }
                           },
-                          icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                          icon: const Icon(
+                            Icons.remove_circle_outline,
+                            color: Colors.grey,
+                          ),
                           iconSize: 30,
                         ),
                         Padding(
@@ -213,10 +308,20 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                             children: [
                               Text(
                                 '$numberOfChildren',
-                                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, fontFamily: 'NotoSansArabic'),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'NotoSansArabic',
+                                ),
                               ),
                               const SizedBox(height: 4),
-                              const Text('طفل', style: TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic')),
+                              const Text(
+                                'طفل',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontFamily: 'NotoSansArabic',
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -224,17 +329,25 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                           onPressed: () {
                             setState(() => numberOfChildren++);
                           },
-                          icon: const Icon(Icons.add_circle_outline, color: Color(0xFFFF007A)),
+                          icon: const Icon(
+                            Icons.add_circle_outline,
+                            color: Color(0xFFFF007A),
+                          ),
                           iconSize: 30,
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 32),
                     buildDivider(),
                     const SizedBox(height: 32),
                     const Text(
                       'هل أنتِ مدخنة؟',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSansArabic'),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSansArabic',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -243,7 +356,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                         ChoiceChip(
                           label: const Row(
                             children: [
-                              Text('نعم', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                              Text(
+                                'نعم',
+                                style: TextStyle(fontFamily: 'NotoSansArabic'),
+                              ),
                               SizedBox(width: 6),
                               Text('😞'),
                             ],
@@ -252,13 +368,15 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                           onSelected: (_) => setState(() => isSmoker = true),
                           selectedColor: const Color(0xFFFFE3D3),
                           backgroundColor: Colors.grey.shade100,
-                          labelStyle: const TextStyle(color: Colors.black),
                         ),
                         const SizedBox(width: 16),
                         ChoiceChip(
                           label: const Row(
                             children: [
-                              Text('لا', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                              Text(
+                                'لا',
+                                style: TextStyle(fontFamily: 'NotoSansArabic'),
+                              ),
                               SizedBox(width: 6),
                               Text('😊'),
                             ],
@@ -267,10 +385,10 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                           onSelected: (_) => setState(() => isSmoker = false),
                           selectedColor: const Color(0xFFFFE3D3),
                           backgroundColor: Colors.grey.shade100,
-                          labelStyle: const TextStyle(color: Colors.black),
                         ),
                       ],
                     ),
+
                     const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
@@ -279,14 +397,23 @@ class _BabySitterRatePageState extends State<BabySitterRatePage> {
                         onPressed: isLoading ? null : _handleSubmit,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFF600A),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text(
-                                'التالي',
-                                style: TextStyle(fontSize: 16, color: Colors.white, fontFamily: 'NotoSansArabic'),
-                              ),
+                        child:
+                            isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                : const Text(
+                                  'التالي',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                    fontFamily: 'NotoSansArabic',
+                                  ),
+                                ),
                       ),
                     ),
                     const SizedBox(height: 20),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Parent/Babysitter/babysitter_profile_parent.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,6 +43,8 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
           "rateMax": widget.jobDetails["rate_max"] ?? 999,
           "additionalRequirements":
               widget.jobDetails["additional_requirements"] ?? [],
+          "isNegotiable":
+              widget.jobDetails["is_negotiable"] ?? false, // ✅ أضفناها
         }),
       );
 
@@ -162,6 +165,7 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                           ),
                                         ),
                                         const SizedBox(height: 8),
+
                                         Row(
                                           children: List.generate(
                                             5,
@@ -178,6 +182,25 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                 ],
                               ),
                               const SizedBox(height: 12),
+                              Text(
+                                "الأجر بالساعة:",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey,
+                                  fontFamily: 'NotoSansArabic',
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                sitter['rateText'] ?? 'لم يتم تحديد الأجر بعد',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                  fontFamily: 'NotoSansArabic',
+                                ),
+                              ),
+                              const SizedBox(height: 16),
                               Text(
                                 "نبذة عنها:",
                                 style: TextStyle(
@@ -229,7 +252,43 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    // لاحقًا ننتقل إلى صفحة تفاصيل الجليسة
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        transitionDuration: const Duration(
+                                          milliseconds: 400,
+                                        ),
+                                        pageBuilder:
+                                            (
+                                              context,
+                                              animation,
+                                              secondaryAnimation,
+                                            ) => BabysitterProfilePage(
+                                              babysitterId: sitter['id'],
+                                            ),
+                                        transitionsBuilder: (
+                                          context,
+                                          animation,
+                                          secondaryAnimation,
+                                          child,
+                                        ) {
+                                          final tween = Tween(
+                                            begin: const Offset(1, 0),
+                                            end: Offset.zero,
+                                          );
+                                          final curveTween = CurveTween(
+                                            curve: Curves.easeInOut,
+                                          );
+
+                                          return SlideTransition(
+                                            position: animation
+                                                .drive(curveTween)
+                                                .drive(tween),
+                                            child: child,
+                                          );
+                                        },
+                                      ),
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFFF600A),

@@ -211,6 +211,35 @@ class _BabysitterTypeSelectionPageState
     );
   }
 
+  String? getSessionDuration() {
+    if (selectedStartTime != null && selectedEndTime != null) {
+      final startMinutes =
+          selectedStartTime!.hour * 60 + selectedStartTime!.minute;
+      final endMinutes = selectedEndTime!.hour * 60 + selectedEndTime!.minute;
+
+      int durationMinutes = endMinutes - startMinutes;
+
+      // في حال كان نهاية الوقت أصغر من البداية (عبور منتصف الليل)
+      if (durationMinutes < 0) {
+        durationMinutes += 24 * 60;
+      }
+
+      final hours = durationMinutes ~/ 60;
+      final minutes = durationMinutes % 60;
+
+      if (hours == 0 && minutes == 0) {
+        return null;
+      } else if (hours == 0) {
+        return 'مدة الجلسة: $minutes دقيقة';
+      } else if (minutes == 0) {
+        return 'مدة الجلسة: $hours ساعة';
+      } else {
+        return 'مدة الجلسة: $hours ساعة و $minutes دقيقة';
+      }
+    }
+    return null;
+  }
+
   Widget _buildTypeCard(Map<String, dynamic> type) {
     final isSelected = selectedType == type['value'];
     return GestureDetector(
@@ -535,6 +564,34 @@ class _BabysitterTypeSelectionPageState
           },
         ),
         const SizedBox(height: 16),
+        if (getSessionDuration() != null) ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.only(bottom: 12),
+            decoration: BoxDecoration(
+              color: Color(0xFFFFF3E8),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Color(0xFFFF600A), width: 1.5),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.access_time_filled, color: Color(0xFFFF600A)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    getSessionDuration()!,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NotoSansArabic',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
         _buildFlexibleCheckbox(),
       ],
     );

@@ -14,6 +14,7 @@ class BabysitterRateRangePage extends StatefulWidget {
 class _BabysitterRateRangePageState extends State<BabysitterRateRangePage> {
   double minRate = 20;
   double maxRate = 30;
+  String rateOption = 'range';
 
   @override
   Widget build(BuildContext context) {
@@ -64,54 +65,88 @@ class _BabysitterRateRangePageState extends State<BabysitterRateRangePage> {
                   ),
                 ),
                 const SizedBox(height: 30),
-                Center(
-                  child: Text(
-                    '₪ ${minRate.toInt()} - ${maxRate.toInt()} / ساعة',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'NotoSansArabic',
-                    ),
+                RadioListTile<String>(
+                  value: 'range',
+                  groupValue: rateOption,
+                  activeColor: const Color(0xFFFF600A),
+                  title: const Text(
+                    'أحدد نطاق السعر الذي أفضّله',
+                    style: TextStyle(fontFamily: 'NotoSansArabic'),
                   ),
-                ),
-                const SizedBox(height: 20),
-                FlutterSlider(
-                  values: [minRate, maxRate],
-                  max: 100,
-                  min: 0,
-                  rangeSlider: true,
-                  step: const FlutterSliderStep(step: 1),
-                  tooltip: FlutterSliderTooltip(disabled: true),
-                  onDragging: (handlerIndex, lowerValue, upperValue) {
-                    setState(() {
-                      minRate = lowerValue;
-                      maxRate = upperValue;
-                    });
+                  onChanged: (value) {
+                    setState(() => rateOption = value!);
                   },
-                  handler: FlutterSliderHandler(
-                    decoration: const BoxDecoration(),
-                    child: const CircleAvatar(
-                      radius: 10,
-                      backgroundColor: Color(0xFFFF600A),
+                ),
+                if (rateOption == 'range') ...[
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Text(
+                      '₪ ${minRate.toInt()} - ${maxRate.toInt()} / ساعة',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSansArabic',
+                      ),
                     ),
                   ),
-                  rightHandler: FlutterSliderHandler(
-                    decoration: const BoxDecoration(),
-                    child: const CircleAvatar(
-                      radius: 10,
-                      backgroundColor: Color(0xFFFF600A),
+                  const SizedBox(height: 20),
+                  FlutterSlider(
+                    values: [minRate, maxRate],
+                    max: 100,
+                    min: 0,
+                    rangeSlider: true,
+                    step: const FlutterSliderStep(step: 1),
+                    tooltip: FlutterSliderTooltip(
+                      alwaysShowTooltip: true,
+                      format: (value) => '₪ $value',
+                      textStyle: const TextStyle(
+                        fontFamily: 'NotoSansArabic',
+                        fontSize: 14,
+                      ),
+                    ),
+                    onDragging: (handlerIndex, lowerValue, upperValue) {
+                      setState(() {
+                        minRate = lowerValue;
+                        maxRate = upperValue;
+                      });
+                    },
+                    handler: FlutterSliderHandler(
+                      decoration: const BoxDecoration(),
+                      child: const CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Color(0xFFFF600A),
+                      ),
+                    ),
+                    rightHandler: FlutterSliderHandler(
+                      decoration: const BoxDecoration(),
+                      child: const CircleAvatar(
+                        radius: 10,
+                        backgroundColor: Color(0xFFFF600A),
+                      ),
+                    ),
+                    trackBar: FlutterSliderTrackBar(
+                      activeTrackBarHeight: 4,
+                      inactiveTrackBarHeight: 4,
+                      activeTrackBar: BoxDecoration(
+                        color: const Color(0xFFFF600A),
+                      ),
+                      inactiveTrackBar: BoxDecoration(
+                        color: Colors.grey.shade300,
+                      ),
                     ),
                   ),
-                  trackBar: FlutterSliderTrackBar(
-                    activeTrackBarHeight: 4,
-                    inactiveTrackBarHeight: 4,
-                    activeTrackBar: BoxDecoration(
-                      color: const Color(0xFFFF600A),
-                    ),
-                    inactiveTrackBar: BoxDecoration(
-                      color: Colors.grey.shade300,
-                    ),
+                ],
+                RadioListTile<String>(
+                  value: 'negotiable',
+                  groupValue: rateOption,
+                  activeColor: const Color(0xFFFF600A),
+                  title: const Text(
+                    'أفضل التفاوض مع الجليسة بشأن الأجر لاحقًا',
+                    style: TextStyle(fontFamily: 'NotoSansArabic'),
                   ),
+                  onChanged: (value) {
+                    setState(() => rateOption = value!);
+                  },
                 ),
                 const Spacer(),
                 SizedBox(
@@ -119,11 +154,11 @@ class _BabysitterRateRangePageState extends State<BabysitterRateRangePage> {
                   height: 48,
                   child: ElevatedButton(
                     onPressed: () {
-                      // print("Min: $minRate, Max: $maxRate");
                       final updatedJobDetails = {
                         ...widget.previousData,
-                        'rate_min': minRate.toInt(),
-                        'rate_max': maxRate.toInt(),
+                        if (rateOption == 'range') 'rate_min': minRate.toInt(),
+                        if (rateOption == 'range') 'rate_max': maxRate.toInt(),
+                        'is_negotiable': rateOption == 'negotiable',
                       };
 
                       Navigator.push(
