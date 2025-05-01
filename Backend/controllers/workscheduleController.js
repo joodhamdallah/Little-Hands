@@ -40,13 +40,12 @@ exports.getWorkSchedules = async (req, res) => {
   }
 };
 
-// 📥 حذف جدول عمل معين
 exports.deleteWorkSchedule = async (req, res) => {
   try {
     const caregiverId = req.user._id;
     const { id } = req.params;
 
-    const deleted = await WorkScheduleService.deleteSchedule(caregiverId, id);
+    const deleted = await WorkScheduleService.deleteSchedule(id , caregiverId );
 
     if (!deleted) {
       return res.status(404).json({ status: false, message: "لم يتم العثور على الجدول" });
