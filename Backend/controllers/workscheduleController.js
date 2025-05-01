@@ -1,6 +1,5 @@
 const WorkScheduleService = require('../services/workScheduleService');
 
-// 📥 إنشاء جدول عمل جديد
 exports.createWorkSchedule = async (req, res) => {
   try {
     const caregiverId = req.user._id; // ✅ مأخوذ من التوكن

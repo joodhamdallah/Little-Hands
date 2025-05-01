@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Caregiver/caregiver_profile_model.dart';
+import 'package:flutter_app/Caregiver/work-schedule-page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart'; 
 
 class CaregiverHomePage extends StatefulWidget {
@@ -22,7 +23,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     _pages = [
       _buildHomePageContent(),               
       _buildComingSoonPage('الحجوزات والطلبات'), 
-      _buildComingSoonPage('لوحة التحكم'), 
+      WorkSchedulePage(),
      SingleChildScrollView(
   child: CaregiverProfilePage(profile: widget.profile),
 )
