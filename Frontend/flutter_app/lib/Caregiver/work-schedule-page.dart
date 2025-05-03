@@ -3,7 +3,8 @@ import 'package:flutter_app/pages/config.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:table_calendar/table_calendar.dart';
+import 'package:intl/intl.dart';
 
 class WorkSchedulePage extends StatefulWidget {
   const WorkSchedulePage({super.key});
@@ -13,39 +14,62 @@ class WorkSchedulePage extends StatefulWidget {
 }
 
 class _WorkSchedulePageState extends State<WorkSchedulePage> {
-  String? selectedDay;
+  DateTime? selectedDate;
   TimeOfDay? startTime;
   TimeOfDay? endTime;
+  String selectedType = 'work';
+  List<Map<String, dynamic>> schedules = [];
 
-  final List<String> weekDays = [
-    'السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchSchedules(); // جلب المواعيد المحفوظة عند الفتح
+  }
 
-  List<Map<String, String>> schedules = [];
+  Future<void> fetchSchedules() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+
+    if (token == null) return;
+
+    final response = await http.get(
+      Uri.parse(saveWorkSchedule),
+      headers: {
+        "Authorization": "Bearer $token",
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        schedules = List<Map<String, dynamic>>.from(data['schedules']);
+      });
+    } else {
+      print("❌ فشل في جلب المواعيد");
+    }
+  }
 
   Future<void> pickTime(bool isStart) async {
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
-
     if (picked != null) {
       setState(() {
-        if (isStart) {
-          startTime = picked;
-        } else {
-          endTime = picked;
-        }
+        if (isStart) startTime = picked;
+        else endTime = picked;
       });
     }
   }
 
   void addSchedule() {
-    if (selectedDay != null && startTime != null && endTime != null) {
+    if (selectedDate != null && startTime != null && endTime != null) {
       schedules.add({
-        "day": selectedDay!,
+        "date": DateFormat('yyyy-MM-dd').format(selectedDate!),
+        "day": DateFormat('EEEE', 'ar').format(selectedDate!),
         "start_time": startTime!.format(context),
         "end_time": endTime!.format(context),
+        "type": selectedType,
       });
       setState(() {
         startTime = null;
@@ -54,64 +78,79 @@ class _WorkSchedulePageState extends State<WorkSchedulePage> {
     }
   }
 
-  void deleteSchedule(int index) {
+  void deleteSchedule(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+    final schedule = schedules[index];
+
+    // إذا كان الموعد يحتوي على id نحذفه من الباكند
+    if (schedule.containsKey('_id')) {
+      final id = schedule['_id'];
+      final response = await http.delete(
+        Uri.parse('$deleteWorkSchedule/$id'),
+        headers: {"Authorization": "Bearer $token"},
+      );
+
+      if (response.statusCode != 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('❌ فشل في حذف الموعد من الباكند')),
+        );
+        return;
+      }
+    }
+
     setState(() {
       schedules.removeAt(index);
     });
   }
 
-void saveSchedules() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('accessToken');
+  void saveSchedules() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+    if (token == null) return;
 
-  if (token == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('المستخدم غير مسجل الدخول')),
-    );
-    return;
-  }
+    try {
+      for (var schedule in schedules) {
+        if (schedule.containsKey('_id')) continue; // تم حفظه مسبقًا
 
-  try {
-    for (var schedule in schedules) {
-      final response = await http.post(
-        Uri.parse(saveWorkSchedule),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: json.encode({
-          "day": schedule["day"],
-          "start_time": schedule["start_time"],
-          "end_time": schedule["end_time"],
-        }),
-      );
+        final response = await http.post(
+          Uri.parse(saveWorkSchedule),
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+          body: json.encode({
+            "day": schedule["day"],
+            "date": schedule["date"],
+            "start_time": schedule["start_time"],
+            "end_time": schedule["end_time"],
+            "type": schedule["type"],
+          }),
+        );
 
-if (response.statusCode != 200 && response.statusCode != 201) {
-         print("Response body: ${response.body}");
-        throw Exception("فشل في حفظ موعد: ${schedule["day"]}");
+        if (response.statusCode == 201 || response.statusCode == 200) {
+          final saved = json.decode(response.body)['data'];
+          schedule['_id'] = saved['_id']; // أضف المعرف
+        } else {
+          throw Exception("خطأ في الحفظ");
+        }
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ تم حفظ جميع المواعيد بنجاح')),
+      );
+      setState(() {});
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('❌ خطأ: $e')),
+      );
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('✅ تم حفظ جميع المواعيد بنجاح')),
-    );
-
-    setState(() {
-      schedules.clear(); // افرغ القائمة بعد الحفظ
-    });
-  } catch (e) {
-    print("خطأ أثناء الحفظ: $e");
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('❌ خطأ أثناء الحفظ: $e')),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-textDirection: Directionality.of(context),
+      textDirection: Directionality.of(context),
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
@@ -123,95 +162,90 @@ textDirection: Directionality.of(context),
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              // ✅ اختيار اليوم
-              SizedBox(
-                height: 50,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: weekDays.length,
-                  itemBuilder: (context, index) {
-                    final day = weekDays[index];
-                    final isSelected = selectedDay == day;
-
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedDay = day;
-                        });
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: isSelected ? const Color(0xFFFF600A) : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: Center(
-                          child: Text(
-                            day,
-                            style: TextStyle(
-                              fontFamily: 'NotoSansArabic',
-                              color: isSelected ? Colors.white : Colors.black,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+              TableCalendar(
+                locale: 'ar',
+                firstDay: DateTime.now(),
+                lastDay: DateTime.now().add(const Duration(days: 90)),
+                focusedDay: selectedDate ?? DateTime.now(),
+                selectedDayPredicate: (day) => isSameDay(day, selectedDate),
+                onDaySelected: (day, _) {
+                  setState(() {
+                    selectedDate = day;
+                  });
+                },
+                calendarFormat: CalendarFormat.week,
+                headerStyle: const HeaderStyle(formatButtonVisible: false, titleCentered: true),
+                calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(color: Colors.grey.shade300, shape: BoxShape.circle),
+                  selectedDecoration: const BoxDecoration(color: Color(0xFFFF600A), shape: BoxShape.circle),
                 ),
               ),
-
-              const SizedBox(height: 16),
-
-              // ✅ اختيار الأوقات
+              const SizedBox(height: 12),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  ElevatedButton(
-                    onPressed: () => pickTime(true),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF600A),
-                    ),
-                    child: Text(
-                      startTime == null ? 'وقت البدء' : 'من: ${startTime!.format(context)}',
-                      style: const TextStyle(fontFamily: 'NotoSansArabic'),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => pickTime(false),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF600A),
-                    ),
-                    child: Text(
-                      endTime == null ? 'وقت الانتهاء' : 'إلى: ${endTime!.format(context)}',
-                      style: const TextStyle(fontFamily: 'NotoSansArabic'),
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: addSchedule,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                    ),
-                    child: const Text('إضافة الموعد', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                  const Text("نوع الموعد:"),
+                  const SizedBox(width: 10),
+                  DropdownButton<String>(
+                    value: selectedType,
+                    onChanged: (val) {
+                      if (val != null) setState(() => selectedType = val);
+                    },
+                    items: const [
+                      DropdownMenuItem(value: 'work', child: Text('عمل')),
+                      DropdownMenuItem(value: 'meeting', child: Text('لقاء')),
+                    ],
                   ),
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              // ✅ قائمة المواعيد
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => pickTime(true),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF600A)),
+                    child: Text(startTime == null ? 'وقت البدء' : 'من: ${startTime!.format(context)}'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => pickTime(false),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFF600A)),
+                    child: Text(endTime == null ? 'وقت الانتهاء' : 'إلى: ${endTime!.format(context)}'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: addSchedule,
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                child: const Text('إضافة الموعد'),
+              ),
+              const SizedBox(height: 12),
               Expanded(
                 child: ListView.builder(
                   itemCount: schedules.length,
                   itemBuilder: (context, index) {
-                    final schedule = schedules[index];
-                    return Card(
+                    final s = schedules[index];
+                     String readableDate;
+                      try {
+                       if (s['date'] != null && s['date'] is String) {
+                          try {
+                            final parsedDate = DateTime.parse(s['date']);
+                            readableDate = DateFormat('dd-MM-yyyy').format(parsedDate);
+                          } catch (_) {
+                            readableDate = s['date'].toString(); // إذا كان التاريخ غير قابل للقراءة
+                          }
+                        } else {
+                          readableDate = 'غير معروف';
+                        }
+
+                      } catch (_) {
+                        readableDate = s['date']; // في حال لم يكن نصًا بصيغة صحيحة
+                      }
+                   return Card(
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
                         title: Text(
-                          '${schedule['day']} | ${schedule['start_time']} - ${schedule['end_time']}',
-                          style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                          '${s['day']} - $readableDate | ${s['start_time']} - ${s['end_time']} (${s['type'] == 'meeting' ? 'لقاء' : 'عمل'})',
                         ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
@@ -222,30 +256,19 @@ textDirection: Directionality.of(context),
                   },
                 ),
               ),
-
-              // ✅ زر حفظ
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: saveSchedules,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF600A),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    'حفظ الجدول',
-                    style: TextStyle(
-                      fontFamily: 'NotoSansArabic',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+              ElevatedButton(
+                onPressed: saveSchedules,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF600A),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  minimumSize: const Size.fromHeight(50),
                 ),
-              )
+                child: const Text(
+                  'حفظ الجدول',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+              ),
             ],
           ),
         ),

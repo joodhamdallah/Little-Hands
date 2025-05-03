@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart'; // ✅ إضافة هذه المكتبة
+
 import 'package:flutter_app/Caregiver/Babysitter/address_page.dart';
 import 'package:flutter_app/Caregiver/Babysitter/baby_sitter_page.dart';
 import 'package:flutter_app/Caregiver/Expert/child_consult_page.dart';
 import 'package:flutter_app/Caregiver/Expert/expert_bio_wage_page.dart';
 import 'package:flutter_app/Caregiver/Expert/expert_experience_page.dart';
-//import 'package:flutter_app/Caregiver/Expert/expert_qualification_page.dart';
+// import 'package:flutter_app/Caregiver/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/academic_qualifications_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/ageexperince_page.dart';
 import 'package:flutter_app/Caregiver/Shadow_Teacher/bio_page.dart';
@@ -24,7 +26,10 @@ import 'package:flutter_app/Parent/register_page.dart';
 import 'package:flutter_app/pages/Firstpage.dart';
 import 'package:flutter_app/Caregiver/onboarding_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('ar', null); 
+
   runApp(const MyApp());
 }
 
@@ -71,8 +76,6 @@ class MyApp extends StatelessWidget {
             (context) => const BabysitterSessionAddressPage(),
 
         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
-
-
       },
     );
   }
