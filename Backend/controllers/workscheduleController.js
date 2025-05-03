@@ -1,16 +1,16 @@
 const WorkScheduleService = require('../services/workScheduleService');
 
-// 📥 إنشاء جدول عمل جديد
 exports.createWorkSchedule = async (req, res) => {
   try {
     const caregiverId = req.user._id; // ✅ مأخوذ من التوكن
-    const { day, start_time, end_time } = req.body;
+    const { day, date, start_time, end_time, type } = req.body;
 
-    if (!day || !start_time || !end_time) {
+    if (!day || !date || !start_time || !end_time || !type) {
       return res.status(400).json({ status: false, message: "كل الحقول مطلوبة" });
     }
-
-    const workSchedule = await WorkScheduleService.createSchedule(caregiverId, { day, start_time, end_time });
+    const workSchedule = await WorkScheduleService.createSchedule(caregiverId, {
+      day, date, start_time, end_time, type
+    });
 
     res.status(201).json({
       status: true,
@@ -40,13 +40,12 @@ exports.getWorkSchedules = async (req, res) => {
   }
 };
 
-// 📥 حذف جدول عمل معين
 exports.deleteWorkSchedule = async (req, res) => {
   try {
     const caregiverId = req.user._id;
     const { id } = req.params;
 
-    const deleted = await WorkScheduleService.deleteSchedule(caregiverId, id);
+    const deleted = await WorkScheduleService.deleteSchedule(id , caregiverId );
 
     if (!deleted) {
       return res.status(404).json({ status: false, message: "لم يتم العثور على الجدول" });

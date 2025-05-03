@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/caregiver_main_page.dart';
 import 'package:flutter_app/Caregiver/caregiver_profile_model.dart';
+import 'package:flutter_app/Caregiver/work-schedule-page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart'; 
 
 class CaregiverHomePage extends StatefulWidget {
@@ -20,9 +22,10 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
   void initState() {
     super.initState();
     _pages = [
-      _buildHomePageContent(),               
+    CaregiverHomeMainPage(profile: widget.profile),
+
       _buildComingSoonPage('الحجوزات والطلبات'), 
-      _buildComingSoonPage('لوحة التحكم'), 
+      WorkSchedulePage(),
      SingleChildScrollView(
   child: CaregiverProfilePage(profile: widget.profile),
 )
@@ -84,71 +87,6 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               label: 'حسابي',
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ✅ الصفحة الرئيسية الافتراضية
-  Widget _buildHomePageContent() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text(
-                  "مرحباً بك في لوحة مقدم الرعاية 👋",
-                  style: TextStyle(
-                    fontFamily: 'NotoSansArabic',
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 10,
-                    offset: Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Center(
-                child: Text(
-                  "قريباً: مواعيد العمل والطلبات",
-                  style: TextStyle(
-                    fontFamily: 'NotoSansArabic',
-                    fontSize: 18,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
             ),
           ],
         ),

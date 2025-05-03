@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter_app/Caregiver/caregiver_home_page.dart';
+import 'package:flutter_app/models/caregiver_profile_model.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // ✅
 import 'config.dart'; // loginUsers = "${url}auth/login";
@@ -241,6 +243,19 @@ class _LoginPageState extends State<LoginPage> {
       onSaved: (val) => password = val!,
     );
   }
+Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
+  final response = await http.get(
+    Uri.parse('${url}caregiver/profile'), // تأكد من المسار الصحيح في API
+    headers: {'Authorization': 'Bearer $token'},
+  );
+
+  if (response.statusCode == 200) {
+    final jsonData = json.decode(response.body);
+    return CaregiverProfileModel.fromJson(jsonData['profile']); // حسب هيكل الرد
+  } else {
+    throw Exception('فشل في تحميل بيانات مقدم الرعاية');
+  }
+}
 
   void loginUser() async {
     setState(() => isLoading = true);
@@ -291,14 +306,28 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
 
         // ✅ تحديد الوجهة حسب النوع والحالة
-        if (type == "caregiver") {
-          if (role == null || role.isEmpty) {
-            await prefs.setString('caregiverEmail', email!);
-            Navigator.pushReplacementNamed(context, '/onboarding');
-          } else {
-            Navigator.pushReplacementNamed(context, '/caregiverHome');
-          }
-        } else {
+     if (type == "caregiver") {
+  if (role == null || role.isEmpty) {
+    await prefs.setString('caregiverEmail', email!);
+    Navigator.pushReplacementNamed(context, '/onboarding');
+  } else {
+    try {
+      final token = prefs.getString('accessToken')!;
+      final profile = await fetchCaregiverProfile(token);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CaregiverHomePage(profile: profile),
+        ),
+      );
+    } catch (e) {
+      print('خطأ في تحميل البروفايل: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('فشل في تحميل البروفايل')),
+      );
+    }
+  }
+} else {
           Navigator.pushReplacementNamed(context, '/parentHome');
         }
       } else {

@@ -30,6 +30,7 @@ environment:
 dependencies:
 
   # file_picker: ^5.2.5
+  table_calendar: ^3.0.9
   
   flutter:
     sdk: flutter

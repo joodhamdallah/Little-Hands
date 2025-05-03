@@ -19,6 +19,12 @@ const workScheduleSchema = new mongoose.Schema({
       'الجمعة'
     ],
   },
+
+  date: {
+    type: Date,
+    required: true
+  },
+  
   start_time: {
     type: String, // hh:mm format
     required: true,
@@ -26,7 +32,17 @@ const workScheduleSchema = new mongoose.Schema({
   end_time: {
     type: String, // hh:mm format
     required: true,
+  },
+
+  type: {
+    type: String,
+    enum: ['meeting', 'work'],
+    required: true,
+    default: 'work', 
   }
+  
+
+
 }, {
   timestamps: true
 });
