@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_summary_parent6.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_summary_parent6.dart';
 
 class ParentOtherRequirementsPage extends StatefulWidget {
   final Map<String, dynamic> previousData;

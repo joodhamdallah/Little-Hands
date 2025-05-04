@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Caregiver/caregiver_home_page.dart';
+import 'package:flutter_app/Caregiver/Home/caregiver_home_page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;

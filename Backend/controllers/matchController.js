@@ -4,14 +4,14 @@ exports.matchBabysitters = async (req, res) => {
   try {
     const { city, childrenAges, rateMin, rateMax, additionalRequirements, isNegotiable } = req.body;
 
-    // // ✅ أطبع الداتا اللي واصلة من الفرونت
-    // console.log("🚀 Incoming Matching Request:", {
-    //   city,
-    //   childrenAges,
-    //   rateMin,
-    //   rateMax,
-    //   additionalRequirements
-    // });
+    // ✅ أطبع الداتا اللي واصلة من الفرونت
+    console.log("🚀 Incoming Matching Request:", {
+      city,
+      childrenAges,
+      rateMin,
+      rateMax,
+      additionalRequirements
+    });
 
     const babysitters = await MatchService.matchBabysitters({
       city,

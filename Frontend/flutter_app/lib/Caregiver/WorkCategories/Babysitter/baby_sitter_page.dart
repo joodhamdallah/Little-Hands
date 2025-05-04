@@ -1,37 +1,41 @@
-// main_consultation_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Caregiver/Expert/subcategories_page.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Babysitter/address_page.dart';
 
-class ChildConsultPage extends StatefulWidget {
-  const ChildConsultPage({super.key});
+class BabySitterPage extends StatefulWidget {
+  const BabySitterPage({super.key});
 
   @override
-  State<ChildConsultPage> createState() => _ChildConsultPageState();
+  State<BabySitterPage> createState() => _BabySitterPageState();
 }
 
-class _ChildConsultPageState extends State<ChildConsultPage> {
+class _BabySitterPageState extends State<BabySitterPage> {
   List<int> selectedIndices = [];
 
   final List<Map<String, dynamic>> subcategories = [
     {
-      'title': 'استشارة سلوكية',
-      'subtitle': 'تعديل سلوك الطفل وتوجيهه',
-      'icon': Icons.track_changes,
+      'title': 'رضيع',
+      'subtitle': '(من 0 إلى 11 شهرًا)',
+      'image': 'assets/images/icons/icons8-infant-64.png',
     },
     {
-      'title': 'استشارة اضطرابات النوم',
-      'subtitle': 'مساعدة في نوم أفضل للطفل',
-      'icon': Icons.bedtime,
+      'title': 'طفل صغير',
+      'subtitle': '(من 1 إلى 3 سنوات)',
+      'image': 'assets/images/icons/icons8-toddler-96.png',
     },
     {
-      'title': 'استشارة تغذية الأطفال',
-      'subtitle': 'إرشادات لتغذية الأطفال في مراحل النمو',
-      'icon': Icons.local_dining,
+      'title': 'ما قبل المدرسة',
+      'subtitle': '(من 4 إلى 5 سنوات)',
+      'image': 'assets/images/icons/icons8-child-safe-zone-100.png',
     },
     {
-      'title': 'استشارة العلاقات داخل الأسرة',
-      'subtitle': 'تعزيز التواصل الأسري',
-      'icon': Icons.family_restroom,
+      'title': 'المرحلة الابتدائية',
+      'subtitle': '(من 6 إلى 10 سنوات)',
+      'image': 'assets/images/icons/icons8-students-100.png',
+    },
+    {
+      'title': 'ما قبل المراهقة',
+      'subtitle': '(11 سنة فأكثر)',
+      'image': 'assets/images/icons/student.png',
     },
   ];
 
@@ -42,15 +46,14 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: const Text(
-            'إستشاري رعاية الطفل',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontFamily: 'NotoSansArabic',
-            ),
-          ),
           backgroundColor: const Color(0xFFFF600A),
           elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
         ),
         body: Column(
           children: [
@@ -59,7 +62,7 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: Text(
-                  'ما نوع الاستشارات التي يمكنك تقديمها؟',
+                  'ما هو العمر الذي لديكِ خبرة في التعامل معه؟',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
@@ -77,7 +80,7 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    childAspectRatio: 1,
+                    childAspectRatio: 1.1,
                   ),
                   itemBuilder: (context, index) {
                     final item = subcategories[index];
@@ -85,7 +88,7 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                     return GestureDetector(
                       onTap: () {
                         setState(() {
-                          if (isSelected) {
+                          if (selectedIndices.contains(index)) {
                             selectedIndices.remove(index);
                           } else {
                             selectedIndices.add(index);
@@ -94,16 +97,10 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? const Color(0xFFFFE3D3)
-                                  : Colors.white,
+                          color: isSelected ? const Color(0xFFFFE3D3) : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color:
-                                isSelected
-                                    ? const Color(0xFFFF600A)
-                                    : Colors.black12,
+                            color: isSelected ? const Color(0xFFFF600A) : Colors.black12,
                             width: 2,
                           ),
                           boxShadow: const [
@@ -118,11 +115,20 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              item['icon'],
-                              size: 40,
-                              color: const Color(0xFFFF600A),
-                            ),
+                            item.containsKey('image')
+                                ? Image.asset(
+                                    item['image'],
+                                    width: 40,
+                                    height: 40,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return const Icon(Icons.error, color: Colors.red);
+                                    },
+                                  )
+                                : Icon(
+                                    item['icon'],
+                                    size: 40,
+                                    color: const Color(0xFFFF600A),
+                                  ),
                             const SizedBox(height: 12),
                             Text(
                               item['title'],
@@ -134,18 +140,13 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Flexible(
-                              child: Text(
-                                item['subtitle'],
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.black54,
-                                  fontFamily: 'NotoSansArabic',
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
+                            Text(
+                              item['subtitle'],
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black54,
+                                fontFamily: 'NotoSansArabic',
                               ),
                             ),
                           ],
@@ -156,37 +157,30 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
             Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 40.0,
-              ),
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 40.0),
               child: SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed:
-                      selectedIndices.isNotEmpty
-                          ? () {
-                            List<String> selectedTitles =
-                                selectedIndices
-                                    .map(
-                                      (i) =>
-                                          subcategories[i]['title'].toString(),
-                                    )
-                                    .toList();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => SubcategoryScreen(
-                                      categoryList: selectedTitles,
-                                    ),
-                              ),
-                            );
-                          }
-                          : null,
+                  onPressed: selectedIndices.isNotEmpty
+                      ? () {
+                          final selectedAges = selectedIndices
+                              .map((index) => subcategories[index]['title'] as String)
+                              .toList();
+
+                       Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BabySitterCityPage(),
+                      settings: RouteSettings(arguments: {
+                        'age_experience': selectedAges,
+                      }),
+                    ),
+                  );
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     shape: RoundedRectangleBorder(
@@ -196,9 +190,10 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                   child: const Text(
                     'التالي',
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
                       fontFamily: 'NotoSansArabic',
+                      fontSize: 17,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ),

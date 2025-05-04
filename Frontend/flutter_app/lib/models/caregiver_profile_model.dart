@@ -37,7 +37,7 @@ class CaregiverProfileModel {
       ),
       bio: json['bio'] ?? '',
       rateText:
-          json['rate_text'] ?? 'لم يتم تحديد الأجر', // ✅ وهنا نقرأه من الـ JSON
+          json['rateText'] ?? 'لم يتم تحديد الأجر', // ✅ وهنا نقرأه من الـ JSON
     );
   }
 }

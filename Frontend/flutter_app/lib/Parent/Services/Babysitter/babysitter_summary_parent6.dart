@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_address_parent1.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_animation.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_childdage_parent3.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_rate_parent4.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_requirments_parent5.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_type_parent2.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_address_parent1.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_animation.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_childdage_parent3.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_rate_parent4.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_requirments_parent5.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_type_parent2.dart';
 
 class BabysitterSummaryPage extends StatelessWidget {
   final Map<String, dynamic> jobDetails;

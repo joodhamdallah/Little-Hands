@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/caregiver_profile_model.dart';
+import '../../models/caregiver_profile_model.dart';
 
 class CaregiverProfilePage extends StatelessWidget {
   final CaregiverProfileModel profile;

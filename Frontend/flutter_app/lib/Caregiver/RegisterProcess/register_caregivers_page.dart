@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter/gestures.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../pages/config.dart';
+import '../../pages/config.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 

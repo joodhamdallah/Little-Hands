@@ -9,3 +9,4 @@ final updateRole = "${url}caregiver/updateRole";
 final fetchParent = "${url}me";
 final saveWorkSchedule = "${url}schedule/";
 final deleteWorkSchedule = "${url}schedule"; 
+final saveBooking = "${url}bookings"; 

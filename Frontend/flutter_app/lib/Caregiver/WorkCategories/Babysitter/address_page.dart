@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Caregiver/Babysitter/skilles_page.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Babysitter/skilles_page.dart';
 
 class BabySitterCityPage extends StatefulWidget {
   const BabySitterCityPage({super.key});

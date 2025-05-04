@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Caregiver/caregiver_main_page.dart';
-import 'package:flutter_app/Caregiver/caregiver_profile_model.dart';
-import 'package:flutter_app/Caregiver/work-schedule-page.dart';
-import 'package:flutter_app/models/caregiver_profile_model.dart'; 
+import 'package:flutter_app/Caregiver/Home/caregiver_main_page.dart';
+import 'package:flutter_app/Caregiver/Home/caregiver_profile_model.dart';
+import 'package:flutter_app/Caregiver/Home/work-schedule-page.dart';
+import 'package:flutter_app/models/caregiver_profile_model.dart';
 
 class CaregiverHomePage extends StatefulWidget {
   final CaregiverProfileModel profile;
@@ -22,13 +22,13 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
   void initState() {
     super.initState();
     _pages = [
-    CaregiverHomeMainPage(profile: widget.profile),
+      CaregiverHomeMainPage(profile: widget.profile),
 
-      _buildComingSoonPage('الحجوزات والطلبات'), 
+      _buildComingSoonPage('الحجوزات والطلبات'),
       WorkSchedulePage(),
-     SingleChildScrollView(
-  child: CaregiverProfilePage(profile: widget.profile),
-)
+      SingleChildScrollView(
+        child: CaregiverProfilePage(profile: widget.profile),
+      ),
     ];
   }
 
@@ -40,24 +40,18 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
         backgroundColor: const Color(0xFFF7F7F7),
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
-        
+
           centerTitle: true,
           actions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.notifications),
-              onPressed: () {},
-            ),
+            IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+            IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
           ],
           leading: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/images/littlehandslogo.png'), 
+            child: Image.asset('assets/images/logo_without_bg.png'),
           ),
         ),
-        body: _pages[_currentIndex], 
+        body: _pages[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (index) {
@@ -72,10 +66,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
           selectedLabelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
           unselectedLabelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
           items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'الرئيسية',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today),
               label: 'الحجوزات',
@@ -84,10 +75,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
               icon: Icon(Icons.dashboard_customize),
               label: 'لوحة التحكم',
             ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: 'حسابي',
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'حسابي'),
           ],
         ),
       ),

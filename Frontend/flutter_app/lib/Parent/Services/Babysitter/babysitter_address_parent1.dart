@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_type_parent2.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_summary_parent6.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_type_parent2.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_summary_parent6.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_app/pages/config.dart'; // loginUsers = "${url}auth/login";
