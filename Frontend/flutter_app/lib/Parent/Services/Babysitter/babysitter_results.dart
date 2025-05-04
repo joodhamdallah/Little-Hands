@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Parent/Babysitter/babysitter_profile_parent.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/babysitter_profile_parent.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -137,7 +137,7 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                         sitter['image'] != null
                                             ? NetworkImage(sitter['image'])
                                             : const AssetImage(
-                                                  'assets/images/default_avatar.png',
+                                                  'assets/images/homepage/maha_test_pic.webp',
                                                 )
                                                 as ImageProvider,
                                   ),
@@ -265,6 +265,9 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                               secondaryAnimation,
                                             ) => BabysitterProfilePage(
                                               babysitterId: sitter['id'],
+                                              jobDetails:
+                                                  widget
+                                                      .jobDetails, // 👈 pass this!
                                             ),
                                         transitionsBuilder: (
                                           context,

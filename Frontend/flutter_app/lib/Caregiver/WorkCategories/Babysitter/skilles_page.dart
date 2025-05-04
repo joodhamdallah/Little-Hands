@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/Caregiver/Babysitter/bio_page.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Babysitter/bio_page.dart';
 
 class BabySitterSkillsPage extends StatefulWidget {
   final Map<String, dynamic> previousData;
