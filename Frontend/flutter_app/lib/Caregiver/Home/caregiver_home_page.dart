@@ -3,6 +3,8 @@ import 'package:flutter_app/Caregiver/Home/caregiver_main_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_profile_model.dart';
 import 'package:flutter_app/Caregiver/Home/work-schedule-page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
+import 'package:flutter_app/pages/custom_app_bar.dart';
+import 'package:flutter_app/pages/custom_bottom_nav.dart';
 
 class CaregiverHomePage extends StatefulWidget {
   final CaregiverProfileModel profile;
@@ -38,33 +40,29 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F7F7),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFFF600A),
-
-          centerTitle: true,
-          actions: [
-            IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-            IconButton(icon: const Icon(Icons.notifications), onPressed: () {}),
+        appBar: CustomAppBar(
+          title: 'Little Hands',
+          customActions: [
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                Navigator.pushNamed(context, '/caregiverSearch');
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                Navigator.pushNamed(context, '/caregiverNotifications');
+              },
+            ),
           ],
-          leading: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Image.asset('assets/images/logo_without_bg.png'),
-          ),
         ),
         body: _pages[_currentIndex],
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: CustomBottomNavBar(
           currentIndex: _currentIndex,
           onTap: (index) {
-            setState(() {
-              _currentIndex = index;
-            });
+            setState(() => _currentIndex = index);
           },
-          selectedItemColor: const Color(0xFFFF600A),
-          unselectedItemColor: Colors.grey,
-          backgroundColor: Colors.white,
-          type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
-          unselectedLabelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
             BottomNavigationBarItem(

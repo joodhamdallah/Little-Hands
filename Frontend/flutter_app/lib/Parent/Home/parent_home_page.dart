@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../../pages/custom_app_bar.dart';
+import '../../pages/custom_bottom_nav.dart';
 
 class ParentHomePage extends StatefulWidget {
   const ParentHomePage({super.key});
@@ -60,29 +62,20 @@ class _ParentHomePageState extends State<ParentHomePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFFFF600A),
-          elevation: 0.5,
-          titleSpacing: 0,
-          leading: Padding(
-            padding: const EdgeInsets.only(right: 2),
-            child: Image.asset('assets/images/logo_without_bg.png', height: 10),
-          ),
-          actions: [
+        appBar: CustomAppBar(
+          title: 'Little Hands',
+          customActions: [
             IconButton(
-              icon: const Icon(Icons.search, color: Colors.black87),
-              onPressed: () {},
+              icon: const Icon(Icons.search),
+              onPressed: () {
+                Navigator.pushNamed(context, '/parentSearch');
+              },
             ),
             IconButton(
-              icon: const Icon(Icons.notifications_none, color: Colors.black87),
-              onPressed: () {},
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: CircleAvatar(
-                radius: 16,
-                backgroundColor: Colors.grey[300],
-              ),
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                Navigator.pushNamed(context, '/parentNotifications');
+              },
             ),
           ],
         ),
@@ -181,10 +174,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
             ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFFFF600A),
-          unselectedItemColor: Colors.grey,
+        bottomNavigationBar: CustomBottomNavBar(
           currentIndex: _selectedIndex,
           onTap: (index) => setState(() => _selectedIndex = index),
           items: const [
@@ -577,8 +567,6 @@ class _ParentHomePageState extends State<ParentHomePage> {
       ),
     );
   }
-
-
 
   Widget buildPlatformIntroSection() {
     return Column(
