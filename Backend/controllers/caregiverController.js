@@ -137,4 +137,29 @@ exports.checkVerificationStatus = async (req, res) => {
     }
   };
   
-
+  exports.saveFcmToken = async (req, res) => {
+    try {
+      const caregiverId = req.user._id;
+      const { fcm_token } = req.body;
+  
+      if (!fcm_token) {
+        return res.status(400).json({ status: false, message: "Token is required" });
+      }
+  
+      const caregiver = await CareGiver.findByIdAndUpdate(
+        caregiverId,
+        { fcm_token },
+        { new: true }
+      );
+  
+      if (!caregiver) {
+        return res.status(404).json({ status: false, message: "Caregiver not found" });
+      }
+  
+      res.status(200).json({ status: true, message: "FCM token saved" });
+    } catch (error) {
+      console.error("❌ Error saving FCM token:", error.message);
+      res.status(500).json({ status: false, message: "Server error" });
+    }
+  };
+  

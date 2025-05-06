@@ -10,3 +10,4 @@ final fetchParent = "${url}me";
 final saveWorkSchedule = "${url}schedule/";
 final deleteWorkSchedule = "${url}schedule"; 
 final saveBooking = "${url}bookings"; 
+final saveFcmToken = "${url}caregiver/save-fcm-token"; 
