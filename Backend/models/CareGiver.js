@@ -57,6 +57,7 @@ const careGiverSchema = new mongoose.Schema({
     default: null,
   },
   
+  fcm_token: { type: String, default: null },
 
   isVerified: { type: Boolean, default: false },
   isResettingPassword: { type: Boolean, default: false },

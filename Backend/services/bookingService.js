@@ -1,5 +1,8 @@
 const Booking = require('../models/Booking');
+const BabySitter = require('../models/BabySitter');
+const CareGiver = require('../models/CareGiver');
 const NotificationService = require('../services/notificationService');
+const sendNotification = require('../firebase/sendNotification'); // ✅ استدعاء الملف
 
 class BookingService {
   static async createBooking(bookingData) {
@@ -73,6 +76,25 @@ class BookingService {
       type: 'booking_request',
       read: false,
     });
+    const babysitter = await BabySitter.findById(caregiver_id); // ❗ ID في الحجز هو ID الـ BabySitter
+
+if (babysitter) {
+  const caregiver = await CareGiver.findById(babysitter.user_id); // ❗ استخدم user_id للبحث عن caregiver
+
+  if (caregiver && caregiver.fcm_token) {
+    console.log("📡 Sending to token:", caregiver.fcm_token);
+
+    await sendNotification(
+      caregiver.fcm_token,
+      "🔔 طلب حجز جديد",
+      `لديك طلب جديد لخدمة ${service_type}`,
+      {
+        booking_id: newBooking._id.toString(),
+        service_type,
+      }
+    );
+  }
+}
 
     return newBooking;
   }

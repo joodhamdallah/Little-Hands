@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_home_page.dart';
@@ -243,19 +244,22 @@ class _LoginPageState extends State<LoginPage> {
       onSaved: (val) => password = val!,
     );
   }
-Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
-  final response = await http.get(
-    Uri.parse('${url}caregiver/profile'), // تأكد من المسار الصحيح في API
-    headers: {'Authorization': 'Bearer $token'},
-  );
 
-  if (response.statusCode == 200) {
-    final jsonData = json.decode(response.body);
-    return CaregiverProfileModel.fromJson(jsonData['profile']); // حسب هيكل الرد
-  } else {
-    throw Exception('فشل في تحميل بيانات مقدم الرعاية');
+  Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
+    final response = await http.get(
+      Uri.parse('${url}caregiver/profile'), // تأكد من المسار الصحيح في API
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return CaregiverProfileModel.fromJson(
+        jsonData['profile'],
+      ); // حسب هيكل الرد
+    } else {
+      throw Exception('فشل في تحميل بيانات مقدم الرعاية');
+    }
   }
-}
 
   void loginUser() async {
     setState(() => isLoading = true);
@@ -306,28 +310,30 @@ Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
         if (!mounted) return;
 
         // ✅ تحديد الوجهة حسب النوع والحالة
-     if (type == "caregiver") {
-  if (role == null || role.isEmpty) {
-    await prefs.setString('caregiverEmail', email!);
-    Navigator.pushReplacementNamed(context, '/onboarding');
-  } else {
-    try {
-      final token = prefs.getString('accessToken')!;
-      final profile = await fetchCaregiverProfile(token);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => CaregiverHomePage(profile: profile),
-        ),
-      );
-    } catch (e) {
-      print('خطأ في تحميل البروفايل: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('فشل في تحميل البروفايل')),
-      );
-    }
-  }
-} else {
+        if (type == "caregiver") {
+          await saveFcmTokenToBackend();
+
+          if (role == null || role.isEmpty) {
+            await prefs.setString('caregiverEmail', email!);
+            Navigator.pushReplacementNamed(context, '/onboarding');
+          } else {
+            try {
+              final token = prefs.getString('accessToken')!;
+              final profile = await fetchCaregiverProfile(token);
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CaregiverHomePage(profile: profile),
+                ),
+              );
+            } catch (e) {
+              print('خطأ في تحميل البروفايل: $e');
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('فشل في تحميل البروفايل')));
+            }
+          }
+        } else {
           Navigator.pushReplacementNamed(context, '/parentHome');
         }
       } else {
@@ -353,6 +359,23 @@ Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
           content: Text("حدث خطأ أثناء تسجيل الدخول"),
           backgroundColor: Colors.red,
         ),
+      );
+    }
+  }
+
+  Future<void> saveFcmTokenToBackend() async {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('accessToken');
+
+    if (fcmToken != null && accessToken != null) {
+      await http.post(
+        Uri.parse(saveFcmToken), // عدل حسب نوع المستخدم إذا كان parent
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode({'fcm_token': fcmToken}),
       );
     }
   }

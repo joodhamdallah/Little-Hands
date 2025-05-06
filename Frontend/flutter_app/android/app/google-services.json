@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "414790343920",
+    "project_id": "little-hands-2025",
+    "storage_bucket": "little-hands-2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414790343920:android:013b84e6375b234e27b635",
+        "android_client_info": {
+          "package_name": "com.littlehands.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAd52tXYb3O5htsilmbY2W3aKnMCmU96BY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
