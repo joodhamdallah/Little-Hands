@@ -56,8 +56,11 @@ class _WorkSchedulePageState extends State<WorkSchedulePage> {
     );
     if (picked != null) {
       setState(() {
-        if (isStart) startTime = picked;
-        else endTime = picked;
+        if (isStart) {
+          startTime = picked;
+        } else {
+          endTime = picked;
+        }
       });
     }
   }

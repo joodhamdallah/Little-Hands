@@ -88,7 +88,7 @@ class _BabysitterTypeSelectionPageState
               const SizedBox(height: 20),
 
               if (!showExtraFields)
-                ...sessionTypes.map((type) => _buildTypeCard(type)).toList(),
+                ...sessionTypes.map((type) => _buildTypeCard(type)),
 
               if (showExtraFields && selectedType != null) ...[
                 const SizedBox(height: 10),
