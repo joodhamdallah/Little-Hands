@@ -1,9 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/pages/SubscriptionPlanPage.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/available_appointments_page.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/caregiver_profile_model.dart';
 
 class BabysitterProfilePage extends StatefulWidget {
@@ -178,102 +177,16 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
                                 children: [
                                   Expanded(
                                     child: ElevatedButton(
-                                      onPressed: () async {
-                                        final prefs =
-                                            await SharedPreferences.getInstance();
-                                        final token = prefs.getString(
-                                          'accessToken',
+                                    onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AvailableAppointmentsPage(
+                                              babysitterId: widget.babysitterId,
+                                              jobDetails: widget.jobDetails,
+                                            ),
+                                          ),
                                         );
-
-                                        if (token == null) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                'الرجاء تسجيل الدخول أولاً',
-                                              ),
-                                            ),
-                                          );
-                                          return;
-                                        }
-
-                                        // ✅ Safely prepare and convert jobData
-                                        final jobData = {
-                                          ...widget.jobDetails,
-                                          'caregiver_id': widget.babysitterId,
-                                          'service_type': 'babysitter',
-                                        };
-
-                                        // ✅ Convert DateTime values to ISO strings
-                                        final sanitizedData = jobData.map((
-                                          key,
-                                          value,
-                                        ) {
-                                          if (value is DateTime) {
-                                            return MapEntry(
-                                              key,
-                                              value.toIso8601String(),
-                                            );
-                                          }
-                                          return MapEntry(key, value);
-                                        });
-
-                                        try {
-                                          final response = await http.post(
-                                            Uri.parse(saveBooking),
-                                            headers: {
-                                              'Content-Type':
-                                                  'application/json',
-                                              'Authorization': 'Bearer $token',
-                                            },
-                                            body: jsonEncode(sanitizedData),
-                                          );
-
-                                          if (response.statusCode == 201) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  '✅ تم إرسال طلب الحجز إلى الجليسة',
-                                                ),
-                                              ),
-                                            );
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder:
-                                                    (context) =>
-                                                        const SubscriptionPlanPage(),
-                                              ),
-                                            );
-                                          } else {
-                                            print(
-                                              "❌ Booking failed: ${response.body}",
-                                            );
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  '❌ فشل في إرسال طلب الحجز',
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          print("❌ Exception: $e");
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: Text(
-                                                '⚠️ حدث خطأ أثناء الحجز',
-                                              ),
-                                            ),
-                                          );
-                                        }
                                       },
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(

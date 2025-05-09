@@ -12,4 +12,7 @@ router.get('/', authMiddleware, WorkScheduleController.getWorkSchedules);
 //  Delete a schedule by ID
 router.delete('/:id', authMiddleware, WorkScheduleController.deleteWorkSchedule);
 
+// ✅ Get schedules by caregiver ID (public or parent access)
+router.get('/caregiver/:caregiverId', WorkScheduleController.getSchedulesByCaregiverId);
+
 module.exports = router;

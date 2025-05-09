@@ -1,4 +1,5 @@
 const WorkScheduleService = require('../services/workScheduleService');
+const WorkSchedule = require('../models/WorkSchedule');
 
 exports.createWorkSchedule = async (req, res) => {
   try {
@@ -37,6 +38,25 @@ exports.getWorkSchedules = async (req, res) => {
   } catch (error) {
     console.error("❌ Error fetching schedules:", error.message);
     res.status(500).json({ status: false, message: "حدث خطأ داخلي" });
+  }
+};
+
+
+exports.getSchedulesByCaregiverId = async (req, res) => {
+  try {
+    const caregiverId = req.params.caregiverId;
+    const schedules = await WorkSchedule.find({ caregiver_id: caregiverId });
+
+    res.status(200).json({
+      status: true,
+      data: schedules,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching caregiver schedules:", error.message);
+    res.status(500).json({
+      status: false,
+      message: "حدث خطأ أثناء جلب المواعيد",
+    });
   }
 };
 
