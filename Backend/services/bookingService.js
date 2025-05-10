@@ -1,8 +1,9 @@
 const Booking = require('../models/Booking');
 const BabySitter = require('../models/BabySitter');
 const CareGiver = require('../models/CareGiver');
+const WorkSchedule = require('../models/WorkSchedule'); 
 const NotificationService = require('../services/notificationService');
-const sendNotification = require('../firebase/sendNotification'); // ✅ استدعاء الملف
+const sendNotification = require('../firebase/sendNotification'); 
 
 class BookingService {
   static async createBooking(bookingData) {
@@ -66,7 +67,12 @@ class BookingService {
       session_duration_minutes,
     });
 
-    // ⏰ Send notification to the caregiver
+
+    if (bookingData.schedule_id) {
+  await WorkSchedule.findByIdAndDelete(bookingData.schedule_id);
+  console.log(`🗑️ Deleted schedule: ${bookingData.schedule_id}`);
+}
+
     await NotificationService.createNotification({
       user_id: caregiver_id,
       user_type: 'CareGiver', // ✅ Add this line

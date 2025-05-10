@@ -251,48 +251,41 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      PageRouteBuilder(
-                                        transitionDuration: const Duration(
-                                          milliseconds: 400,
-                                        ),
-                                        pageBuilder:
-                                            (
-                                              context,
-                                              animation,
-                                              secondaryAnimation,
-                                            ) => BabysitterProfilePage(
-                                              babysitterId: sitter['id'],
-                                              jobDetails:
-                                                  widget
-                                                      .jobDetails, // 👈 pass this!
-                                            ),
-                                        transitionsBuilder: (
-                                          context,
-                                          animation,
-                                          secondaryAnimation,
-                                          child,
-                                        ) {
-                                          final tween = Tween(
-                                            begin: const Offset(1, 0),
-                                            end: Offset.zero,
-                                          );
-                                          final curveTween = CurveTween(
-                                            curve: Curves.easeInOut,
-                                          );
+                             onPressed: () {
+                                  final userId = sitter['user_id'];
 
-                                          return SlideTransition(
-                                            position: animation
-                                                .drive(curveTween)
-                                                .drive(tween),
-                                            child: child,
-                                          );
-                                        },
-                                      ),
+                                  // ✅ تحقق من وجود user_id
+                                  if (userId == null) {
+                                    print("🚨 sitter['user_id'] is null! sitter = $sitter");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text("حدث خطأ: لا يمكن تحديد الجليسة")),
                                     );
-                                  },
+                                    return;
+                                  }
+
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      transitionDuration: const Duration(milliseconds: 400),
+                                      pageBuilder: (context, animation, secondaryAnimation) =>
+                                        BabysitterProfilePage(
+                                        babysitterId: sitter['user_id'] is String
+                                        ? sitter['user_id']
+                                        : sitter['user_id']['\$oid'],
+                                          jobDetails: widget.jobDetails,
+                                        ),
+                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                        final tween = Tween(begin: const Offset(1, 0), end: Offset.zero);
+                                        final curveTween = CurveTween(curve: Curves.easeInOut);
+                                        return SlideTransition(
+                                          position: animation.drive(curveTween).drive(tween),
+                                          child: child,
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: const Color(0xFFFF600A),
                                     shape: RoundedRectangleBorder(

@@ -87,6 +87,7 @@ class MatchService {
       
         return {
           id: sitter._id,
+           user_id: sitter.user_id._id, 
           fullName: formattedName,
           image: sitter.user_id.image || null,
           city: sitter.city,
@@ -106,46 +107,44 @@ class MatchService {
       throw error;
     }
   }
-  static async getBabysitterProfileById(babysitterId) {
-    try {
-      const babysitter = await BabySitter.findById(babysitterId).populate({
-        path: 'user_id',
-        select: 'first_name last_name image'
-      });
-  
-      if (!babysitter || !babysitter.user_id) {
-        return null;
-      }
-  
-      // ✅ تجهيز السعر النصي
-      let priceText = "";
-      if (babysitter.rate_per_hour) {
-        const min = babysitter.rate_per_hour.min;
-        const max = babysitter.rate_per_hour.max;
-        if (min === max) {
-          priceText = `₪ ${min} / ساعة`;
-        } else {
-          priceText = `₪ ${min} - ₪ ${max} / ساعة`;
-        }
-      }
-  
-      return {
-        id: babysitter._id,
-        first_name: babysitter.user_id.first_name,
-        last_name: babysitter.user_id.last_name,
-        image: babysitter.user_id.image,
-        city: babysitter.city,
-        years_experience: babysitter.years_experience,
-        skills_and_services: babysitter.skills_and_services || [],
-        training_certification: babysitter.training_certification || [],
-        bio: babysitter.bio || '',
-        is_smoker: babysitter.is_smoker || false,
-        rateText: priceText, // ✅ أضفناه هنا
-      };
-    } catch (error) {
-      throw error;
+static async getBabysitterProfileById(babysitterId) {
+  try {
+    const babysitter = await BabySitter.findOne({ user_id: babysitterId }).populate({
+      path: 'user_id',
+      select: 'first_name last_name image'
+    });
+
+    if (!babysitter || !babysitter.user_id) {
+      return null;
     }
+
+    let priceText = "";
+    if (babysitter.rate_per_hour) {
+      const min = babysitter.rate_per_hour.min;
+      const max = babysitter.rate_per_hour.max;
+      priceText = (min === max)
+        ? `₪ ${min} / ساعة`
+        : `₪ ${min} - ₪ ${max} / ساعة`;
+    }
+
+    return {
+      id: babysitter._id,
+      first_name: babysitter.user_id.first_name,
+      last_name: babysitter.user_id.last_name,
+      image: babysitter.user_id.image,
+      city: babysitter.city,
+      years_experience: babysitter.years_experience,
+      skills_and_services: babysitter.skills_and_services || [],
+      training_certification: babysitter.training_certification || [],
+      bio: babysitter.bio || '',
+      is_smoker: babysitter.is_smoker || false,
+      rateText: priceText,
+    };
+  } catch (error) {
+    throw error;
   }
+}
+
   
 }
 
