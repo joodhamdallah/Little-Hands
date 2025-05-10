@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Home/caregiver_bookings_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_main_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_profile_model.dart';
 import 'package:flutter_app/Caregiver/Home/work-schedule-page.dart';
@@ -26,7 +27,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     _pages = [
       CaregiverHomeMainPage(profile: widget.profile),
 
-      _buildComingSoonPage('الحجوزات والطلبات'),
+    CaregiverBookingsPage(), 
       WorkSchedulePage(),
       SingleChildScrollView(
         child: CaregiverProfilePage(profile: widget.profile),
@@ -80,18 +81,4 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     );
   }
 
-  // ✅ صفحة قريباً (حجوزات / لوحة تحكم)
-  Widget _buildComingSoonPage(String title) {
-    return Center(
-      child: Text(
-        'قريباً: $title',
-        style: const TextStyle(
-          fontFamily: 'NotoSansArabic',
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
 }

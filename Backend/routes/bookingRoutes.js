@@ -5,5 +5,9 @@ const  authMiddleware  = require('../middleware/authMiddleware');
 
 // 🧑‍👧‍👦 إنشاء حجز
 router.post('/bookings', authMiddleware, bookingController.createBooking);
+// routes/bookingRoutes.js
+router.get('/caregiver/bookings', authMiddleware, bookingController.getBookingsForCaregiver);
+router.patch('/bookings/:id/confirm', authMiddleware, bookingController.confirmBooking);
+
 
 module.exports = router;

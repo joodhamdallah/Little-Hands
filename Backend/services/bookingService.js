@@ -1,9 +1,9 @@
 const Booking = require('../models/Booking');
 const BabySitter = require('../models/BabySitter');
 const CareGiver = require('../models/CareGiver');
-const WorkSchedule = require('../models/WorkSchedule'); 
-const NotificationService = require('../services/notificationService');
-const sendNotification = require('../firebase/sendNotification'); 
+const WorkSchedule = require('../models/WorkSchedule');
+const NotificationService = require('./notificationService');
+const sendNotification = require('../firebase/sendNotification');
 
 class BookingService {
   static async createBooking(bookingData) {
@@ -17,10 +17,6 @@ class BookingService {
       street,
       building,
       session_type,
-      session_start_date,
-      session_end_date,
-      session_start_time,
-      session_end_time,
       session_days,
       children_ages,
       has_medical_condition,
@@ -35,8 +31,29 @@ class BookingService {
       special_needs_support,
       preferred_contact_method,
       session_duration_minutes,
+      schedule_id, // ⬅️ نتأكد أن هذا موجود
     } = bookingData;
 
+    let session_start_date = bookingData.session_start_date;
+    let session_start_time = bookingData.session_start_time;
+    let session_end_time = bookingData.session_end_time;
+
+    // ✅ إذا تم اختيار موعد من WorkSchedule، نقرأ تفاصيله
+    if (schedule_id) {
+      const selectedSlot = await WorkSchedule.findById(schedule_id);
+      if (selectedSlot) {
+        session_start_date = selectedSlot.date;
+        session_start_time = selectedSlot.start_time;
+        session_end_time = selectedSlot.end_time;
+
+        await WorkSchedule.findByIdAndDelete(schedule_id);
+        console.log(`🗑️ Deleted schedule: ${schedule_id}`);
+      } else {
+        console.warn(`⚠️ Schedule not found for ID: ${schedule_id}`);
+      }
+    }
+
+    // ✅ إنشاء الحجز
     const newBooking = await Booking.create({
       service_type,
       parent_id,
@@ -48,7 +65,7 @@ class BookingService {
       building,
       session_type,
       session_start_date,
-      session_end_date,
+      session_end_date: bookingData.session_end_date || null,
       session_start_time,
       session_end_time,
       session_days,
@@ -65,42 +82,37 @@ class BookingService {
       special_needs_support,
       preferred_contact_method,
       session_duration_minutes,
+      status: "pending", // ✅ بشكل افتراضي
     });
 
-
-    if (bookingData.schedule_id) {
-  await WorkSchedule.findByIdAndDelete(bookingData.schedule_id);
-  console.log(`🗑️ Deleted schedule: ${bookingData.schedule_id}`);
-}
-
+    // ✅ إنشاء إشعار للجليسة
     await NotificationService.createNotification({
       user_id: caregiver_id,
-      user_type: 'CareGiver', // ✅ Add this line
-
+      user_type: 'CareGiver',
       title: 'طلب حجز جديد',
       message: `لديك طلب حجز لخدمة ${service_type}`,
       type: 'booking_request',
       read: false,
     });
-    const babysitter = await BabySitter.findById(caregiver_id); // ❗ ID في الحجز هو ID الـ BabySitter
 
-if (babysitter) {
-  const caregiver = await CareGiver.findById(babysitter.user_id); // ❗ استخدم user_id للبحث عن caregiver
+    // ✅ إرسال إشعار عبر FCM إذا كان هناك توكن
+    const babysitter = await BabySitter.findById(caregiver_id);
+    if (babysitter) {
+      const caregiver = await CareGiver.findById(babysitter.user_id);
+      if (caregiver && caregiver.fcm_token) {
+        console.log("📡 Sending to token:", caregiver.fcm_token);
 
-  if (caregiver && caregiver.fcm_token) {
-    console.log("📡 Sending to token:", caregiver.fcm_token);
-
-    await sendNotification(
-      caregiver.fcm_token,
-      "🔔 طلب حجز جديد",
-      `لديك طلب جديد لخدمة ${service_type}`,
-      {
-        booking_id: newBooking._id.toString(),
-        service_type,
+        await sendNotification(
+          caregiver.fcm_token,
+          "🔔 طلب حجز جديد",
+          `لديك طلب جديد لخدمة ${service_type}`,
+          {
+            booking_id: newBooking._id.toString(),
+            service_type,
+          }
+        );
       }
-    );
-  }
-}
+    }
 
     return newBooking;
   }
