@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
 import 'package:intl/date_symbol_data_local.dart'; // ✅ إضافة هذه المكتبة
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -143,6 +144,13 @@ class MyApp extends StatelessWidget {
             (context) => const BabysitterSessionAddressPage(),
 
         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
+
+
+        '/send_price': (context) {
+  final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+  return SendPricePage(booking: args);
+},
+
       },
     );
   }
