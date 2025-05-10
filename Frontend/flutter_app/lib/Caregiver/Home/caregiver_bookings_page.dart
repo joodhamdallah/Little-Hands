@@ -56,55 +56,74 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage> with Sing
     return allBookings.where((b) => (b['status'] ?? 'pending') == status).toList();
   }
 
-    Widget buildBookingCard(Map<String, dynamic> booking) {
-      return Card(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        elevation: 3,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "نوع الخدمة: ${booking['service_type'] ?? ''}",
-                style: const TextStyle(fontWeight: FontWeight.bold, fontFamily: 'NotoSansArabic'),
+Widget buildBookingCard(Map<String, dynamic> booking) {
+
+  return Card(
+  margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(16),
+    side: BorderSide(color: Colors.orange.shade100), // حدود خفيفة برتقالية
+  ),
+  elevation: 4, // ظل أوضح
+  color: Colors.white, // لون خلفية نظيف وواضح
+  shadowColor: Colors.orange.shade200, // ظل بلون حيوي
+  child: Padding(
+    padding: const EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("نوع الخدمة: ${booking['service_type']}", style: boldOrangeTitle()),
+        const SizedBox(height: 6),
+        Text("📅 التاريخ: ${booking['session_start_date']?.substring(0, 10) ?? 'غير محدد'}"),
+        Text("⏰ الوقت: ${booking['session_start_time']} - ${booking['session_end_time']}"),
+        Text("📍 العنوان: ${booking['city']} - ${booking['neighborhood']}"),
+        const Divider(thickness: 0.8),
+        if (booking['children_ages'] != null)
+          Text("👶 أعمار الأطفال: ${booking['children_ages'].join(', ')}"),
+        Text("💊 حالة طبية: ${booking['has_medical_condition'] == true ? 'نعم' : 'لا'}"),
+        Text("💉 يتناول دواء: ${booking['takes_medicine'] == true ? 'نعم' : 'لا'}"),
+        if (booking['additional_requirements'] != null)
+          Text("🧩 الخدمات الإضافية: ${booking['additional_requirements'].join(', ')}"),
+        if ((booking['additional_notes'] ?? '').isNotEmpty)
+          Text("📝 ملاحظات: ${booking['additional_notes']}"),
+        Text("💰 الأجر المقترح: ₪${booking['rate_min']} - ₪${booking['rate_max']}"),
+        const SizedBox(height: 10),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade100,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Text(
+              "قيد الانتظار",
+              style: TextStyle(
+                color: Color(0xFFFF600A),
+                fontWeight: FontWeight.bold,
+                fontFamily: 'NotoSansArabic',
               ),
-              const SizedBox(height: 6),
-              Text("التاريخ: ${booking['session_start_date']?.toString().substring(0, 10) ?? 'غير محدد'}"),
-              Text("الوقت: ${booking['session_start_time']} - ${booking['session_end_time']}"),
-              Text("العنوان: ${booking['city'] ?? ''} - ${booking['neighborhood'] ?? ''}"),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: booking['status'] == 'confirmed' ? Colors.green.shade100
-                      : booking['status'] == 'rejected' ? Colors.red.shade100
-                      : Colors.orange.shade100,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Text(
-                  booking['status'] == 'confirmed'
-                      ? "مؤكد"
-                      : booking['status'] == 'rejected'
-                          ? "مرفوض"
-                          : "قيد الانتظار",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: booking['status'] == 'confirmed'
-                        ? Colors.green
-                        : booking['status'] == 'rejected'
-                            ? Colors.red
-                            : Colors.orange,
-                    fontFamily: 'NotoSansArabic',
-                  ),
-                ),
-              )
-            ],
+            ),
           ),
         ),
-      );
-    }
+      ],
+    ),
+  ),
+);
+}
+
+TextStyle boldOrangeTitle() => const TextStyle(
+  fontSize: 16,
+  fontWeight: FontWeight.bold,
+  color: Color(0xFFFF600A),
+  fontFamily: 'NotoSansArabic',
+);
+
+TextStyle bold() => const TextStyle(
+  fontWeight: FontWeight.bold,
+  fontFamily: 'NotoSansArabic',
+);
+
 
 
   @override
