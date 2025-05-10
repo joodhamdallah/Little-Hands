@@ -50,14 +50,26 @@ class _ParentOtherRequirementsPageState
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
-          elevation: 0,
+          automaticallyImplyLeading: false, // Disable default back
+          title: const Text(
+            'المهام والمتطلبات الإضافية',
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/parentHome', // or '/caregiverHome'
+                  (route) => false,
+                );
+              },
+            ),
+          ],
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'المهام والمتطلبات الإضافية',
-            style: TextStyle(fontFamily: 'NotoSansArabic'),
           ),
         ),
         body: Padding(

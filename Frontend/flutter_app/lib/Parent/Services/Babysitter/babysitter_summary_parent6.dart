@@ -37,14 +37,26 @@ class BabysitterSummaryPage extends StatelessWidget {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
-          elevation: 0,
+          automaticallyImplyLeading: false, // Disable default back
+          title: const Text(
+            'ملخص تفاصيل الجلسة',
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/parentHome', // or '/caregiverHome'
+                  (route) => false,
+                );
+              },
+            ),
+          ],
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'ملخص تفاصيل الجلسة',
-            style: TextStyle(fontFamily: 'NotoSansArabic'),
           ),
         ),
         body: Padding(
@@ -269,5 +281,4 @@ class BabysitterSummaryPage extends StatelessWidget {
       ),
     );
   }
-
 }

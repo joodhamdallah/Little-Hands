@@ -5,7 +5,9 @@ import 'package:flutter_app/Parent/Services/Babysitter/babysitter_type_parent2.d
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_summary_parent6.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_app/pages/config.dart'; // loginUsers = "${url}auth/login";
+import 'package:flutter_app/pages/config.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 class BabysitterSessionAddressPage extends StatefulWidget {
   final Map<String, dynamic>? previousData;
@@ -24,13 +26,15 @@ class BabysitterSessionAddressPage extends StatefulWidget {
 
 class _BabysitterSessionAddressPageState
     extends State<BabysitterSessionAddressPage> {
-  String parentAddress = "جارٍ التحميل..."; // Initially loading text
-  String? selectedCity; // لعنوان آخر (custom)
-  String? parentCity; // لعنوان المنزل
-  String? selectedAddress;
+  LatLng? selectedLatLng;
+  LatLng? parentLatLng;
+  final TextEditingController searchController = TextEditingController();
   final TextEditingController neighborhoodController = TextEditingController();
-  final TextEditingController streetController = TextEditingController();
-  final TextEditingController buildingController = TextEditingController();
+  late final MapController _mapController = MapController();
+
+  String parentAddress = "جارٍ التحميل...";
+  String? parentCity;
+  String? selectedCity;
 
   final List<String> cities = [
     "طولكرم",
@@ -47,11 +51,8 @@ class _BabysitterSessionAddressPageState
     super.initState();
     _fetchParentProfile();
     if (widget.previousData != null) {
-      selectedAddress = widget.previousData!['session_address'];
       selectedCity = widget.previousData!['city'];
-      neighborhoodController.text = widget.previousData!['neighborhood'] ?? '';
-      streetController.text = widget.previousData!['street'] ?? '';
-      buildingController.text = widget.previousData!['building'] ?? '';
+      neighborhoodController.text = widget.previousData!['location_note'] ?? '';
     }
   }
 
@@ -87,81 +88,128 @@ class _BabysitterSessionAddressPageState
               const SizedBox(height: 24),
 
               const Text(
-                'أين تريد أن تُقدَّم الجلسة؟',
+                'حدد مكان الجلسة على الخريطة:',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'NotoSansArabic',
                 ),
               ),
-              const SizedBox(height: 16),
-              _buildOption('home', 'في منزلي', "$parentCity - $parentAddress"),
               const SizedBox(height: 12),
-              _buildOption(
-                'custom',
-                'في عنوان آخر',
-                'اختر المدينة وأدخل تفاصيل العنوان',
+
+              if (parentLatLng != null && parentAddress != "جارٍ التحميل...")
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      selectedLatLng = parentLatLng;
+                    });
+                    _mapController.move(parentLatLng!, 15.0);
+                  },
+                  icon: const Icon(Icons.home, color: Color(0xFFFF600A)),
+                  label: Text(
+                    'هل تريد استخدام عنوان منزلك؟ ($parentCity - $parentAddress)',
+                    style: const TextStyle(
+                      color: Color(0xFFFF600A),
+                      fontFamily: 'NotoSansArabic',
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: selectedCity,
+                items:
+                    cities
+                        .map(
+                          (city) =>
+                              DropdownMenuItem(value: city, child: Text(city)),
+                        )
+                        .toList(),
+                onChanged: (val) {
+                  setState(() {
+                    selectedCity = val;
+                  });
+                  if (val != null) {
+                    _searchLocation(val);
+                  }
+                },
+                decoration: InputDecoration(
+                  labelText: 'اختر المدينة',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
-
-              if (selectedAddress == 'custom') ...[
-                DropdownButtonFormField<String>(
-                  value: selectedCity,
-                  items:
-                      cities
-                          .map(
-                            (city) => DropdownMenuItem(
-                              value: city,
-                              child: Text(city),
+              TextField(
+                controller: searchController,
+                decoration: const InputDecoration(
+                  hintText: 'اكتب اسم الحي أو المنطقة للبحث على الخريطة',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _searchLocation(searchController.text),
+                      icon: const Icon(Icons.search),
+                      label: const Text('ابحث'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFFF600A),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Container(
+                height: 300,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFFF600A)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    center: selectedLatLng ?? LatLng(31.9, 35.2),
+                    zoom: 18,
+                    onTap: (_, point) {
+                      setState(() => selectedLatLng = point);
+                    },
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.app',
+                    ),
+                    if (selectedLatLng != null)
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: selectedLatLng!,
+                            width: 40,
+                            height: 40,
+                            child: const Icon(
+                              Icons.location_on,
+                              size: 40,
+                              color: Colors.red,
                             ),
-                          )
-                          .toList(),
-                  onChanged: (val) => setState(() => selectedCity = val),
-                  decoration: InputDecoration(
-                    labelText: 'اختر المدينة',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  onChanged: (_) => setState(() {}), // ✅ أضف هذه
-
-                  controller: neighborhoodController,
-                  decoration: InputDecoration(
-                    hintText: 'اسم الحي / البلدة',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: neighborhoodController,
+                decoration: const InputDecoration(
+                  hintText: 'وصف إضافي (اسم الحي، معلم قريب...)',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 12),
-                TextField(
-                  onChanged: (_) => setState(() {}), // ✅ أضف هذه
-
-                  controller: streetController,
-                  decoration: InputDecoration(
-                    hintText: 'اسم الشارع',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  onChanged: (_) => setState(() {}), // ✅ أضف هذه
-
-                  controller: buildingController,
-                  decoration: InputDecoration(
-                    hintText: 'رقم المبنى أو الطابق (اختياري)',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ],
-
+              ),
               const SizedBox(height: 30),
               Center(
                 child: ElevatedButton(
@@ -198,14 +246,11 @@ class _BabysitterSessionAddressPageState
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
 
-    if (accessToken == null) {
-      print('No token found');
-      return;
-    }
+    if (accessToken == null) return;
 
     try {
       final response = await http.get(
-        Uri.parse(fetchParent), // change url if needed
+        Uri.parse(fetchParent),
         headers: {
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json',
@@ -213,15 +258,18 @@ class _BabysitterSessionAddressPageState
       );
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        final parentData = jsonData['data'];
+        final parentData = jsonDecode(response.body)['data'];
 
         setState(() {
           parentAddress = parentData['address'] ?? "لم يتم العثور على العنوان";
           parentCity = parentData['city'] ?? "";
+          if (parentData['location'] != null) {
+            parentLatLng = LatLng(
+              parentData['location']['lat'],
+              parentData['location']['lng'],
+            );
+          }
         });
-      } else {
-        print('Failed to load parent profile. Status: ${response.statusCode}');
       }
     } catch (e) {
       print('Error fetching parent profile: $e');
@@ -231,11 +279,15 @@ class _BabysitterSessionAddressPageState
   void _onNextPressed() {
     final updatedJobDetails = {
       ...?widget.previousData,
-      'session_address': selectedAddress,
-      'city': selectedAddress == 'home' ? parentCity : selectedCity,
-      'neighborhood': neighborhoodController.text.trim(),
-      'street': streetController.text.trim(),
-      'building': buildingController.text.trim(),
+      'city': selectedCity,
+      'location':
+          selectedLatLng != null
+              ? {
+                'lat': selectedLatLng!.latitude,
+                'lng': selectedLatLng!.longitude,
+              }
+              : null,
+      'location_note': neighborhoodController.text.trim(),
     };
 
     if (widget.isEditing) {
@@ -258,63 +310,36 @@ class _BabysitterSessionAddressPageState
     }
   }
 
-  Widget _buildOption(String value, String title, String subtitle) {
-    final bool isSelected = value == selectedAddress;
-    return GestureDetector(
-      onTap: () => setState(() => selectedAddress = value),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? const Color(0xFFFF600A) : Colors.grey.shade300,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected ? const Color(0xFFFFF3E8) : Colors.white,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: const Color(0xFFFF600A),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'NotoSansArabic',
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      color: Colors.black54,
-                      fontFamily: 'NotoSansArabic',
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  bool _canProceed() {
+    return selectedCity != null && selectedLatLng != null;
   }
 
-  bool _canProceed() {
-    if (selectedAddress == null) return false;
-    if (selectedAddress == 'custom' &&
-        (selectedCity == null ||
-            neighborhoodController.text.trim().isEmpty ||
-            streetController.text.trim().isEmpty)) {
-      return false;
+  Future<void> _searchLocation(String placeName) async {
+    final url = Uri.parse(
+      'https://nominatim.openstreetmap.org/search?q=${placeName.trim()},West Bank&format=json&limit=1',
+    );
+    final response = await http.get(
+      url,
+      headers: {'User-Agent': 'LittleHandsApp/1.0'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data.isNotEmpty) {
+        final lat = double.parse(data[0]['lat']);
+        final lon = double.parse(data[0]['lon']);
+        final newPoint = LatLng(lat, lon);
+        setState(() => selectedLatLng = newPoint);
+        _mapController.move(newPoint, 15.0);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('لم يتم العثور على الموقع')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('حدث خطأ أثناء البحث')));
     }
-    return true;
   }
 }

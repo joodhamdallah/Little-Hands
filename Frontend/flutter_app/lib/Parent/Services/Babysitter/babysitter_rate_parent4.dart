@@ -24,14 +24,26 @@ class _BabysitterRateRangePageState extends State<BabysitterRateRangePage> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
-          elevation: 0,
+          automaticallyImplyLeading: false, // Disable default back
+          title: const Text(
+            'تحديد ميزانية الجلسة',
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/parentHome', // or '/caregiverHome'
+                  (route) => false,
+                );
+              },
+            ),
+          ],
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'تحديد ميزانية الجلسة',
-            style: TextStyle(fontFamily: 'NotoSansArabic'),
           ),
         ),
         body: SafeArea(

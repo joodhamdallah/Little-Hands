@@ -53,6 +53,24 @@ class _BabysitterTypeSelectionPageState
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
+          backgroundColor: const Color(0xFFFF600A),
+          automaticallyImplyLeading: false, // Disable default back
+          title: const Text(
+            'نوع جليسة الأطفال',
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/parentHome', // or '/caregiverHome'
+                  (route) => false,
+                );
+              },
+            ),
+          ],
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
@@ -63,8 +81,6 @@ class _BabysitterTypeSelectionPageState
               }
             },
           ),
-          title: const Text('نوع جليسة الأطفال'),
-          backgroundColor: const Color(0xFFFF600A),
         ),
         body: Padding(
           padding: const EdgeInsets.all(20),
