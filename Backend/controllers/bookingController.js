@@ -44,3 +44,25 @@ exports.getBookingsForCaregiver = async (req, res) => {
     });
   }
 };
+
+
+exports.confirmBooking = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: 'confirmed' },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'الحجز غير موجود' });
+    }
+
+    res.status(200).json({ message: 'تم تأكيد الحجز', data: updated });
+  } catch (err) {
+    console.error("❌ Error in confirmBooking:", err.message);
+    res.status(500).json({ message: 'خطأ في تأكيد الحجز' });
+  }
+};
