@@ -8,7 +8,7 @@ const BabySitter = require('../models/BabySitter');
  * @returns {Promise<BabySitter>} - Saved babysitter document.
  */
 const createSitterDetails = async (data) => {
-  const { user_id } = data;
+const { user_id, location, ...rest } = data;
 
   // Check if babysitter details already exist for this user
   const existing = await BabySitter.findOne({ user_id });
@@ -16,7 +16,16 @@ const createSitterDetails = async (data) => {
     throw new Error('Details already submitted for this caregiver.');
   }
 
-  const sitter = new BabySitter(data);
+  const geoLocation = {
+  type: 'Point',
+  coordinates: [location.lng, location.lat] // GeoJSON expects [lng, lat]
+};
+
+const sitter = new BabySitter({
+  user_id,
+  location: geoLocation,
+  ...rest
+});
   return await sitter.save();
 };
 

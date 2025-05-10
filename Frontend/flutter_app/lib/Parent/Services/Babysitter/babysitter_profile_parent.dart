@@ -22,6 +22,8 @@ class BabysitterProfilePage extends StatefulWidget {
 class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
   CaregiverProfileModel? profile;
   bool isLoading = true;
+  String locationLabel = 'جارٍ التحميل...';
+  double? distanceInKm;
 
   @override
   void initState() {
@@ -37,8 +39,20 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        final parsedProfile = CaregiverProfileModel.fromJson(data['data']);
+
+        // ✅ Now safe to access parsedProfile.location
+        if (parsedProfile.location != null) {
+          final lat = parsedProfile.location!['lat'];
+          final lng = parsedProfile.location!['lng'];
+          locationLabel = await getLocationLabel(lat, lng);
+        }
+
+        distanceInKm = parsedProfile.distanceInKm;
+
         setState(() {
-          profile = CaregiverProfileModel.fromJson(data['data']);
+          profile = parsedProfile;
           isLoading = false;
         });
       } else {
@@ -59,7 +73,27 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
-          title: const Text('ملف الجليسة'),
+          automaticallyImplyLeading: false, // Disable default back
+          title: const Text(
+            'ملف الجليسة',
+            style: TextStyle(color: Colors.black),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home, color: Colors.white),
+              onPressed: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/parentHome', // or '/caregiverHome'
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
         body:
             isLoading
@@ -143,7 +177,18 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
                               ),
                               const SizedBox(height: 20),
                               infoRow('المدينة:', profile!.city),
+
                               const SizedBox(height: 10),
+                              if (locationLabel.isNotEmpty)
+                                infoRow('المنطقة:', locationLabel),
+
+                              if (distanceInKm != null)
+                                infoRow(
+                                  'تبعد عنك:',
+                                  "${distanceInKm!.toStringAsFixed(1)} كم",
+                                ),
+                              const SizedBox(height: 10),
+
                               infoRow(
                                 'سنوات الخبرة:',
                                 "${profile!.yearsExperience} سنوات",
@@ -314,5 +359,22 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
             );
           }).toList(),
     );
+  }
+
+  Future<String> getLocationLabel(double lat, double lng) async {
+    final response = await http.get(
+      Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$lat&lon=$lng',
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['address']['suburb'] ??
+          data['address']['neighbourhood'] ??
+          'موقع غير معروف';
+    } else {
+      return 'موقع غير معروف';
+    }
   }
 }

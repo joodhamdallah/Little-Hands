@@ -2,11 +2,12 @@ const MatchService = require('../services/matchService');
 
 exports.matchBabysitters = async (req, res) => {
   try {
-    const { city, childrenAges, rateMin, rateMax, additionalRequirements, isNegotiable } = req.body;
+const { city, location, childrenAges, rateMin, rateMax, additionalRequirements, isNegotiable } = req.body;
 
     // ✅ أطبع الداتا اللي واصلة من الفرونت
     console.log("🚀 Incoming Matching Request:", {
       city,
+      location,
       childrenAges,
       rateMin,
       rateMax,
@@ -14,7 +15,8 @@ exports.matchBabysitters = async (req, res) => {
     });
 
     const babysitters = await MatchService.matchBabysitters({
-      city,
+      city,  
+      location,
       childrenAges,
       rateMin,
       rateMax,

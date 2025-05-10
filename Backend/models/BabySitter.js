@@ -25,13 +25,25 @@ const babySitterSchema = new mongoose.Schema({
   },
   number_of_children: Number,
   is_smoker: Boolean,
-
-  city: {
-    type: String,  
-    required: true,
+city: {
+  type: String,
+  required: true,
+},
+location: {
+  type: {
+    type: String,
+    enum: ['Point'],
+    default: 'Point',
   },
+  coordinates: {
+    type: [Number], // [longitude, latitude]
+    required: true,
+  }
+},
+
 }, {
   timestamps: true
 });
+babySitterSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model('BabySitter', babySitterSchema);

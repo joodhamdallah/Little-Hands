@@ -10,6 +10,9 @@ class CaregiverProfileModel {
   final String bio;
   final String rateText; // ✅ أضفنا الحقل الجديد
 
+  final Map<String, dynamic>? location; // ✅ New: raw coordinates
+  final double? distanceInKm; // ✅ New: distance in km
+
   CaregiverProfileModel({
     required this.firstName,
     required this.lastName,
@@ -21,6 +24,8 @@ class CaregiverProfileModel {
     required this.trainingCertification,
     required this.bio,
     required this.rateText, // ✅ أضفناه هنا أيضاً
+    this.location, // ✅ added
+    this.distanceInKm, // ✅ added
   });
 
   factory CaregiverProfileModel.fromJson(Map<String, dynamic> json) {
@@ -38,6 +43,8 @@ class CaregiverProfileModel {
       bio: json['bio'] ?? '',
       rateText:
           json['rateText'] ?? 'لم يتم تحديد الأجر', // ✅ وهنا نقرأه من الـ JSON
+      location: json['location'], // ✅ expects {lat, lng}
+      distanceInKm: json['distanceInKm']?.toDouble(), // ✅ optional
     );
   }
 }
