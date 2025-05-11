@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 
 class SendPricePage extends StatefulWidget {
   final Map<String, dynamic> booking;
@@ -40,7 +40,8 @@ class _SendPricePageState extends State<SendPricePage> {
     final booking = widget.booking;
 
     return Directionality(
-      textDirection: Directionality.of(context),   //doooooooooo it if u can \
+      textDirection: TextDirection.rtl, // ✅ Force RTL
+      //doooooooooo it if u can \
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
@@ -60,17 +61,19 @@ class _SendPricePageState extends State<SendPricePage> {
                 ),
               ),
               const SizedBox(height: 8),
-              Text("تاريخ الجلسة: ${booking['session_start_date']?.substring(0, 10) ?? ''}"),
-              Text("الوقت: ${booking['session_start_time']} - ${booking['session_end_time']}"),
+              Text(
+                "تاريخ الجلسة: ${booking['session_start_date']?.substring(0, 10) ?? ''}",
+              ),
+              Text(
+                "الوقت: ${booking['session_start_time']} - ${booking['session_end_time']}",
+              ),
               const Divider(height: 30),
 
               const Text("عدد الأيام:"),
               TextField(
                 controller: _daysController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: "مثلاً: 3",
-                ),
+                decoration: const InputDecoration(hintText: "مثلاً: 3"),
               ),
               const SizedBox(height: 10),
 
@@ -78,9 +81,7 @@ class _SendPricePageState extends State<SendPricePage> {
               TextField(
                 controller: _rateController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: "مثلاً: 25",
-                ),
+                decoration: const InputDecoration(hintText: "مثلاً: 25"),
               ),
               const SizedBox(height: 10),
 
@@ -88,9 +89,7 @@ class _SendPricePageState extends State<SendPricePage> {
               TextField(
                 controller: _extraFeeController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  hintText: "مثلاً: 30",
-                ),
+                decoration: const InputDecoration(hintText: "مثلاً: 30"),
               ),
               const SizedBox(height: 20),
 
@@ -108,11 +107,14 @@ class _SendPricePageState extends State<SendPricePage> {
                   children: [
                     const Text(
                       "المبلغ النهائي:",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      "₪ ${NumberFormat('#,##0.00').format(total)}",
+                      "₪ ${intl.NumberFormat('#,##0.00').format(total)}",
                       style: const TextStyle(fontSize: 24, color: Colors.green),
                     ),
                     const SizedBox(height: 20),
@@ -120,7 +122,9 @@ class _SendPricePageState extends State<SendPricePage> {
                     ElevatedButton(
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("✅ تم إرسال السعر بنجاح")),
+                          const SnackBar(
+                            content: Text("✅ تم إرسال السعر بنجاح"),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
