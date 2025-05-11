@@ -40,10 +40,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           customActions ??
           (showIcons
               ? [
-                IconButton(icon: const Icon(Icons.search), onPressed: () {}),
                 IconButton(
-                  icon: const Icon(Icons.notifications),
-                  onPressed: () {},
+                  icon: const Icon(Icons.search),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/search');
+                  },
                 ),
               ]
               : []),

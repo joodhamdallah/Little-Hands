@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/providers/notification_provider.dart';
+import 'package:provider/provider.dart';
 import 'dart:async';
 import '../../pages/custom_app_bar.dart';
 import '../../pages/custom_bottom_nav.dart';
@@ -32,6 +34,12 @@ class _ParentHomePageState extends State<ParentHomePage> {
   @override
   void initState() {
     super.initState();
+    final notifProvider = Provider.of<NotificationProvider>(
+      context,
+      listen: false,
+    );
+    notifProvider.loadUnreadCount();
+    notifProvider.startAutoRefresh();
     _startAutoScroll();
   }
 
@@ -62,23 +70,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Colors.white,
-        appBar: CustomAppBar(
-          title: 'Little Hands',
-          customActions: [
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {
-                Navigator.pushNamed(context, '/parentSearch');
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.notifications),
-              onPressed: () {
-                Navigator.pushNamed(context, '/parentNotifications');
-              },
-            ),
-          ],
-        ),
+        appBar: CustomAppBar(title: 'Little Hands'),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -181,6 +173,10 @@ class _ParentHomePageState extends State<ParentHomePage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               label: 'الرئيسية',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.notifications),
+              label: 'الإشعارات',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today_outlined),
