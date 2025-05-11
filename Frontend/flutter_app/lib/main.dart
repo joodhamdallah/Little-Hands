@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
 import 'package:intl/date_symbol_data_local.dart'; // ✅ إضافة هذه المكتبة
 import 'package:firebase_core/firebase_core.dart';
@@ -29,7 +30,10 @@ import 'package:flutter_app/Caregiver/RegisterProcess/register_caregivers_page.d
 import 'package:flutter_app/Parent/Register/register_page.dart';
 import 'package:flutter_app/pages/Firstpage.dart';
 import 'package:flutter_app/Caregiver/RegisterProcess/onboarding_page.dart';
+import 'package:provider/provider.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -98,7 +102,21 @@ void main() async {
 
   initFCM();
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = NotificationProvider();
+            provider.loadUnreadCount();
+            provider.startAutoRefresh(); // 🔄 enable polling every 30s
+            return provider;
+          },
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

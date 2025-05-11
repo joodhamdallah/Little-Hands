@@ -94,25 +94,44 @@ class BookingService {
       type: 'booking_request',
       read: false,
     });
+//     const babysitter = await BabySitter.findById(caregiver_id); // ❗ ID في الحجز هو ID الـ BabySitter
+// console.log("🔍 Looking for babysitter with _id:", caregiver_id);
 
-    // ✅ إرسال إشعار عبر FCM إذا كان هناك توكن
-    const babysitter = await BabySitter.findById(caregiver_id);
-    if (babysitter) {
-      const caregiver = await CareGiver.findById(babysitter.user_id);
-      if (caregiver && caregiver.fcm_token) {
-        console.log("📡 Sending to token:", caregiver.fcm_token);
 
-        await sendNotification(
-          caregiver.fcm_token,
-          "🔔 طلب حجز جديد",
-          `لديك طلب جديد لخدمة ${service_type}`,
-          {
-            booking_id: newBooking._id.toString(),
-            service_type,
-          }
-        );
-      }
+  const caregiver = await CareGiver.findById(caregiver_id); // ❗ استخدم user_id للبحث عن caregiver
+
+  if (!caregiver) {
+    console.warn("⚠️ Caregiver not found with user_id:", babysitter.user_id);
+  } else {
+    console.log("👤 Caregiver info:", {
+      id: caregiver._id,
+      name: `${caregiver.first_name} ${caregiver.last_name}`,
+      email: caregiver.email,
+      role: caregiver.role,
+      fcm_token: caregiver.fcm_token,
+      isVerified: caregiver.is_verified,
+    });
+
+    if (caregiver.fcm_token) {
+      console.log("📡 Sending to token:", caregiver.fcm_token);
+
+      await sendNotification(
+        caregiver.fcm_token,
+        "🔔 طلب حجز جديد",
+        `لديك طلب جديد لخدمة ${service_type}`,
+        {
+          booking_id: newBooking._id.toString(),
+          service_type,
+        }
+      );
+
+      console.log("✅ FCM push notification sent");
+    } else {
+      console.warn("⚠️ Caregiver has no FCM token.");
     }
+  }
+
+
 
     return newBooking;
   }
