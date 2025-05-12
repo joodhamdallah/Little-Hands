@@ -41,6 +41,7 @@ const parentSchema  = new mongoose.Schema({
         default: null, 
         trim: true 
     },
+  fcm_token: { type: String, default: null },
 
     isVerified: { type: Boolean, default: false },
     isResettingPassword: { type: Boolean, default: false },
