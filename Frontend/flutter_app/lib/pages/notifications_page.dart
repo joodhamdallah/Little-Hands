@@ -66,7 +66,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   Widget build(BuildContext context) {
     final unread = notifications.where((n) => n['read'] == false).toList();
-    final read = notifications.where((n) => n['read'] == true).toList();
+    notifications.where((n) => n['read'] == true).toList();
     final visibleNotifications =
         selectedTab == 'unread' ? unread : notifications;
 

@@ -4,6 +4,8 @@ import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
+final randomCode = DateTime.now().millisecondsSinceEpoch;
+final meetLink = "https://meet.google.com/lookup/$randomCode";
 
 class AvailableAppointmentsPage extends StatefulWidget {
   final String babysitterId;
@@ -85,16 +87,17 @@ class _AvailableAppointmentsPageState extends State<AvailableAppointmentsPage> {
     final token = prefs.getString('accessToken');
     if (token == null) return;
 
-    final bookingData = {
-      ...widget.jobDetails,
-      'caregiver_id': widget.babysitterId,
-      'service_type': 'babysitter',
-      'schedule_id': slot['_id'],
-      'day': slot['day'],
-      'date': slot['date'],
-      'start_time': slot['start_time'],
-      'end_time': slot['end_time'],
-    };
+          final bookingData = {
+          ...widget.jobDetails,
+          'caregiver_id': widget.babysitterId,
+          'service_type': 'babysitter',
+          'schedule_id': slot['_id'],
+          'day': slot['day'],
+          'date': slot['date'],
+          'start_time': slot['start_time'],
+          'end_time': slot['end_time'],
+          'meeting_link': meetLink, // ✅ رابط الاجتماع
+        };
 
     final sanitized = bookingData.map((key, value) {
       if (value is DateTime) return MapEntry(key, value.toIso8601String());
