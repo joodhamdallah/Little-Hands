@@ -334,6 +334,7 @@ class _LoginPageState extends State<LoginPage> {
             }
           }
         } else {
+          saveFcmTokenToBackend();
           Navigator.pushReplacementNamed(context, '/parentHome');
         }
       } else {
@@ -364,7 +365,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> saveFcmTokenToBackend() async {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
+    await FirebaseMessaging.instance.deleteToken(); // Clear old token
+    final fcmToken =
+        await FirebaseMessaging.instance.getToken(); // Get new token
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('accessToken');
 

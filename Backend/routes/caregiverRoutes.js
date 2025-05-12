@@ -17,7 +17,5 @@ router.post("/updateRole", authMiddleware, caregiverController.updateRole);
 
 router.get('/profile', authMiddleware, caregiverController.getProfile);
 
-//for firebase notification
-router.post("/save-fcm-token", authMiddleware, caregiverController.saveFcmToken);
 
 module.exports = router;

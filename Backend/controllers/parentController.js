@@ -1,4 +1,5 @@
 const ParentServices = require("../services/parentServices");
+const Parent = require('../models/Parent');
 
 exports.register = async (req, res, next) => {
     try {

@@ -1,4 +1,6 @@
 const AuthService = require("../services/authServices");
+const Parent = require('../models/Parent');
+const CareGiver = require('../models/CareGiver');
 
 exports.login = async (req, res, next) => {
     try {
@@ -95,4 +97,37 @@ exports.resetPassword = async (req, res, next) => {
             message: err.message || "Something went wrong"
         });
     }
+};
+
+exports.saveFcmToken = async (req, res) => {
+  try {
+    const { fcm_token } = req.body;
+    if (!fcm_token) {
+      return res.status(400).json({ status: false, message: "FCM token is required" });
+    }
+
+    const userId = req.user._id;
+
+    // Try caregiver first
+    const caregiver = await CareGiver.findById(userId);
+    if (caregiver) {
+      caregiver.fcm_token = fcm_token;
+      await caregiver.save();
+      return res.status(200).json({ status: true, message: "FCM token saved (caregiver)" });
+    }
+
+    // Try parent next
+    const parent = await Parent.findById(userId);
+    if (parent) {
+      parent.fcm_token = fcm_token;
+      await parent.save();
+      return res.status(200).json({ status: true, message: "FCM token saved (parent)" });
+    }
+
+    return res.status(404).json({ status: false, message: "User not found" });
+
+  } catch (error) {
+    console.error("❌ Error saving FCM token:", error.message);
+    return res.status(500).json({ status: false, message: "Server error" });
+  }
 };
