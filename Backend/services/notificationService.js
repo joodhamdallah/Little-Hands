@@ -1,16 +1,35 @@
 const Notification = require('../models/Notification');
+const sendFCM = require('../firebase/sendNotification');
 
 class NotificationService {
-  static async createNotification({ user_id, user_type ,title, message, type = 'general' }) {
-    const notification = await Notification.create({
+  static async createNotification({ user_id, user_type, title, message, type = 'general', data = {} }) {
+    return Notification.create({
       user_id,
       user_type,
       title,
       message,
       type,
+      data,
       read: false,
     });
-    return notification;
+  }
+
+  static async sendBookingNotification({ user_id, user_type, title, message, type = 'booking_request', fcm_token = null, data = {} }) {
+    // 👇 Save to DB
+    await Notification.create({
+      user_id,
+      user_type,
+      title,
+      message,
+      type,
+      data,
+      read: false,
+    });
+
+    // 👇 Send FCM if token exists
+    if (fcm_token) {
+      await sendFCM(fcm_token, title, message, data);
+    }
   }
 
   static async markAsRead(notificationId) {

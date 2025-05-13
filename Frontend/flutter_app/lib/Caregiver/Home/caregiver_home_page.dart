@@ -43,7 +43,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
           ).loadUnreadCount();
         },
       ),
-    CaregiverBookingsPage(), 
+      CaregiverBookingsPage(), 
       WorkSchedulePage(),
       SingleChildScrollView(
         child: CaregiverProfilePage(profile: widget.profile),

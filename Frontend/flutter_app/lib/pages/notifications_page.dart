@@ -99,6 +99,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       itemCount: visibleNotifications.length,
                       itemBuilder: (context, index) {
                         final n = visibleNotifications[index];
+                        final Map<String, dynamic>? extraData = n['data'];
+
                         return Card(
                           margin: const EdgeInsets.only(bottom: 12),
                           elevation: 3,
@@ -120,12 +122,35 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                 fontFamily: 'NotoSansArabic',
                               ),
                             ),
-                            subtitle: Text(
-                              n['message'],
-                              style: const TextStyle(
-                                fontFamily: 'NotoSansArabic',
-                              ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  n['message'],
+                                  style: const TextStyle(
+                                    fontFamily: 'NotoSansArabic',
+                                  ),
+                                ),
+                                if (extraData != null) ...[
+                                  if (extraData['city'] != null)
+                                    Text(
+                                      'المدينة: ${extraData['city']}',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  if (extraData['session_time'] != null)
+                                    Text(
+                                      'الوقت: ${extraData['session_time']}',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  if (extraData['parent_name'] != null)
+                                    Text(
+                                      'المرسل: ${extraData['parent_name']}',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                ],
+                              ],
                             ),
+
                             trailing: PopupMenuButton<String>(
                               icon: const Icon(Icons.more_vert),
                               onSelected: (value) {
