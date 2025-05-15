@@ -17,6 +17,7 @@ const workScheduleRoutes = require('./routes/workScheduleRoutes');
 const matchRoutes = require('./routes/matchRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const specialNeedsRoutes = require('./routes/specialNeedsRoutes');
 
 
 
@@ -37,6 +38,7 @@ app.use('/api/schedule', workScheduleRoutes);
 app.use('/api', matchRoutes); 
  app.use('/api', bookingRoutes); 
  app.use('/api', notificationRoutes); 
+app.use("/api", specialNeedsRoutes);
 
 
 // ✅ Connect to MongoDB then start the server

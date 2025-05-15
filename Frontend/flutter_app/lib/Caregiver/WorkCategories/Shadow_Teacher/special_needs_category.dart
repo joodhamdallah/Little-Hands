@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:provider/provider.dart';
 
 class DisabilityExperiencePage extends StatefulWidget {
   const DisabilityExperiencePage({super.key});
@@ -122,11 +124,20 @@ class _DisabilityExperiencePageState extends State<DisabilityExperiencePage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                ElevatedButton(
+                  ElevatedButton(
                   onPressed: selectedIndexes.isNotEmpty
                       ? () {
+                          // 🟠 استخراج العناوين المختارة
+                          final selectedDisabilities = selectedIndexes
+                              .map((index) => options[index]['title'] as String)
+                              .toList();
 
-                    Navigator.pushNamed(context, '/shadowteacherQ2'); 
+                          // 🟠 حفظ في الـ Provider
+                          final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+                          provider.update('disability_experience', selectedDisabilities);
+
+                          // 🟠 الانتقال للصفحة التالية
+                          Navigator.pushNamed(context, '/shadowteacherQ2');
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -137,16 +148,17 @@ class _DisabilityExperiencePageState extends State<DisabilityExperiencePage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                 child: const Text(
-                      'التالي',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansArabic',
-                        fontSize: 17,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
+                  child: const Text(
+                    'التالي',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansArabic',
+                      fontSize: 17,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
+                  ),
                 ),
+
               ],
             ),
           ),
