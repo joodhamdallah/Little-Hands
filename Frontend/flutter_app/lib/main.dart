@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
 import 'package:intl/date_symbol_data_local.dart'; // ✅ إضافة هذه المكتبة
@@ -113,6 +114,9 @@ void main() async {
             return provider;
           },
         ),
+
+              ChangeNotifierProvider(create: (_) => SpecialNeedsProvider()),
+
       ],
       child: const MyApp(),
     ),
