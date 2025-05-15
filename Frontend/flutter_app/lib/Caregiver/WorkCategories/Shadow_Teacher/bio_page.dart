@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:provider/provider.dart';
 
 class ShadowTeacherBioPage extends StatefulWidget {
   const ShadowTeacherBioPage({super.key});
@@ -141,39 +143,47 @@ class _ShadowTeacherBioPageState extends State<ShadowTeacherBioPage> {
                         ),
 
                         // ✅ Next Button
-                        Positioned(
-                          bottom: 5 + MediaQuery.of(context).viewInsets.bottom,
-                          left: 16,
-                          right: 16,
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: 53,
-                            child: ElevatedButton(
-                              onPressed: _bioController.text.length >= _minLength
-                                  ? () {
-                                      Navigator.pushNamed(context, '/shadowteacherpricing');
-                                    }
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFFF600A),
-                                disabledBackgroundColor: Colors.orange.shade200,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                      // ✅ Next Button
+                      Positioned(
+                        bottom: 5 + MediaQuery.of(context).viewInsets.bottom,
+                        left: 16,
+                        right: 16,
+                        child: Builder(
+                          builder: (context) {
+                            return SizedBox(
+                              width: double.infinity,
+                              height: 53,
+                              child: ElevatedButton(
+                                onPressed: _bioController.text.length >= _minLength
+                                    ? () {
+                                        final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+                                        provider.update('bio', _bioController.text.trim());
+
+                                        Navigator.pushNamed(context, '/shadowteacherpricing');
+                                      }
+                                    : null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFF600A),
+                                  disabledBackgroundColor: Colors.orange.shade200,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'التالي',
+                                  style: TextStyle(
+                                    fontFamily: 'NotoSansArabic',
+                                    fontSize: 17,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                               ),
-                              child: const Text(
-                      'التالي',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansArabic',
-                        fontSize: 17,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                      ],
+                      ),
+                                        ],
                     );
                   },
                 ),

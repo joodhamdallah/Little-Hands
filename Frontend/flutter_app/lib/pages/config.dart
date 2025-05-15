@@ -11,3 +11,4 @@ final saveWorkSchedule = "${url}schedule/";
 final deleteWorkSchedule = "${url}schedule";
 final saveBooking = "${url}bookings";
 final saveFcmToken = "${url}auth/save-fcm-token";
+final String specialNeedsDetails = "${url}special-needs/details";

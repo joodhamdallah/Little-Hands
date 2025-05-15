@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 
 class SpecialNeedsProvider extends ChangeNotifier {
-  Map<String, dynamic> _data = {};
-
-  Map<String, dynamic> get data => _data;
+  final Map<String, dynamic> _data = {};
 
   void update(String key, dynamic value) {
     _data[key] = value;
     notifyListeners();
   }
 
-  void updateMany(Map<String, dynamic> newData) {
-    _data.addAll(newData);
+  void updateMany(Map<String, dynamic> values) {
+    _data.addAll(values);
     notifyListeners();
   }
 
-  void clear() {
-    _data.clear();
-    notifyListeners();
+  Map<String, dynamic> getAll() {
+    return _data;
   }
 }
+
