@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class ShadowTeacherStep2 extends StatefulWidget {
   const ShadowTeacherStep2({super.key});
@@ -261,30 +263,45 @@ class _ShadowTeacherStep2State extends State<ShadowTeacherStep2> {
             ),
 
             // Next button
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                    Navigator.pushNamed(context, '/shadowteacherQ3'); 
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF600A),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+             Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Builder(
+                    builder: (context) {
+                      return ElevatedButton(
+                        onPressed: selectedQualification != null
+                            ? () {
+                                final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+                                provider.updateMany({
+                                  'qualification': selectedQualification,
+                                  'certificate_image': _pickedImage?.path ?? '',
+                                  'has_experience': hasExperience ?? false,
+                                  'years_of_experience': hasExperience == true ? selectedYears ?? '' : '',
+                                });
+
+                                Navigator.pushNamed(context, '/shadowteacherQ3');
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF600A),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'التالي',
+                          style: TextStyle(
+                            fontFamily: 'NotoSansArabic',
+                            fontSize: 17,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                child: const Text(
-                      'التالي',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansArabic',
-                        fontSize: 17,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-              ),
-            ),
+
           ],
         ),
       ),

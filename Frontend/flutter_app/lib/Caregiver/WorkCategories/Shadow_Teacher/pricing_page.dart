@@ -1,4 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:flutter_app/pages/config.dart';
+import 'package:http/http.dart' as http;
+// ignore: depend_on_referenced_packages
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ShadowTeacherPricingPage extends StatefulWidget {
   const ShadowTeacherPricingPage({super.key});
@@ -9,7 +17,7 @@ class ShadowTeacherPricingPage extends StatefulWidget {
 
 class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
   final TextEditingController _priceController = TextEditingController();
-  String rateType = 'ساعة'; // or 'يوم'
+  String rateType = 'ساعة';
 
   bool get isValidPrice => _priceController.text.trim().isNotEmpty && double.tryParse(_priceController.text) != null;
 
@@ -17,6 +25,50 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
   void dispose() {
     _priceController.dispose();
     super.dispose();
+  }
+
+  Future<String> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('accessToken') ?? '';
+  }
+
+  Future<void> submitData(BuildContext context) async {
+    final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+    final token = await getToken();
+    final data = provider.getAll();
+
+    data['rate'] = _priceController.text.trim();
+    data['rate_type'] = rateType;
+
+    try {
+      print('📦 Token: $token');
+      print('📤 Payload: ${jsonEncode(data)}');
+
+      final response = await http.post(
+        Uri.parse(specialNeedsDetails),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(data),
+      );
+
+      print('📨 Response Code: ${response.statusCode}');
+      print('📨 Response Body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        Navigator.pushNamed(context, '/idverifyapi');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('فشل في إرسال البيانات: ${response.statusCode}')),
+        );
+      }
+    } catch (e) {
+      print('❌ Error while sending special needs data: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء إرسال البيانات')),
+      );
+    }
   }
 
   @override
@@ -35,7 +87,6 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
         ),
         body: Column(
           children: [
-            // Progress bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: ClipRRect(
@@ -49,8 +100,6 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Main content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -86,7 +135,6 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
                               hintText: 'مثال: 50',
                               hintStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
                               suffixText: 'شيكل',
-                              prefixText: '', 
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFFFF600A)),
@@ -97,7 +145,6 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
                               ),
                             ),
                           ),
-
                         ),
                         const SizedBox(width: 12),
                         DropdownButton<String>(
@@ -110,8 +157,7 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
                           items: ['ساعة', 'يوم'].map((value) {
                             return DropdownMenuItem<String>(
                               value: value,
-                              child: Text('لكل $value',
-                                  style: const TextStyle(fontFamily: 'NotoSansArabic')),
+                              child: Text('لكل $value', style: const TextStyle(fontFamily: 'NotoSansArabic')),
                             );
                           }).toList(),
                         ),
@@ -133,18 +179,12 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
                 ),
               ),
             ),
-
-            // Submit button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: isValidPrice
-                      ? () {
-                          Navigator.pushNamed(context, '/shadowteachercomplete');
-                        }
-                      : null,
+                  onPressed: isValidPrice ? () => submitData(context) : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     disabledBackgroundColor: Colors.orange.shade200,
@@ -154,14 +194,14 @@ class _ShadowTeacherPricingPageState extends State<ShadowTeacherPricingPage> {
                     ),
                   ),
                   child: const Text(
-                      'التالي',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansArabic',
-                        fontSize: 17,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
+                    'التالي',
+                    style: TextStyle(
+                      fontFamily: 'NotoSansArabic',
+                      fontSize: 17,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
                     ),
+                  ),
                 ),
               ),
             ),

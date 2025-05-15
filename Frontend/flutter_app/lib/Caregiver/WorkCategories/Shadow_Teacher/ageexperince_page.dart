@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart' show SpecialNeedsProvider;
+import 'package:provider/provider.dart';
 
 class ShadowTeacherStep4 extends StatefulWidget {
   const ShadowTeacherStep4({super.key});
@@ -252,27 +254,40 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
             ),
 
             // Next Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: (selectedAgeGroup != null &&
-                          canAccompany != null &&
-                          availability.values.any((set) => set.isNotEmpty))
-                      ? () {
-                    Navigator.pushNamed(context, '/shadowteacherbio'); 
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF600A),
-                    disabledBackgroundColor: Colors.orange.shade200,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+       Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12),
+            child: Builder(
+              builder: (context) {
+                return SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: (selectedAgeGroup != null &&
+                            canAccompany != null &&
+                            availability.values.any((set) => set.isNotEmpty))
+                        ? () {
+                            // تحويل الـ Set إلى List لتخزينها
+                            final Map<String, List<String>> availabilityMap =
+                                availability.map((key, value) => MapEntry(key, value.toList()));
+
+                            final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+                            provider.updateMany({
+                              'preferred_age_group': selectedAgeGroup,
+                              'can_accompany_to_school': canAccompany,
+                              'availability': availabilityMap,
+                            });
+
+                            Navigator.pushNamed(context, '/shadowteacherbio');
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF600A),
+                      disabledBackgroundColor: Colors.orange.shade200,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                  ),
-                child: const Text(
+                    child: const Text(
                       'التالي',
                       style: TextStyle(
                         fontFamily: 'NotoSansArabic',
@@ -281,9 +296,12 @@ class _ShadowTeacherStep4State extends State<ShadowTeacherStep4> {
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                ),
-              ),
+                  ),
+                );
+              },
             ),
+          ),
+
           ],
         ),
       ),

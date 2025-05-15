@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:provider/provider.dart';
 
 class ShadowTeacherStep3 extends StatefulWidget {
   const ShadowTeacherStep3({super.key});
@@ -121,34 +123,45 @@ class _ShadowTeacherStep3State extends State<ShadowTeacherStep3> {
             ),
 
             // Next Button
-            Padding(
+              Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: selectedIndexes.isNotEmpty
-                        ? () {
-                    Navigator.pushNamed(context, '/shadowteacherQ4'); 
-                          }
-                        : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF600A),
-                      disabledBackgroundColor: Colors.orange.shade200,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                child: Builder(
+                  builder: (context) {
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: selectedIndexes.isNotEmpty
+                            ? () {
+                                final selectedTrainings = selectedIndexes
+                                    .map((i) => trainingOptions[i])
+                                    .toList();
+
+                                final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+                                provider.update('training_certifications', selectedTrainings);
+
+                                Navigator.pushNamed(context, '/shadowteacherQ4');
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFF600A),
+                          disabledBackgroundColor: Colors.orange.shade200,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'التالي',
+                          style: TextStyle(
+                            fontFamily: 'NotoSansArabic',
+                            fontSize: 17,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      'التالي',
-                      style: TextStyle(
-                        fontFamily: 'NotoSansArabic',
-                        fontSize: 17,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
 
