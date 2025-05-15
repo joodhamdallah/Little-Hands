@@ -124,40 +124,42 @@ class _DisabilityExperiencePageState extends State<DisabilityExperiencePage> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                  ElevatedButton(
-                  onPressed: selectedIndexes.isNotEmpty
-                      ? () {
-                          // 🟠 استخراج العناوين المختارة
-                          final selectedDisabilities = selectedIndexes
-                              .map((index) => options[index]['title'] as String)
-                              .toList();
+              Builder(
+                  builder: (context) {
+                    return ElevatedButton(
+                      onPressed: selectedIndexes.isNotEmpty
+                          ? () {
+                              final selectedDisabilities = selectedIndexes
+                                  .map((index) => options[index]['title'] as String)
+                                  .toList();
 
-                          // 🟠 حفظ في الـ Provider
-                          final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
-                          provider.update('disability_experience', selectedDisabilities);
+                              final provider = Provider.of<SpecialNeedsProvider>(context, listen: false);
+                              provider.update('disability_experience', selectedDisabilities);
 
-                          // 🟠 الانتقال للصفحة التالية
-                          Navigator.pushNamed(context, '/shadowteacherQ2');
-                        }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF600A),
-                    disabledBackgroundColor: const Color.fromARGB(255, 255, 218, 196),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    'التالي',
-                    style: TextStyle(
-                      fontFamily: 'NotoSansArabic',
-                      fontSize: 17,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
+                              Navigator.pushNamed(context, '/shadowteacherQ2');
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF600A),
+                        disabledBackgroundColor: const Color.fromARGB(255, 255, 218, 196),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'التالي',
+                        style: TextStyle(
+                          fontFamily: 'NotoSansArabic',
+                          fontSize: 17,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    );
+                  },
                 ),
+
 
               ],
             ),
