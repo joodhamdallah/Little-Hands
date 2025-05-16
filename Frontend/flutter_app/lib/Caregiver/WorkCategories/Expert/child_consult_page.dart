@@ -1,6 +1,7 @@
-// main_consultation_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/subcategories_page.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
+import 'package:provider/provider.dart';
 
 class ChildConsultPage extends StatefulWidget {
   const ChildConsultPage({super.key});
@@ -94,16 +95,10 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? const Color(0xFFFFE3D3)
-                                  : Colors.white,
+                          color: isSelected ? const Color(0xFFFFE3D3) : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color:
-                                isSelected
-                                    ? const Color(0xFFFF600A)
-                                    : Colors.black12,
+                            color: isSelected ? const Color(0xFFFF600A) : Colors.black12,
                             width: 2,
                           ),
                           boxShadow: const [
@@ -166,27 +161,24 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed:
-                      selectedIndices.isNotEmpty
-                          ? () {
-                            List<String> selectedTitles =
-                                selectedIndices
-                                    .map(
-                                      (i) =>
-                                          subcategories[i]['title'].toString(),
-                                    )
-                                    .toList();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => SubcategoryScreen(
-                                      categoryList: selectedTitles,
-                                    ),
-                              ),
-                            );
-                          }
-                          : null,
+                  onPressed: selectedIndices.isNotEmpty
+                      ? () {
+                          final selectedTitles = selectedIndices
+                              .map((i) => subcategories[i]['title'].toString())
+                              .toList();
+
+                          // 🧠 Store in Provider
+                          final provider = Provider.of<ExpertProvider>(context, listen: false);
+                          provider.update('selected_consultations', selectedTitles);
+
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SubcategoryScreen(categoryList: selectedTitles),
+                            ),
+                          );
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     shape: RoundedRectangleBorder(

@@ -1,13 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 
 class ExpertQualificationPage extends StatefulWidget {
   const ExpertQualificationPage({super.key});
 
   @override
-  State<ExpertQualificationPage> createState() =>
-      _ExpertQualificationPageState();
+  State<ExpertQualificationPage> createState() => _ExpertQualificationPageState();
 }
 
 class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
@@ -52,30 +52,29 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
   final TextEditingController expiryDateController = TextEditingController();
   String? licenseAttachmentFileName;
 
-final ImagePicker _picker = ImagePicker();
+  final ImagePicker _picker = ImagePicker();
 
-Future<void> pickDegreeFile(int index) async {
-  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-  if (image != null) {
-    setState(() {
-      if (attachedDegrees.length > index) {
-        attachedDegrees[index] = image.name;
-      } else {
-        attachedDegrees.add(image.name);
-      }
-    });
+  Future<void> pickDegreeFile(int index) async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        if (attachedDegrees.length > index) {
+          attachedDegrees[index] = image.name;
+        } else {
+          attachedDegrees.add(image.name);
+        }
+      });
+    }
   }
-}
 
-Future<void> pickLicenseFile() async {
-  final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-  if (image != null) {
-    setState(() {
-      licenseAttachmentFileName = image.name;
-    });
+  Future<void> pickLicenseFile() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        licenseAttachmentFileName = image.name;
+      });
+    }
   }
-}
-
 
   void addDegreeField() {
     setState(() {
@@ -123,9 +122,9 @@ Future<void> pickLicenseFile() async {
   }
 
   Widget buildDivider() => const Padding(
-    padding: EdgeInsets.symmetric(horizontal: 16.0),
-    child: Divider(color: Colors.black12, thickness: 1),
-  );
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Divider(color: Colors.black12, thickness: 1),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -220,19 +219,15 @@ Future<void> pickLicenseFile() async {
                             ),
                             value: selectedDegrees[index],
                             hint: const Text('اختر نوع الشهادة'),
-                            items:
-                                degreeOptions
-                                    .map(
-                                      (degree) => DropdownMenuItem(
-                                        value: degree,
-                                        child: Text(degree),
-                                      ),
-                                    )
-                                    .toList(),
-                            onChanged:
-                                (value) => setState(
-                                  () => selectedDegrees[index] = value,
-                                ),
+                            items: degreeOptions
+                                .map(
+                                  (degree) => DropdownMenuItem(
+                                    value: degree,
+                                    child: Text(degree),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) => setState(() => selectedDegrees[index] = value),
                           ),
                           if (selectedDegrees[index] == 'أخرى')
                             Padding(
@@ -322,10 +317,7 @@ Future<void> pickLicenseFile() async {
                 ),
                 if (hasLicense) ...[
                   const SizedBox(height: 12),
-                  const Text(
-                    'اسم الجهة المانحة',
-                    style: TextStyle(fontFamily: 'NotoSansArabic'),
-                  ),
+                  const Text('اسم الجهة المانحة', style: TextStyle(fontFamily: 'NotoSansArabic')),
                   const SizedBox(height: 6),
                   TextField(
                     controller: authorityNameController,
@@ -335,10 +327,7 @@ Future<void> pickLicenseFile() async {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'تاريخ انتهاء الترخيص',
-                    style: TextStyle(fontFamily: 'NotoSansArabic'),
-                  ),
+                  const Text('تاريخ انتهاء الترخيص', style: TextStyle(fontFamily: 'NotoSansArabic')),
                   const SizedBox(height: 6),
                   TextField(
                     controller: expiryDateController,
@@ -368,13 +357,39 @@ Future<void> pickLicenseFile() async {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed:
-                          isFormValid()
-                              ? () => Navigator.pushNamed(
-                                context,
-                                '/expertExperienceQ4',
-                              )
-                              : null,
+                      onPressed: isFormValid()
+                          ? () {
+                              final provider = Provider.of<ExpertProvider>(context, listen: false);
+
+                              final List<Map<String, dynamic>> degrees = [];
+                              for (int i = 0; i < selectedDegrees.length; i++) {
+                                degrees.add({
+                                  'degree': selectedDegrees[i] == 'أخرى'
+                                      ? otherDegreeControllers[i].text
+                                      : selectedDegrees[i],
+                                  'specialization': specializationControllers[i].text,
+                                  'institution': institutionControllers[i].text,
+                                  'attachment': attachedDegrees[i],
+                                });
+                              }
+
+                              Map<String, dynamic>? license;
+                              if (hasLicense) {
+                                license = {
+                                  'authority': authorityNameController.text,
+                                  'expiry_date': expiryDateController.text,
+                                  'attachment': licenseAttachmentFileName,
+                                };
+                              }
+
+                              provider.setQualificationsAndLicense(
+                                degrees: degrees,
+                                license: license,
+                              );
+
+                              Navigator.pushNamed(context, '/expertExperienceQ4');
+                            }
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF600A),
                         shape: RoundedRectangleBorder(
