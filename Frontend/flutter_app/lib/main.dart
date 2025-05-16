@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
@@ -116,6 +117,8 @@ void main() async {
         ),
 
               ChangeNotifierProvider(create: (_) => SpecialNeedsProvider()),
+              ChangeNotifierProvider(create: (_) => ExpertProvider()),
+
 
       ],
       child: const MyApp(),
