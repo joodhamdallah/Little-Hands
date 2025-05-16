@@ -1,5 +1,6 @@
-// subcategory_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 
 class SubcategoryScreen extends StatefulWidget {
   final List<String> categoryList;
@@ -96,9 +97,7 @@ class _SubcategoryScreenState extends State<SubcategoryScreen> {
                           final sub = subList[subIndex];
                           final title = sub['title'] as String;
                           final icon = sub['icon'] as IconData;
-                          final isSelected = selectedSubcategories.contains(
-                            title,
-                          );
+                          final isSelected = selectedSubcategories.contains(title);
 
                           return GestureDetector(
                             onTap: () {
@@ -112,20 +111,12 @@ class _SubcategoryScreenState extends State<SubcategoryScreen> {
                             },
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               decoration: BoxDecoration(
-                                color:
-                                    isSelected
-                                        ? const Color(0xFFFFE3D3)
-                                        : const Color(0xFFFFF3ED),
+                                color: isSelected ? const Color(0xFFFFE3D3) : const Color(0xFFFFF3ED),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color:
-                                      isSelected
-                                          ? const Color(0xFFFF600A)
-                                          : Colors.black12,
+                                  color: isSelected ? const Color(0xFFFF600A) : Colors.black12,
                                   width: 2,
                                 ),
                                 boxShadow: const [
@@ -139,11 +130,7 @@ class _SubcategoryScreenState extends State<SubcategoryScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    icon,
-                                    color: const Color(0xFFFF600A),
-                                    size: 24,
-                                  ),
+                                  Icon(icon, color: const Color(0xFFFF600A), size: 24),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
@@ -169,25 +156,18 @@ class _SubcategoryScreenState extends State<SubcategoryScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                bottom: 24.0,
-                top: 8,
-              ),
+              padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 24.0, top: 8),
               child: SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed:
-                      selectedSubcategories.isNotEmpty
-                          ? () {
-                            Navigator.pushNamed(
-                              context,
-                              '/expertQualificationsQ3',
-                            );
-                          }
-                          : null,
+                  onPressed: selectedSubcategories.isNotEmpty
+                      ? () {
+                          final provider = Provider.of<ExpertProvider>(context, listen: false);
+                          provider.update('selected_subcategories', selectedSubcategories.toList());
+                          Navigator.pushNamed(context, '/expertQualificationsQ3');
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     shape: RoundedRectangleBorder(

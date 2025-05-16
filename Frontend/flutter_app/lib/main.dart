@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
-import 'package:intl/date_symbol_data_local.dart'; // ✅ إضافة هذه المكتبة
+import 'package:intl/date_symbol_data_local.dart'; 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -12,7 +14,6 @@ import 'package:flutter_app/Caregiver/WorkCategories/Babysitter/baby_sitter_page
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/child_consult_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_bio_wage_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_experience_page.dart';
-// import 'package:flutter_app/Caregiver/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/academic_qualifications_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/ageexperince_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/bio_page.dart';
@@ -116,6 +117,8 @@ void main() async {
         ),
 
               ChangeNotifierProvider(create: (_) => SpecialNeedsProvider()),
+              ChangeNotifierProvider(create: (_) => ExpertProvider()),
+
 
       ],
       child: const MyApp(),
@@ -146,7 +149,7 @@ class MyApp extends StatelessWidget {
         '/idverifyapi': (context) => const IDVerificationPage(),
 
         '/childConsult': (context) => const ChildConsultPage(),
-        // '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
+       '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
         '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
         '/expertBioQ5': (context) => const ExpertBioPage(),
 

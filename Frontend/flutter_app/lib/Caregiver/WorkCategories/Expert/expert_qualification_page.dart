@@ -1,129 +1,130 @@
-// expert_qualification_page.dart
-/*
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 
-// class ExpertQualificationPage extends StatefulWidget {
-//   const ExpertQualificationPage({super.key});
+class ExpertQualificationPage extends StatefulWidget {
+  const ExpertQualificationPage({super.key});
 
-//   @override
-//   State<ExpertQualificationPage> createState() =>
-//       _ExpertQualificationPageState();
-// }
+  @override
+  State<ExpertQualificationPage> createState() => _ExpertQualificationPageState();
+}
 
-// class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
-//   bool isFormValid() {
-//     for (int i = 0; i < selectedDegrees.length; i++) {
-//       if (selectedDegrees[i] == null ||
-//           specializationControllers[i].text.isEmpty ||
-//           institutionControllers[i].text.isEmpty) {
-//         return false;
-//       }
-//       if (selectedDegrees[i] == 'أخرى' &&
-//           otherDegreeControllers[i].text.isEmpty) {
-//         return false;
-//       }
-//     }
-//     if (hasLicense) {
-//       if (authorityNameController.text.isEmpty ||
-//           expiryDateController.text.isEmpty ||
-//           licenseAttachmentFileName == null) {
-//         return false;
-//       }
-//     }
-//     return true;
-//   }
+class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
+  bool isFormValid() {
+    for (int i = 0; i < selectedDegrees.length; i++) {
+      if (selectedDegrees[i] == null ||
+          specializationControllers[i].text.isEmpty ||
+          institutionControllers[i].text.isEmpty) {
+        return false;
+      }
+      if (selectedDegrees[i] == 'أخرى' &&
+          otherDegreeControllers[i].text.isEmpty) {
+        return false;
+      }
+    }
+    if (hasLicense) {
+      if (authorityNameController.text.isEmpty ||
+          expiryDateController.text.isEmpty ||
+          licenseAttachmentFileName == null) {
+        return false;
+      }
+    }
+    return true;
+  }
 
-//   final List<String?> selectedDegrees = [];
-//   final List<String?> attachedDegrees = [];
-//   final List<TextEditingController> specializationControllers = [];
-//   final List<TextEditingController> institutionControllers = [];
-//   final List<TextEditingController> otherDegreeControllers = [];
+  final List<String?> selectedDegrees = [];
+  final List<String?> attachedDegrees = [];
+  final List<TextEditingController> specializationControllers = [];
+  final List<TextEditingController> institutionControllers = [];
+  final List<TextEditingController> otherDegreeControllers = [];
 
-//   final List<String> degreeOptions = [
-//     'بكالوريوس',
-//     'ماجستير',
-//     'دكتوراه',
-//     'دبلوم عالي',
-//     'أخرى',
-//   ];
+  final List<String> degreeOptions = [
+    'بكالوريوس',
+    'ماجستير',
+    'دكتوراه',
+    'دبلوم عالي',
+    'أخرى',
+  ];
 
-//   bool hasLicense = false;
-//   final TextEditingController authorityNameController = TextEditingController();
-//   final TextEditingController expiryDateController = TextEditingController();
-//   String? licenseAttachmentFileName;
+  bool hasLicense = false;
+  final TextEditingController authorityNameController = TextEditingController();
+  final TextEditingController expiryDateController = TextEditingController();
+  String? licenseAttachmentFileName;
 
-//   Future<void> pickDegreeFile(int index) async {
-//     FilePickerResult? result = await FilePicker.platform.pickFiles();
-//     if (result != null) {
-//       setState(() {
-//         if (attachedDegrees.length > index) {
-//           attachedDegrees[index] = result.files.single.name;
-//         } else {
-//           attachedDegrees.add(result.files.single.name);
-//         }
-//       });
-//     }
-//   }
+  final ImagePicker _picker = ImagePicker();
 
-//   Future<void> pickLicenseFile() async {
-//     FilePickerResult? result = await FilePicker.platform.pickFiles();
-//     if (result != null) {
-//       setState(() {
-//         licenseAttachmentFileName = result.files.single.name;
-//       });
-//     }
-//   }
+  Future<void> pickDegreeFile(int index) async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        if (attachedDegrees.length > index) {
+          attachedDegrees[index] = image.name;
+        } else {
+          attachedDegrees.add(image.name);
+        }
+      });
+    }
+  }
 
-//   void addDegreeField() {
-//     setState(() {
-//       selectedDegrees.add(null);
-//       attachedDegrees.add(null);
-//       specializationControllers.add(TextEditingController());
-//       institutionControllers.add(TextEditingController());
-//       otherDegreeControllers.add(TextEditingController());
-//     });
-//   }
+  Future<void> pickLicenseFile() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        licenseAttachmentFileName = image.name;
+      });
+    }
+  }
 
-//   void removeDegreeField(int index) {
-//     setState(() {
-//       selectedDegrees.removeAt(index);
-//       attachedDegrees.removeAt(index);
-//       specializationControllers[index].dispose();
-//       institutionControllers[index].dispose();
-//       otherDegreeControllers[index].dispose();
-//       specializationControllers.removeAt(index);
-//       institutionControllers.removeAt(index);
-//       otherDegreeControllers.removeAt(index);
-//     });
-//   }
+  void addDegreeField() {
+    setState(() {
+      selectedDegrees.add(null);
+      attachedDegrees.add(null);
+      specializationControllers.add(TextEditingController());
+      institutionControllers.add(TextEditingController());
+      otherDegreeControllers.add(TextEditingController());
+    });
+  }
 
-//   @override
-//   void dispose() {
-//     authorityNameController.dispose();
-//     expiryDateController.dispose();
-//     for (var controller in specializationControllers) {
-//       controller.dispose();
-//     }
-//     for (var controller in institutionControllers) {
-//       controller.dispose();
-//     }
-//     for (var controller in otherDegreeControllers) {
-//       controller.dispose();
-//     }
-//     super.dispose();
-//   }
+  void removeDegreeField(int index) {
+    setState(() {
+      selectedDegrees.removeAt(index);
+      attachedDegrees.removeAt(index);
+      specializationControllers[index].dispose();
+      institutionControllers[index].dispose();
+      otherDegreeControllers[index].dispose();
+      specializationControllers.removeAt(index);
+      institutionControllers.removeAt(index);
+      otherDegreeControllers.removeAt(index);
+    });
+  }
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     addDegreeField();
-//   }
+  @override
+  void dispose() {
+    authorityNameController.dispose();
+    expiryDateController.dispose();
+    for (var controller in specializationControllers) {
+      controller.dispose();
+    }
+    for (var controller in institutionControllers) {
+      controller.dispose();
+    }
+    for (var controller in otherDegreeControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
 
-//   Widget buildDivider() => const Padding(
-//     padding: EdgeInsets.symmetric(horizontal: 16.0),
-//     child: Divider(color: Colors.black12, thickness: 1),
-//   );
+  @override
+  void initState() {
+    super.initState();
+    addDegreeField();
+  }
+
+  Widget buildDivider() => const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Divider(color: Colors.black12, thickness: 1),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -218,19 +219,15 @@ import 'package:file_picker/file_picker.dart';
                             ),
                             value: selectedDegrees[index],
                             hint: const Text('اختر نوع الشهادة'),
-                            items:
-                                degreeOptions
-                                    .map(
-                                      (degree) => DropdownMenuItem(
-                                        value: degree,
-                                        child: Text(degree),
-                                      ),
-                                    )
-                                    .toList(),
-                            onChanged:
-                                (value) => setState(
-                                  () => selectedDegrees[index] = value,
-                                ),
+                            items: degreeOptions
+                                .map(
+                                  (degree) => DropdownMenuItem(
+                                    value: degree,
+                                    child: Text(degree),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) => setState(() => selectedDegrees[index] = value),
                           ),
                           if (selectedDegrees[index] == 'أخرى')
                             Padding(
@@ -320,10 +317,7 @@ import 'package:file_picker/file_picker.dart';
                 ),
                 if (hasLicense) ...[
                   const SizedBox(height: 12),
-                  const Text(
-                    'اسم الجهة المانحة',
-                    style: TextStyle(fontFamily: 'NotoSansArabic'),
-                  ),
+                  const Text('اسم الجهة المانحة', style: TextStyle(fontFamily: 'NotoSansArabic')),
                   const SizedBox(height: 6),
                   TextField(
                     controller: authorityNameController,
@@ -333,10 +327,7 @@ import 'package:file_picker/file_picker.dart';
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'تاريخ انتهاء الترخيص',
-                    style: TextStyle(fontFamily: 'NotoSansArabic'),
-                  ),
+                  const Text('تاريخ انتهاء الترخيص', style: TextStyle(fontFamily: 'NotoSansArabic')),
                   const SizedBox(height: 6),
                   TextField(
                     controller: expiryDateController,
@@ -366,13 +357,39 @@ import 'package:file_picker/file_picker.dart';
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed:
-                          isFormValid()
-                              ? () => Navigator.pushNamed(
-                                context,
-                                '/expertExperienceQ4',
-                              )
-                              : null,
+                      onPressed: isFormValid()
+                          ? () {
+                              final provider = Provider.of<ExpertProvider>(context, listen: false);
+
+                              final List<Map<String, dynamic>> degrees = [];
+                              for (int i = 0; i < selectedDegrees.length; i++) {
+                                degrees.add({
+                                  'degree': selectedDegrees[i] == 'أخرى'
+                                      ? otherDegreeControllers[i].text
+                                      : selectedDegrees[i],
+                                  'specialization': specializationControllers[i].text,
+                                  'institution': institutionControllers[i].text,
+                                  'attachment': attachedDegrees[i],
+                                });
+                              }
+
+                              Map<String, dynamic>? license;
+                              if (hasLicense) {
+                                license = {
+                                  'authority': authorityNameController.text,
+                                  'expiry_date': expiryDateController.text,
+                                  'attachment': licenseAttachmentFileName,
+                                };
+                              }
+
+                              provider.setQualificationsAndLicense(
+                                degrees: degrees,
+                                license: license,
+                              );
+
+                              Navigator.pushNamed(context, '/expertExperienceQ4');
+                            }
+                          : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF600A),
                         shape: RoundedRectangleBorder(
@@ -398,4 +415,3 @@ import 'package:file_picker/file_picker.dart';
     );
   }
 }
-*/
