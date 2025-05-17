@@ -13,3 +13,4 @@ final saveBooking = "${url}bookings";
 final saveFcmToken = "${url}auth/save-fcm-token";
 final String specialNeedsDetails = "${url}special-needs/details";
 final String expertDetails = "${url}experts/details";
+final saveWeeklyWorkPrefrences = "${url}weekly-preferences";

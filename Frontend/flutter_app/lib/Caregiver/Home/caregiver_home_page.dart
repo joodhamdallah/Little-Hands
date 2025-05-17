@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_bookings_page.dart';
+import 'package:flutter_app/Caregiver/Home/ControlPanel/caregiver_control_panel_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_main_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_profile_model.dart';
-import 'package:flutter_app/Caregiver/Home/work-schedule-page.dart';
+import 'package:flutter_app/Caregiver/Home/ControlPanel/work-schedule-page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
 import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
@@ -43,8 +44,8 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
           ).loadUnreadCount();
         },
       ),
-      CaregiverBookingsPage(), 
-      WorkSchedulePage(),
+      CaregiverBookingsPage(),
+      CaregiverControlPanelPage(), // ⬅️ we’ll build this
       SingleChildScrollView(
         child: CaregiverProfilePage(profile: widget.profile),
       ),
@@ -84,5 +85,4 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
       ),
     );
   }
-
 }

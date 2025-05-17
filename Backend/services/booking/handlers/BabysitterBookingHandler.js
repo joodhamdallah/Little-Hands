@@ -7,96 +7,95 @@ const Parent = require('../../../models/Parent');
 const NotificationService = require('../../notificationService');
 
 class BabysitterBookingHandler {
-  static async handle(bookingData) {
-    const {
-      parent_id,
-      caregiver_id,
-      service_type,
-      session_address_type,
-      city,
-      neighborhood,
-      street,
-      building,
-      session_start_date: original_start_date,
-      session_end_date,
-      session_start_time: original_start_time,
-      session_end_time: original_end_time,
-      session_days,
-      children_ages,
-      has_medical_condition,
-      medical_condition_details,
-      takes_medicine,
-      medicine_details,
-      additional_notes,
-      rate_min,
-      rate_max,
-      additional_requirements,
-      consultation_topic,
-      special_needs_support,
-      preferred_contact_method,
-      session_duration_minutes,
-      schedule_id,
-    } = bookingData;
+static async handle(bookingData) {
+  const {
+    parent_id,
+    caregiver_id,
+    service_type,
+    session_address_type,
+    city,
+    neighborhood,
+    street,
+    building,
+    session_start_date,
+    session_end_date,
+    session_start_time,
+    session_end_time,
+    session_days,
+    children_ages,
+    has_medical_condition,
+    medical_condition_details,
+    takes_medicine,
+    medicine_details,
+    additional_notes,
+    rate_min,
+    rate_max,
+    additional_requirements,
+    consultation_topic,
+    special_needs_support,
+    preferred_contact_method,
+    session_duration_minutes,
+  } = bookingData;
+console.log("📦 Booking data received:", {
+  session_start_date,
+  session_start_time,
+  session_end_time
+});
 
-    const { session_start_date, session_start_time, session_end_time } = await this.#resolveSchedule(schedule_id, {
-      session_start_date: original_start_date,
-      session_start_time: original_start_time,
-      session_end_time: original_end_time,
-    });
+  const newBooking = await Booking.create({
+    parent_id,
+    caregiver_id,
+    service_type,
+    session_address_type,
+    city,
+    neighborhood,
+    street,
+    building,
+    session_start_date,
+    session_end_date: session_end_date || null,
+    session_start_time,
+    session_end_time,
+    session_days,
+    children_ages,
+    has_medical_condition,
+    medical_condition_details,
+    takes_medicine,
+    medicine_details,
+    additional_notes,
+    rate_min,
+    rate_max,
+    additional_requirements,
+    consultation_topic,
+    special_needs_support,
+    preferred_contact_method,
+    session_duration_minutes,
+    status: 'pending',
+  });
 
-    const newBooking = await Booking.create({
-      parent_id,
-      caregiver_id,
-      service_type,
-      session_address_type,
-      city,
-      neighborhood,
-      street,
-      building,
-      session_start_date,
-      session_end_date: session_end_date || null,
-      session_start_time,
-      session_end_time,
-      session_days,
-      children_ages,
-      has_medical_condition,
-      medical_condition_details,
-      takes_medicine,
-      medicine_details,
-      additional_notes,
-      rate_min,
-      rate_max,
-      additional_requirements,
-      consultation_topic,
-      special_needs_support,
-      preferred_contact_method,
-      session_duration_minutes,
-      status: 'pending',
-    });
+  await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city);
+  await this.#notifyParent(newBooking, parent_id, caregiver_id, session_start_time, city);
 
-    await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city);
-    await this.#notifyParent(newBooking, parent_id, caregiver_id, session_start_time, city);
+  return newBooking;
+}
 
-    return newBooking;
-  }
 
-  static async #resolveSchedule(schedule_id, fallback) {
-    if (!schedule_id) return fallback;
+  // static async #resolveSchedule(schedule_id, fallback) {
+  //   if (!schedule_id) return fallback;
 
-    const selectedSlot = await WorkSchedule.findById(schedule_id);
-    if (selectedSlot) {
-      await WorkSchedule.findByIdAndDelete(schedule_id);
-      console.log(`🗑️ Deleted schedule: ${schedule_id}`);
-      return {
-        session_start_date: selectedSlot.date,
-        session_start_time: selectedSlot.start_time,
-        session_end_time: selectedSlot.end_time,
-      };
-    } else {
-      console.warn(`⚠️ Schedule not found for ID: ${schedule_id}`);
-      return fallback;
-    }
-  }
+  //   const selectedSlot = await WorkSchedule.findById(schedule_id);
+  //   if (selectedSlot) {
+  //     await WorkSchedule.findByIdAndDelete(schedule_id);
+  //     console.log(`🗑️ Deleted schedule: ${schedule_id}`);
+  //     return {
+  //       session_start_date: selectedSlot.date,
+  //       session_start_time: selectedSlot.start_time,
+  //       session_end_time: selectedSlot.end_time,
+  //     };
+  //   } else {
+  //     console.warn(`⚠️ Schedule not found for ID: ${schedule_id}`);
+  //     return fallback;
+  //   }
+  // }
 
   static async #notifyCaregiver(booking, caregiver_id, parent_id, service_type, session_time, city) {
     const caregiver = await CareGiver.findById(caregiver_id);

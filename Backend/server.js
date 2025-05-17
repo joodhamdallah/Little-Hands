@@ -18,7 +18,10 @@ const matchRoutes = require('./routes/matchRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const specialNeedsRoutes = require('./routes/specialNeedsRoutes');
-const expertRoutes = require("./routes/expertRoutes")
+const expertRoutes = require("./routes/expertRoutes");
+const workPreferenceRoutes = require('./routes/weeklyPreferenceRoutes');
+const specificDateRoutes = require('./routes/specificDateRoutes');
+
 
 
 app.use('/api/stripe', stripeWebhookRoute);
@@ -40,7 +43,8 @@ app.use('/api', matchRoutes);
  app.use('/api', notificationRoutes); 
 app.use("/api", specialNeedsRoutes);
 app.use("/api", expertRoutes);
-
+app.use('/api', workPreferenceRoutes);
+app.use('/api', specificDateRoutes);
 
 
 // ✅ Connect to MongoDB then start the server

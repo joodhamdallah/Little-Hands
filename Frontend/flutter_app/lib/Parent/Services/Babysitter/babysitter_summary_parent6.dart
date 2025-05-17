@@ -87,17 +87,6 @@ class BabysitterSummaryPage extends StatelessWidget {
 
               _buildInfoRow(
                 context,
-                'تواريخ وأوقات الجلسة:',
-                jobDetails['session_start_date'] != null
-                    ? """التاريخ: ${jobDetails['session_start_date'].toString().split(' ')[0]}
-الوقت: ${jobDetails['session_start_time']} إلى ${jobDetails['session_end_time']} 
-الأيام: ${(jobDetails['session_days'] as List?)?.join("، ") ?? ''}
- نهايةالجلسات: ${jobDetails['session_end_date'] != null ? jobDetails['session_end_date'].toString().split(' ')[0] : ''}"""
-                    : 'غير محدد',
-              ),
-
-              _buildInfoRow(
-                context,
                 'الأطفال الذين يحتاجون للرعاية:',
                 (jobDetails['children_ages'] != null &&
                         (jobDetails['children_ages'] as List).isNotEmpty)
