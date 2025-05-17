@@ -169,7 +169,7 @@ class _ChildConsultPageState extends State<ChildConsultPage> {
 
                           // 🧠 Store in Provider
                           final provider = Provider.of<ExpertProvider>(context, listen: false);
-                          provider.update('selected_consultations', selectedTitles);
+                          provider.update('categories', selectedTitles);
 
                           Navigator.push(
                             context,

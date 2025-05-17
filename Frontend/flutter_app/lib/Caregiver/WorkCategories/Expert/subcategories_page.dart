@@ -164,7 +164,7 @@ class _SubcategoryScreenState extends State<SubcategoryScreen> {
                   onPressed: selectedSubcategories.isNotEmpty
                       ? () {
                           final provider = Provider.of<ExpertProvider>(context, listen: false);
-                          provider.update('selected_subcategories', selectedSubcategories.toList());
+                          provider.update('subcategories', selectedSubcategories.toList());
                           Navigator.pushNamed(context, '/expertQualificationsQ3');
                         }
                       : null,

@@ -36,21 +36,27 @@ void setExperienceDetails({
   required String deliveryMethod,
   required List<String> ageGroups,
 }) {
-  _data['experience_years'] = yearsOfExperience;
+  _data['years_of_experience'] = yearsOfExperience;
   _data['session_types'] = sessionTypes;
   _data['delivery_method'] = deliveryMethod;
   _data['age_groups'] = ageGroups;
   notifyListeners();
 }
 
-  void setQualificationsAndLicense({
+ void setQualificationsAndLicense({
   required List<Map<String, dynamic>> degrees,
   required Map<String, dynamic>? license,
 }) {
   _data['degrees'] = degrees;
-  _data['license'] = license;
+  _data['has_license'] = license != null;
+  if (license != null) {
+    _data['license_authority'] = license['authority'];
+    _data['license_expiry'] = license['expiry_date'];
+    _data['license_file_name'] = license['attachment'];
+  }
   notifyListeners();
 }
+
 
 
   dynamic get(String key) => _data[key];
