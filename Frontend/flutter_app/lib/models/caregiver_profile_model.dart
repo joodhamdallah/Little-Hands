@@ -8,10 +8,10 @@ class CaregiverProfileModel {
   final List<String> skillsAndServices;
   final List<String> trainingCertification;
   final String bio;
-  final String rateText; // ✅ أضفنا الحقل الجديد
+  final String rateText; 
 
-  final Map<String, dynamic>? location; // ✅ New: raw coordinates
-  final double? distanceInKm; // ✅ New: distance in km
+  final Map<String, dynamic>? location; 
+  final double? distanceInKm; 
 
   CaregiverProfileModel({
     required this.firstName,
@@ -23,28 +23,34 @@ class CaregiverProfileModel {
     required this.skillsAndServices,
     required this.trainingCertification,
     required this.bio,
-    required this.rateText, // ✅ أضفناه هنا أيضاً
-    this.location, // ✅ added
-    this.distanceInKm, // ✅ added
+    required this.rateText, 
+    this.location, 
+    this.distanceInKm, 
   });
 
-  factory CaregiverProfileModel.fromJson(Map<String, dynamic> json) {
-    return CaregiverProfileModel(
-      firstName: json['first_name'] ?? '',
-      lastName: json['last_name'] ?? '',
-      image: json['image'],
-      city: json['city'] ?? '',
-      yearsExperience: json['years_experience'] ?? 0,
-      isSmoker: json['is_smoker'],
-      skillsAndServices: List<String>.from(json['skills_and_services'] ?? []),
-      trainingCertification: List<String>.from(
-        json['training_certification'] ?? [],
-      ),
-      bio: json['bio'] ?? '',
-      rateText:
-          json['rateText'] ?? 'لم يتم تحديد الأجر', // ✅ وهنا نقرأه من الـ JSON
-      location: json['location'], // ✅ expects {lat, lng}
-      distanceInKm: json['distanceInKm']?.toDouble(), // ✅ optional
-    );
-  }
+
+
+ factory CaregiverProfileModel.fromJson(Map<String, dynamic> json) {
+  return CaregiverProfileModel(
+    firstName: json['first_name'] ?? '',
+    lastName: json['last_name'] ?? '',
+    image: json['image'],
+    city: json['city'] ?? '',
+    yearsExperience: json['years_experience'] ?? 0,
+    isSmoker: json['is_smoker'],
+    skillsAndServices: List<String>.from(
+      json['skills_and_services'] ?? json['session_types'] ?? [],
+    ),
+    trainingCertification: List<String>.from(
+      json['training_certification'] ?? json['categories'] ?? [],
+    ),
+    bio: json['bio'] ?? '',
+    rateText: json['rateText'] ??
+        (json['rate'] != null ? '${json['rate']} شيكل' : 'لم يتم تحديد الأجر'),
+    location: json['location'],
+    distanceInKm: json['distanceInKm']?.toDouble(),
+  );
+}
+
+
 }
