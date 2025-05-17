@@ -8,7 +8,8 @@ class CaregiverProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String displayName = "${profile.firstName} ${profile.lastName.isNotEmpty ? profile.lastName[0] : ''}.";
+    String displayName =
+        "${profile.firstName} ${profile.lastName.isNotEmpty ? profile.lastName[0] : ''}.";
 
     return Padding(
       padding: const EdgeInsets.all(20),
@@ -16,22 +17,17 @@ class CaregiverProfilePage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          
-          // صورة البروفايل
           CircleAvatar(
             radius: 50,
             backgroundColor: Colors.orange.shade100,
             backgroundImage: profile.image != null && profile.image!.isNotEmpty
-              ? NetworkImage(profile.image!)
-              : null,
+                ? NetworkImage(profile.image!)
+                : null,
             child: profile.image == null || profile.image!.isEmpty
-              ? const Icon(Icons.person, size: 50, color: Colors.white)
-              : null,
+                ? const Icon(Icons.person, size: 50, color: Colors.white)
+                : null,
           ),
-
           const SizedBox(height: 15),
-
-          // الاسم
           Text(
             displayName,
             style: const TextStyle(
@@ -40,25 +36,13 @@ class CaregiverProfilePage extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 25),
-
-          // 🏙️ كارد المعلومات الأساسية
           _buildInfoCard(),
-
           const SizedBox(height: 20),
-
-          // 🌟 كارد المهارات والخدمات
           if (profile.skillsAndServices.isNotEmpty) _buildSkillsCard(),
-
           const SizedBox(height: 20),
-
-          // 🎓 كارد الشهادات
           if (profile.trainingCertification.isNotEmpty) _buildCertificationsCard(),
-
           const SizedBox(height: 20),
-
-          // 📝 كارد النبذة التعريفية
           _buildBioCard(),
         ],
       ),
@@ -114,7 +98,6 @@ class CaregiverProfilePage extends StatelessWidget {
     );
   }
 
-  // ➡️ كارد المهارات والخدمات
   Widget _buildSkillsCard() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -153,7 +136,6 @@ class CaregiverProfilePage extends StatelessWidget {
     );
   }
 
-  // ➡️ كارد الشهادات
   Widget _buildCertificationsCard() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -179,9 +161,11 @@ class CaregiverProfilePage extends StatelessWidget {
                   children: [
                     const Icon(Icons.check_circle_outline, color: Color(0xFFFF600A)),
                     const SizedBox(width: 8),
-                    Text(
-                      cert,
-                      style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                    Expanded(
+                      child: Text(
+                        cert,
+                        style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
                     ),
                   ],
                 );
@@ -193,7 +177,6 @@ class CaregiverProfilePage extends StatelessWidget {
     );
   }
 
-  // ➡️ كارد النبذة التعريفية
   Widget _buildBioCard() {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -216,6 +199,17 @@ class CaregiverProfilePage extends StatelessWidget {
             Text(
               profile.bio,
               style: const TextStyle(fontFamily: 'NotoSansArabic'),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Icon(Icons.attach_money, color: Color(0xFFFF600A)),
+                const SizedBox(width: 8),
+                Text(
+                  'الأجر للجلسة: ${profile.rateText}',
+                  style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                ),
+              ],
             ),
           ],
         ),
