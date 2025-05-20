@@ -13,11 +13,22 @@ const notificationSchema = new mongoose.Schema({
   },
   title: { type: String, required: true },
   message: { type: String, required: true },
-  type: {
-    type: String,
-    enum: ['booking_request', 'booking_response', 'welcome', 'alert', 'system'],
-    default: 'alert',
-  },
+type: {
+  type: String,
+  enum: [
+    'booking_request',          // parent → caregiver
+    'booking_accepted',         // caregiver → parent
+    'booking_rejected',
+    'booking_cancelled_by_parent',
+    'booking_cancelled_by_caregiver',
+    'session_reminder',
+    'system',
+    'alert',
+    'welcome',
+    'general'
+  ],
+  default: 'alert',
+},
   data: { type: mongoose.Schema.Types.Mixed }, // optional metadata
   read: { type: Boolean, default: false },
 }, { timestamps: true });

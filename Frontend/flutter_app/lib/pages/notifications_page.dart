@@ -131,21 +131,36 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                     fontFamily: 'NotoSansArabic',
                                   ),
                                 ),
+
                                 if (extraData != null) ...[
                                   if (extraData['city'] != null)
                                     Text(
                                       'المدينة: ${extraData['city']}',
-                                      style: TextStyle(fontSize: 12),
+                                      style: TextStyle(fontSize: 15),
                                     ),
-                                  if (extraData['session_time'] != null)
+
+                                  if (extraData['session_date'] != null)
                                     Text(
-                                      'الوقت: ${extraData['session_time']}',
-                                      style: TextStyle(fontSize: 12),
+                                      'التاريخ: ${_formatDate(extraData['session_date'])}',
+                                      style: TextStyle(fontSize: 15),
                                     ),
+                                  if (extraData['session_start_time'] != null &&
+                                      extraData['session_end_time'] != null)
+                                    Text(
+                                      'الوقت: من ${extraData['session_start_time']} حتى ${extraData['session_end_time']}',
+                                      style: const TextStyle(fontSize: 15),
+                                    ),
+
                                   if (extraData['parent_name'] != null)
                                     Text(
                                       'المرسل: ${extraData['parent_name']}',
-                                      style: TextStyle(fontSize: 12),
+                                      style: TextStyle(fontSize: 15),
+                                    ),
+
+                                  if (extraData['caregiver_name'] != null)
+                                    Text(
+                                      'الجليسة: ${extraData['caregiver_name']}',
+                                      style: TextStyle(fontSize: 15),
                                     ),
                                 ],
                               ],
@@ -185,6 +200,15 @@ class _NotificationsPageState extends State<NotificationsPage> {
         ],
       ),
     );
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return dateString;
+    }
   }
 
   Widget _buildTabButton(String value, String label) {

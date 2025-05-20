@@ -23,10 +23,13 @@ const sendNotification = async (fcmToken, title, body, data = {}) => {
         },
       },
     },
-    data: {
-      ...data,
-      click_action: "FLUTTER_NOTIFICATION_CLICK",
-    },
+   data: {
+  ...Object.entries(data).reduce((acc, [key, val]) => {
+    acc[key] = String(typeof val === 'object' ? JSON.stringify(val) : val);
+    return acc;
+  }, {}),
+  click_action: "FLUTTER_NOTIFICATION_CLICK"
+},
   };
 
   try {

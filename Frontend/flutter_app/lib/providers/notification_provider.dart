@@ -21,7 +21,7 @@ class NotificationProvider extends ChangeNotifier {
     _pollingTimer?.cancel();
 
     // Start new polling timer every 30 seconds
-    _pollingTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
       loadUnreadCount();
     });
   }
