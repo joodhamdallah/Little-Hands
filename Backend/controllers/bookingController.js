@@ -45,6 +45,25 @@ exports.getBookingsForCaregiver = async (req, res) => {
   }
 };
 
+// controllers/bookingController.js
+exports.getBookingsByCaregiverId = async (req, res) => {
+  try {
+    const caregiverId = req.params.id;
+
+  const bookings = await Booking.find({
+  caregiver_id: caregiverId,
+  status: 'confirmed'
+});
+
+    res.status(200).json({
+      status: true,
+      data: bookings
+    });
+  } catch (err) {
+    console.error("❌ Error in getBookingsByCaregiverId:", err.message);
+    res.status(500).json({ status: false, message: "خطأ في جلب الحجوزات" });
+  }
+};
 
 exports.confirmBooking = async (req, res) => {
   try {

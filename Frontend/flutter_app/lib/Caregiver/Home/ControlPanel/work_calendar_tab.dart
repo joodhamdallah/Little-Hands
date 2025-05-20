@@ -14,16 +14,22 @@ class WorkCalendarTab extends StatefulWidget {
 
 class _WorkCalendarTabState extends State<WorkCalendarTab> {
   Set<DateTime> disabledDates = {};
-  Set<DateTime> bookedDates = {};
   Set<String> weeklyWorkDays = {};
-
+  Set<DateTime> fullyBookedDates = {};
+  Set<DateTime> partiallyBookedDates = {};
+  List<Map<String, dynamic>> bookings = [];
   Map<String, dynamic> specificOverrides = {};
   Map<String, dynamic> weeklyPreferences = {};
 
   @override
   void initState() {
     super.initState();
-    loadPreferences();
+    loadAll();
+  }
+
+  Future<void> loadAll() async {
+    await loadPreferences(); // 🧠 Ensures weeklyPreferences is filled
+    await fetchBookings(); // ✅ Now safe to use session_type from it
   }
 
   Future<void> loadPreferences() async {
@@ -37,10 +43,12 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
     if (specificRes.statusCode == 200) {
       final data = jsonDecode(specificRes.body)['data'];
       for (var item in data) {
-        final date = DateTime.parse(item['date']);
-        final key = _dateKey(date);
+        final date = DateTime.parse(item['date']).toLocal();
+        final normalized = DateTime(date.year, date.month, date.day);
+
+        final key = _dateKey(normalized);
         if (item['is_disabled'] == true) {
-          disabledDates.add(date);
+          disabledDates.add(normalized);
         } else {
           specificOverrides[key] = item;
         }
@@ -55,17 +63,66 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
       final decoded = jsonDecode(weeklyRes.body);
       final data = decoded['data'];
       if (data != null && data['preferences'] != null) {
-        final prefsList = data['preferences'];
-        if (prefsList is List) {
-          for (var p in prefsList) {
-            weeklyPreferences[p['day']] = p;
-            weeklyWorkDays.add(p['day']); // ➕ Add the Arabic weekday
-          }
+        for (var p in data['preferences']) {
+          weeklyPreferences[p['day']] = p;
+          weeklyWorkDays.add(p['day']);
         }
       }
     }
 
     setState(() {});
+  }
+
+  Future<void> fetchBookings() async {
+    fullyBookedDates.clear();
+    partiallyBookedDates.clear();
+
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken') ?? '';
+
+    final res = await http.get(
+      Uri.parse('${url}caregiver/bookings'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body)['data'] as List;
+      bookings = data.cast<Map<String, dynamic>>();
+
+      final Map<String, List<Map<String, dynamic>>> grouped = {};
+
+      for (var b in bookings) {
+        final date = DateTime.parse(b['session_start_date']);
+        final normalized = DateTime(date.year, date.month, date.day);
+        final key = _dateKey(normalized);
+        grouped.putIfAbsent(key, () => []).add(b);
+      }
+
+      grouped.forEach((key, list) {
+        final parts = key.split('-').map((e) => int.parse(e)).toList();
+        final day = DateTime(parts[0], parts[1], parts[2]);
+        final weekdayName = _getArabicWeekday(day.weekday);
+
+        // Get the session_type from weekly preferences
+        final sessionType = weeklyPreferences[weekdayName]?['session_type'];
+
+        if (sessionType == 'single') {
+          // A single session type means one booking is enough to fully book the day
+          fullyBookedDates.add(day);
+          print('🔵 FULLY BOOKED (single): $day — ${list.length} session(s)');
+        } else if (sessionType == 'multiple') {
+          // Multiple means you can have more than one — so we treat it as partially booked
+          partiallyBookedDates.add(day);
+          print(
+            '🟡 PARTIALLY BOOKED (multiple): $day — ${list.length} session(s)',
+          );
+        } else {
+          print('❗ Unknown session_type for $day: $sessionType');
+        }
+      });
+
+      setState(() {});
+    }
   }
 
   String _dateKey(DateTime d) => '${d.year}-${d.month}-${d.day}';
@@ -89,41 +146,36 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
             ),
             const SizedBox(height: 12),
             TableCalendar(
-              availableCalendarFormats: const {CalendarFormat.month: 'الشهر'},
-              headerStyle: const HeaderStyle(formatButtonVisible: false),
-
               locale: 'ar_EG',
               firstDay: DateTime.now().subtract(const Duration(days: 30)),
               lastDay: DateTime.now().add(const Duration(days: 90)),
               focusedDay: DateTime.now(),
+              availableCalendarFormats: const {CalendarFormat.month: 'الشهر'},
+              headerStyle: const HeaderStyle(formatButtonVisible: false),
               onDaySelected: (selectedDay, _) {
-                _showDayOptionsDialog(selectedDay);
+                final normalized = DateTime(
+                  selectedDay.year,
+                  selectedDay.month,
+                  selectedDay.day,
+                );
+                _showDayOptionsDialog(normalized);
               },
               calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, focusedDay) {
-                  final isDisabled = disabledDates.contains(day);
-                  final isBooked = bookedDates.contains(day);
-                  final isWeeklyWorkDay = weeklyWorkDays.contains(
-                    _getArabicWeekday(day.weekday),
-                  );
-
-                  if (isDisabled) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.red.shade300,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                defaultBuilder: (context, day, _) {
+                  final normalized = DateTime(day.year, day.month, day.day);
+                  if (disabledDates.contains(normalized)) {
+                    return _buildCircle(day.day, Colors.red, Colors.white);
+                  } else if (fullyBookedDates.contains(normalized)) {
+                    return _buildCircle(
+                      day.day,
+                      Colors.blue.shade700,
+                      Colors.white,
                     );
-                  } else if (isBooked) {
+                  } else if (partiallyBookedDates.contains(normalized)) {
                     return Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.blue),
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.blue, width: 2),
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -131,46 +183,44 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                         style: const TextStyle(color: Colors.blue),
                       ),
                     );
-                  } else if (isWeeklyWorkDay) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.orange.shade200,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: const TextStyle(color: Colors.black),
-                      ),
+                  } else if (weeklyWorkDays.contains(
+                    _getArabicWeekday(day.weekday),
+                  )) {
+                    return _buildCircle(
+                      day.day,
+                      Colors.orange.shade200,
+                      Colors.black,
                     );
                   }
-
                   return null;
                 },
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              "ملاحظة:",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-                fontFamily: 'NotoSansArabic',
-              ),
-            ),
-            const SizedBox(height: 8),
-            Row(
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 _legendColorBox(Colors.red, 'يوم معطّل'),
-                SizedBox(width: 12),
-                _legendBorderBox(Colors.blue, 'يوم محجوز'),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
+                _legendColorBox(Colors.blue.shade700, 'محجوز بالكامل'),
+                const SizedBox(width: 12),
+                _legendBorderBox(Colors.blue, 'محجوز جزئياً'),
+                const SizedBox(width: 12),
                 _legendColorBox(Colors.orangeAccent, 'يوم عمل أسبوعي'),
               ],
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCircle(int day, Color bg, Color textColor) {
+    return Container(
+      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      alignment: Alignment.center,
+      child: Text('$day', style: TextStyle(color: textColor)),
     );
   }
 
@@ -205,24 +255,32 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
     );
   }
 
+  DateTime normalizeDate(DateTime d) => DateTime(d.year, d.month, d.day);
+
   void _showDayOptionsDialog(DateTime date) async {
-    final weekdayName = _getArabicWeekday(date.weekday);
-    final key = _dateKey(date);
+    final weekday = _getArabicWeekday(date.weekday);
+    final normalized = DateTime(date.year, date.month, date.day);
+    final key = _dateKey(normalized);
     final override = specificOverrides[key];
-    final defaultWeek = weeklyPreferences[weekdayName];
-    if (override == null && defaultWeek == null) {
-      // Nothing defined for this date, show a message or just return
-      return;
-    }
-    bool isDisabled = disabledDates.contains(date);
+    final week = weeklyPreferences[weekday];
+
+    bool isDisabled = disabledDates.contains(normalized);
     String sessionType =
-        override?['session_type'] ?? defaultWeek?['session_type'] ?? 'single';
+        override?['session_type'] ?? week?['session_type'] ?? 'single';
     TimeOfDay startTime =
-        _parseTime(override?['start_time'] ?? defaultWeek?['start_time']) ??
+        _parseTime(override?['start_time'] ?? week?['start_time']) ??
         const TimeOfDay(hour: 9, minute: 0);
     TimeOfDay endTime =
-        _parseTime(override?['end_time'] ?? defaultWeek?['end_time']) ??
+        _parseTime(override?['end_time'] ?? week?['end_time']) ??
         const TimeOfDay(hour: 17, minute: 0);
+
+    final sameDayBookings =
+        bookings.where((b) {
+          final dateObj = DateTime.parse(b['session_start_date']);
+          return dateObj.year == date.year &&
+              dateObj.month == date.month &&
+              dateObj.day == date.day;
+        }).toList();
 
     await showDialog(
       context: context,
@@ -231,7 +289,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
             textDirection: TextDirection.rtl,
             child: StatefulBuilder(
               builder:
-                  (context, setLocalState) => AlertDialog(
+                  (context, setState) => AlertDialog(
                     title: Text(
                       'اليوم ${date.year}-${date.month}-${date.day}',
                       style: const TextStyle(fontFamily: 'NotoSansArabic'),
@@ -244,8 +302,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                             Checkbox(
                               value: isDisabled,
                               onChanged:
-                                  (val) =>
-                                      setLocalState(() => isDisabled = val!),
+                                  (val) => setState(() => isDisabled = val!),
                             ),
                             const Text(
                               'تعطيل هذا اليوم',
@@ -260,7 +317,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                                 'عدد الجلسات:',
                                 style: TextStyle(fontFamily: 'NotoSansArabic'),
                               ),
-                              const SizedBox(width: 12),
+                              const SizedBox(width: 10),
                               DropdownButton<String>(
                                 value: sessionType,
                                 items:
@@ -272,20 +329,16 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                                               e == 'single'
                                                   ? 'جلسة واحدة'
                                                   : 'أكثر من جلسة',
-                                              style: const TextStyle(
-                                                fontFamily: 'NotoSansArabic',
-                                              ),
                                             ),
                                           ),
                                         )
                                         .toList(),
                                 onChanged:
-                                    (val) =>
-                                        setLocalState(() => sessionType = val!),
+                                    (val) => setState(() => sessionType = val!),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               Expanded(
@@ -296,7 +349,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                                       initialTime: startTime,
                                     );
                                     if (picked != null)
-                                      setLocalState(() => startTime = picked);
+                                      setState(() => startTime = picked);
                                   },
                                   child: Text(
                                     'وقت البدء: ${startTime.format(context)}',
@@ -312,7 +365,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                                       initialTime: endTime,
                                     );
                                     if (picked != null)
-                                      setLocalState(() => endTime = picked);
+                                      setState(() => endTime = picked);
                                   },
                                   child: Text(
                                     'وقت الانتهاء: ${endTime.format(context)}',
@@ -322,32 +375,94 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                             ],
                           ),
                         ],
+                        if (sameDayBookings.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          const Text(
+                            'الحجوزات في هذا اليوم:',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSansArabic',
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Column(
+                            children:
+                                sameDayBookings.map((booking) {
+                                  return Container(
+                                    margin: const EdgeInsets.only(bottom: 10),
+                                    padding: const EdgeInsets.all(12),
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.shade100,
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: Colors.orange),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'من ${booking['session_start_time']} إلى ${booking['session_end_time']}',
+                                          style: const TextStyle(
+                                            fontFamily: 'NotoSansArabic',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        if (booking['children_ages'] != null)
+                                          Text(
+                                            'الأعمار: ${booking['children_ages'].join(', ')}',
+                                            style: const TextStyle(
+                                              fontFamily: 'NotoSansArabic',
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                          ),
+                        ],
                       ],
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'إلغاء',
-                          style: TextStyle(fontFamily: 'NotoSansArabic'),
-                        ),
+                        child: const Text('إلغاء'),
                       ),
                       TextButton(
                         onPressed: () {
-                          final body = {
-                            'date': date.toIso8601String(),
+                          final normalized = DateTime(
+                            date.year,
+                            date.month,
+                            date.day,
+                          );
+
+                          // 🔴 Immediate visual update
+                          setState(() {
+                            if (isDisabled) {
+                              disabledDates.add(normalized);
+                            } else {
+                              disabledDates.remove(normalized);
+                            }
+                          });
+
+                          final data = {
+                            'date':
+                                DateTime.utc(
+                                  date.year,
+                                  date.month,
+                                  date.day,
+                                ).toIso8601String(),
                             'is_disabled': isDisabled,
                             'session_type': sessionType,
                             'start_time': startTime.format(context),
                             'end_time': endTime.format(context),
                           };
-                          _saveDatePreference(body);
+
+                          _saveDatePreference(data);
                           Navigator.pop(context);
                         },
-                        child: const Text(
-                          'حفظ التعديلات',
-                          style: TextStyle(fontFamily: 'NotoSansArabic'),
-                        ),
+
+                        child: const Text('حفظ التعديلات'),
                       ),
                     ],
                   ),
@@ -359,7 +474,10 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
   Future<void> _saveDatePreference(Map<String, dynamic> data) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken') ?? '';
-    await http.put(
+
+    print('📤 Sending PUT: $data');
+
+    final response = await http.put(
       Uri.parse('${url}specific-date-preferences'),
       headers: {
         'Authorization': 'Bearer $token',
@@ -367,7 +485,15 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
       },
       body: jsonEncode(data),
     );
-    loadPreferences();
+
+    print('✅ Response status: ${response.statusCode}');
+    print('✅ Response body: ${response.body}');
+
+    if (response.statusCode == 200) {
+      await loadAll(); // refresh prefs + bookings
+    } else {
+      print('❌ Failed to save date preference');
+    }
   }
 
   String _getArabicWeekday(int weekday) {
@@ -398,6 +524,9 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
     final minute =
         int.tryParse(parts[1].replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
     final isPM = str.toLowerCase().contains('pm');
-    return TimeOfDay(hour: isPM ? hour + 12 : hour, minute: minute);
+    return TimeOfDay(
+      hour: isPM && hour < 12 ? hour + 12 : hour,
+      minute: minute,
+    );
   }
 }
