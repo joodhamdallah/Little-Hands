@@ -14,23 +14,30 @@ class NotificationService {
     });
   }
 
-  static async sendBookingNotification({ user_id, user_type, title, message, type = 'booking_request', fcm_token = null, data = {} }) {
-    // 👇 Save to DB
-    await Notification.create({
-      user_id,
-      user_type,
-      title,
-      message,
-      type,
-      data,
-      read: false,
-    });
+ static async sendTypedNotification({
+  user_id,
+  user_type,
+  title,
+  message,
+  type = 'general',
+  fcm_token = null,
+  data = {},
+}) {
+  await Notification.create({
+    user_id,
+    user_type,
+    title,
+    message,
+    type,
+    data,
+    read: false,
+  });
 
-    // 👇 Send FCM if token exists
-    if (fcm_token) {
-      await sendFCM(fcm_token, title, message, data);
-    }
+  if (fcm_token) {
+    await sendFCM(fcm_token, title, message, data);
   }
+}
+
 
   static async markAsRead(notificationId) {
     return Notification.findByIdAndUpdate(notificationId, { read: true }, { new: true });

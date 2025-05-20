@@ -106,22 +106,31 @@ console.log("📦 Booking data received:", {
 
     const parent = await Parent.findById(parent_id);
 
-    await NotificationService.sendBookingNotification({
-      user_id: caregiver_id,
-      user_type: 'CareGiver',
-      title: '🔔 طلب حجز جديد',
-      message: `لديك طلب جديد لخدمة ${service_type}`,
-      fcm_token: caregiver.fcm_token,
-      type: 'booking_request',
-      data: {
-        booking_id: booking._id.toString(),
-        parent_id: parent_id.toString(),
-         parent_name: parent?.firstName + ' ' + parent?.lastName,
-  parent_email: parent?.email,
-        session_time,
-        city,
-      },
-    });
+await NotificationService.sendTypedNotification({
+  user_id: caregiver_id,
+  user_type: 'CareGiver',
+  title: '🔔 طلب حجز جديد',
+  message: `لديك طلب جديد لرعاية الأطفال.`,
+  fcm_token: caregiver.fcm_token,
+  type: 'booking_request',
+data: {
+  booking_id: booking._id.toString(),
+  parent_id: parent_id.toString(),
+  parent_name: `${parent?.firstName} ${parent?.lastName}`,
+  session_date: booking.session_start_date?.toISOString(),
+  session_start_time: booking.session_start_time,
+  session_end_time: booking.session_end_time,
+  city,
+  neighborhood: booking.neighborhood,
+  address: {
+    street: booking.street,
+    building: booking.building,
+  },
+  children_ages: booking.children_ages,
+},
+
+});
+
   }
 
     static async #notifyParent(booking, parent_id, caregiver_id, session_time, city) {
@@ -133,21 +142,31 @@ console.log("📦 Booking data received:", {
       return;
     }
 
-    await NotificationService.sendBookingNotification({
-      user_id: parent_id,
-      user_type: 'Parent',
-      title: '📅 تم حجز موعد مقابلة',
-      message: `تم حجز موعد مقابلة مع الجليسة ${caregiver?.first_name ?? ''}`,
-      fcm_token: parent.fcm_token,
-      type: 'booking_response',
-      data: {
-        booking_id: booking._id.toString(),
-        caregiver_id: caregiver_id.toString(),
-        caregiver_name: caregiver?.first_name + ' ' + caregiver?.last_name,
-        session_time,
-        city,
-      },
-    });
+  await NotificationService.sendTypedNotification({
+  user_id: parent_id,
+  user_type: 'Parent',
+  title: '📅 تم إرسال طلبك بنجاح',
+  message: `تم إرسال طلبك إلى الجليسة ${caregiver?.first_name ?? ''}.`,
+  fcm_token: parent.fcm_token,
+  type: 'booking_request',
+data: {
+  booking_id: booking._id.toString(),
+  parent_id: parent_id.toString(),
+  caregiver_id: caregiver_id.toString(),
+  caregiver_name: `${caregiver?.first_name ?? ''} ${caregiver?.last_name ?? ''}`,
+  session_date: booking.session_start_date?.toISOString(),
+  session_start_time: booking.session_start_time,
+  session_end_time: booking.session_end_time,
+  city,
+  neighborhood: booking.neighborhood,
+  address: {
+    street: booking.street,
+    building: booking.building,
+  },
+  children_ages: booking.children_ages,
+},
+});
+
   }
 }
 
