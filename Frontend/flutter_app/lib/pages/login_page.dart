@@ -245,21 +245,23 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
-    final response = await http.get(
-      Uri.parse('${url}caregiver/profile'), // تأكد من المسار الصحيح في API
-      headers: {'Authorization': 'Bearer $token'},
-    );
+Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
+  final response = await http.get(
+    Uri.parse('${url}caregiver/profile'),
+    headers: {'Authorization': 'Bearer $token'},
+  );
 
-    if (response.statusCode == 200) {
-      final jsonData = json.decode(response.body);
-      return CaregiverProfileModel.fromJson(
-        jsonData['profile'],
-      ); // حسب هيكل الرد
-    } else {
-      throw Exception('فشل في تحميل بيانات مقدم الرعاية');
-    }
+  print('📥 Status Code: ${response.statusCode}');
+  print('📥 Body: ${response.body}');
+
+  if (response.statusCode == 200) {
+    final jsonData = json.decode(response.body);
+    return CaregiverProfileModel.fromJson(jsonData['profile']);
+  } else {
+    throw Exception('فشل في تحميل بيانات مقدم الرعاية');
   }
+}
+
 
   void loginUser() async {
     setState(() => isLoading = true);
