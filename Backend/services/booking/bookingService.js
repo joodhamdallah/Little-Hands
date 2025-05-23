@@ -5,10 +5,10 @@ const BabysitterBookingHandler = require('././handlers/BabysitterBookingHandler'
 // const ExpertBookingHandler = require('./handlers/ExpertBookingHandler');
 
 class BookingService {
-  static async createBooking(bookingData) {
+  static async createBooking(bookingData, io) {
     switch (bookingData.service_type) {
       case 'babysitter':
-        return await BabysitterBookingHandler.handle(bookingData);
+        return await BabysitterBookingHandler.handle(bookingData, io);
       // case 'special_needs':
       //   return await SpecialNeedsBookingHandler.handle(bookingData);
       // case 'expert':

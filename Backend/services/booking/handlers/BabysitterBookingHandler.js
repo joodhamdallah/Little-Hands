@@ -7,7 +7,7 @@ const Parent = require('../../../models/Parent');
 const NotificationService = require('../../notificationService');
 
 class BabysitterBookingHandler {
-static async handle(bookingData) {
+static async handle(bookingData, io) {
   const {
     parent_id,
     caregiver_id,
@@ -72,8 +72,9 @@ console.log("📦 Booking data received:", {
     status: 'pending',
   });
 
-  await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city);
-  await this.#notifyParent(newBooking, parent_id, caregiver_id, session_start_time, city);
+  await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city, io);
+  await this.#notifyParent(newBooking, parent_id, caregiver_id, session_start_time, city, io);
+
 
   return newBooking;
 }
@@ -97,7 +98,7 @@ console.log("📦 Booking data received:", {
   //   }
   // }
 
-  static async #notifyCaregiver(booking, caregiver_id, parent_id, service_type, session_time, city) {
+  static async #notifyCaregiver(booking, caregiver_id, parent_id, service_type, session_time, city, io) {
     const caregiver = await CareGiver.findById(caregiver_id);
     if (!caregiver) {
       console.warn(`⚠️ Caregiver not found: ${caregiver_id}`);
@@ -133,7 +134,7 @@ data: {
 
   }
 
-    static async #notifyParent(booking, parent_id, caregiver_id, session_time, city) {
+    static async #notifyParent(booking, parent_id, caregiver_id, session_time, city, io) {
     const parent = await Parent.findById(parent_id);
     const caregiver = await CareGiver.findById(caregiver_id);
 

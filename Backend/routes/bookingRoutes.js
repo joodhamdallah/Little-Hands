@@ -13,5 +13,8 @@ router.get('/bookings/caregiver/:id', bookingController.getBookingsByCaregiverId
 
 router.patch('/bookings/:id/confirm', authMiddleware, bookingController.confirmBooking);
 
+//router.patch('/bookings/:id/reject', authMiddleware, bookingController.rejectBooking); // ✅ NEW LINE
+
+router.get('/bookings/parent', authMiddleware, bookingController.getParentBookings);
 
 module.exports = router;

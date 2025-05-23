@@ -111,7 +111,7 @@ void main() async {
           create: (_) {
             final provider = NotificationProvider();
             provider.loadUnreadCount();
-            provider.startAutoRefresh(); // 🔄 enable polling every 30s
+          //  provider.startAutoRefresh(); // 🔄 enable polling every 30s
             return provider;
           },
         ),
