@@ -7,6 +7,7 @@ import 'package:flutter_app/models/caregiver_profile_model.dart';
 import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
 import 'package:flutter_app/pages/notifications_page.dart';
+import 'package:flutter_app/services/socket_service.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 
@@ -25,26 +26,42 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
   late final List<Widget> _pages;
 
   @override
+  @override
   void initState() {
     super.initState();
+
     final notifProvider = Provider.of<NotificationProvider>(
       context,
       listen: false,
     );
-    notifProvider.loadUnreadCount();
-    notifProvider.startAutoRefresh();
+
+    notifProvider.loadUnreadCount(); // load once on start
+
+    // 👇 Remove this — no more polling!
+    // notifProvider.startAutoRefresh();
+
+    // ✅ Listen for real-time notifications
+    SocketService().onNewNotification((data) {
+      print("📥 Real-time notification: $data");
+
+      // 🔁 Update unread badge count
+      notifProvider.loadUnreadCount();
+
+      // Optional: show snackbar or alert
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['title'] ?? 'إشعار جديد'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
+
+    // ✅ Initialize pages after socket setup
     _pages = [
       CaregiverHomeMainPage(profile: widget.profile),
-      NotificationsPage(
-        onMarkedRead: () {
-          Provider.of<NotificationProvider>(
-            context,
-            listen: false,
-          ).loadUnreadCount();
-        },
-      ),
+      NotificationsPage(onMarkedRead: () => notifProvider.loadUnreadCount()),
       CaregiverBookingsPage(),
-      CaregiverControlPanelPage(), // ⬅️ we’ll build this
+      CaregiverControlPanelPage(),
       SingleChildScrollView(
         child: CaregiverProfilePage(profile: widget.profile),
       ),
