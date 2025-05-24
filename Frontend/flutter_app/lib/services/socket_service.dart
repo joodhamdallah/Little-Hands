@@ -6,7 +6,6 @@ class SocketService {
 
   late IO.Socket _socket;
   bool _isConnected = false;
-  bool _listenerRegistered = false;
 
   SocketService._internal();
 
@@ -41,13 +40,11 @@ void connect(String userId) {
       print('🔔 New notification: $data');
       callback(Map<String, dynamic>.from(data));
     });
-    _listenerRegistered = true;
   }
 
   void disconnect() {
     _socket.disconnect();
     _isConnected = false;
-    _listenerRegistered = false;
   }
 
   void removeListeners() {

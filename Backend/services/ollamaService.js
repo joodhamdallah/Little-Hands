@@ -3,7 +3,7 @@ const axios = require('axios');
 const OLLAMA_URL = 'http://localhost:11434/api/generate';
 
 async function summarizePDF(text) {
-const prompt = `Extract a short title and a one-sentence summary suitable for displaying in a mobile app card, based on the following text:\n\n${text}`;
+const prompt = `Extract a short title and a one-sentence summary suitable just about 30 words, based on the following text:\n\n${text}`;
 
   const response = await axios.post(OLLAMA_URL, {
     model: 'llama2:7b',
