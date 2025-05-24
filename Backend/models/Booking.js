@@ -58,17 +58,40 @@ const bookingSchema = new mongoose.Schema({
   session_duration_minutes: { type: Number },
 
   // ✅ حالة الطلب
-  status: {
-    type: String,
-    enum: ['pending', 'accepted', 'rejected'],
-    default: 'pending'
-  },
+ status: {
+  type: String,
+  enum: [
+    'pending',         // Parent sent request
+    'accepted',        // Caregiver accepted
+    'rejected',        // Caregiver rejected
+    'meeting_booked',  // Parent booked a meeting
+    'confirmed',       // Parent confirmed and ready to proceed
+    'cancelled',       // Either party cancelled
+    'completed'        // Session is finished
+  ],
+  default: 'pending'
+},
 
   meeting_link: {
   type: String,
   default: null,
 },
+cancelled_by: {
+  type: String,
+  enum: ['parent', 'caregiver', null],
+  default: null
+},
 
+payment_status: {
+  type: String,
+  enum: ['unpaid', 'paid'],
+  default: 'unpaid'
+},
+meeting_slot_id: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'WorkSchedule',
+  default: null
+},
 
 }, { timestamps: true });
 

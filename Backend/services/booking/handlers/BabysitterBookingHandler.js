@@ -1,173 +1,334 @@
 // services/booking/handlers/BabysitterBookingHandler.js
-
 const Booking = require('../../../models/Booking');
 const WorkSchedule = require('../../../models/WorkSchedule');
 const CareGiver = require('../../../models/CareGiver');
 const Parent = require('../../../models/Parent');
 const NotificationService = require('../../notificationService');
+const { v4: uuidv4 } = require('uuid'); 
+const sendEmail = require('../../../utils/sendEmail');
+const {
+  getParentMeetingEmail,
+  getBabysitterMeetingEmail
+} = require('../../../utils/emailTemplates/meetingLinkTemplates');
 
 class BabysitterBookingHandler {
-static async handle(bookingData, io) {
-  const {
-    parent_id,
-    caregiver_id,
-    service_type,
-    session_address_type,
-    city,
-    neighborhood,
-    street,
-    building,
-    session_start_date,
-    session_end_date,
-    session_start_time,
-    session_end_time,
-    session_days,
-    children_ages,
-    has_medical_condition,
-    medical_condition_details,
-    takes_medicine,
-    medicine_details,
-    additional_notes,
-    rate_min,
-    rate_max,
-    additional_requirements,
-    consultation_topic,
-    special_needs_support,
-    preferred_contact_method,
-    session_duration_minutes,
-  } = bookingData;
-console.log("📦 Booking data received:", {
-  session_start_date,
-  session_start_time,
-  session_end_time
-});
+  static async createBooking(bookingData, io) {
+    const {
+      parent_id,
+      caregiver_id,
+      service_type,
+      session_address_type,
+      city,
+      neighborhood,
+      street,
+      building,
+      session_start_date,
+      session_end_date,
+      session_start_time,
+      session_end_time,
+      session_days,
+      children_ages,
+      has_medical_condition,
+      medical_condition_details,
+      takes_medicine,
+      medicine_details,
+      additional_notes,
+      rate_min,
+      rate_max,
+      additional_requirements,
+      consultation_topic,
+      special_needs_support,
+      preferred_contact_method,
+      session_duration_minutes,
+    } = bookingData;
 
-  const newBooking = await Booking.create({
-    parent_id,
-    caregiver_id,
-    service_type,
-    session_address_type,
-    city,
-    neighborhood,
-    street,
-    building,
-    session_start_date,
-    session_end_date: session_end_date || null,
-    session_start_time,
-    session_end_time,
-    session_days,
-    children_ages,
-    has_medical_condition,
-    medical_condition_details,
-    takes_medicine,
-    medicine_details,
-    additional_notes,
-    rate_min,
-    rate_max,
-    additional_requirements,
-    consultation_topic,
-    special_needs_support,
-    preferred_contact_method,
-    session_duration_minutes,
-    status: 'pending',
-  });
+    const newBooking = await Booking.create({
+      parent_id,
+      caregiver_id,
+      service_type,
+      session_address_type,
+      city,
+      neighborhood,
+      street,
+      building,
+      session_start_date,
+      session_end_date: session_end_date || null,
+      session_start_time,
+      session_end_time,
+      session_days,
+      children_ages,
+      has_medical_condition,
+      medical_condition_details,
+      takes_medicine,
+      medicine_details,
+      additional_notes,
+      rate_min,
+      rate_max,
+      additional_requirements,
+      consultation_topic,
+      special_needs_support,
+      preferred_contact_method,
+      session_duration_minutes,
+      status: 'pending',
+    });
 
-  await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city, io);
-  await this.#notifyParent(newBooking, parent_id, caregiver_id, session_start_time, city, io);
+    await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city,io);
+    await this.#notifyParent(newBooking, parent_id, caregiver_id, session_start_time, city,io);
 
-
-  return newBooking;
-}
-
-
-  // static async #resolveSchedule(schedule_id, fallback) {
-  //   if (!schedule_id) return fallback;
-
-  //   const selectedSlot = await WorkSchedule.findById(schedule_id);
-  //   if (selectedSlot) {
-  //     await WorkSchedule.findByIdAndDelete(schedule_id);
-  //     console.log(`🗑️ Deleted schedule: ${schedule_id}`);
-  //     return {
-  //       session_start_date: selectedSlot.date,
-  //       session_start_time: selectedSlot.start_time,
-  //       session_end_time: selectedSlot.end_time,
-  //     };
-  //   } else {
-  //     console.warn(`⚠️ Schedule not found for ID: ${schedule_id}`);
-  //     return fallback;
-  //   }
-  // }
-
-  static async #notifyCaregiver(booking, caregiver_id, parent_id, service_type, session_time, city, io) {
-    const caregiver = await CareGiver.findById(caregiver_id);
-    if (!caregiver) {
-      console.warn(`⚠️ Caregiver not found: ${caregiver_id}`);
-      return;
-    }
-
-    const parent = await Parent.findById(parent_id);
-
-await NotificationService.sendTypedNotification({
-  user_id: caregiver_id,
-  user_type: 'CareGiver',
-  title: '🔔 طلب حجز جديد',
-  message: `لديك طلب جديد لرعاية الأطفال.`,
-  fcm_token: caregiver.fcm_token,
-  type: 'booking_request',
-data: {
-  booking_id: booking._id.toString(),
-  parent_id: parent_id.toString(),
-  parent_name: `${parent?.firstName} ${parent?.lastName}`,
-  session_date: booking.session_start_date?.toISOString(),
-  session_start_time: booking.session_start_time,
-  session_end_time: booking.session_end_time,
-  city,
-  neighborhood: booking.neighborhood,
-  address: {
-    street: booking.street,
-    building: booking.building,
-  },
-  children_ages: booking.children_ages,
-},
-
-});
-
+    return newBooking;
   }
 
-    static async #notifyParent(booking, parent_id, caregiver_id, session_time, city, io) {
-    const parent = await Parent.findById(parent_id);
-    const caregiver = await CareGiver.findById(caregiver_id);
+  static async confirmBooking(bookingId, io) {
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: 'confirmed' },
+      { new: true }
+    );
+    if (!updated) throw new Error('Booking not found');
 
-    if (!parent) {
-      console.warn(`⚠️ Parent not found: ${parent_id}`);
-      return;
-    }
+    io.to(updated.parent_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'confirmed',
+    });
 
-  await NotificationService.sendTypedNotification({
-  user_id: parent_id,
-  user_type: 'Parent',
-  title: '📅 تم إرسال طلبك بنجاح',
-  message: `تم إرسال طلبك إلى الجليسة ${caregiver?.first_name ?? ''}.`,
-  fcm_token: parent.fcm_token,
-  type: 'booking_request',
-data: {
-  booking_id: booking._id.toString(),
-  parent_id: parent_id.toString(),
-  caregiver_id: caregiver_id.toString(),
-  caregiver_name: `${caregiver?.first_name ?? ''} ${caregiver?.last_name ?? ''}`,
-  session_date: booking.session_start_date?.toISOString(),
-  session_start_time: booking.session_start_time,
-  session_end_time: booking.session_end_time,
-  city,
-  neighborhood: booking.neighborhood,
-  address: {
-    street: booking.street,
-    building: booking.building,
-  },
-  children_ages: booking.children_ages,
-},
+    return updated;
+  }
+
+  static async rejectBooking(bookingId) {
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: 'rejected' },
+      { new: true }
+    );
+    if (!updated) throw new Error('Booking not found');
+    return updated;
+  }
+
+   static async acceptBooking(bookingId, io) {
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: 'accepted' },
+      { new: true }
+    );
+    if (!updated) throw new Error('Booking not found');
+io.to(updated.parent_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'accepted',
+    });
+    const caregiver = await CareGiver.findById(updated.caregiver_id);
+    const parent = await Parent.findById(updated.parent_id);
+
+    // 🎯 Notify Parent
+    await NotificationService.sendTypedNotification({
+      user_id: updated.parent_id.toString(),
+      user_type: 'Parent',
+      title: '✅ تم قبول الحجز',
+      message: `${caregiver?.first_name ?? 'المقدم'} قبل حجز الجلسة.`,
+      fcm_token: parent?.fcm_token,
+      type: 'booking_accepted',
+      data: {
+        booking_id: updated._id.toString(),
+        status: 'accepted',
+      },
+    });
+
+    // 🎯 Notify Caregiver (confirmation for themselves)
+    await NotificationService.sendTypedNotification({
+      user_id: updated.caregiver_id.toString(),
+      user_type: 'CareGiver',
+      title: '👍 تم قبول الحجز',
+      message: `تم قبولك للحجز بنجاح.`,
+      fcm_token: caregiver?.fcm_token,
+      type: 'booking_accepted',
+      data: {
+        booking_id: updated._id.toString(),
+        status: 'accepted',
+      },
+    });
+
+    // 📡 Real-time update
+    io.to(updated.parent_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'accepted',
+    });
+    io.to(updated.caregiver_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'accepted',
+    });
+
+    return updated;
+  }
+
+
+  static async bookMeeting(bookingId, meetingData, io) {
+    const booking = await Booking.findById(bookingId);
+    if (!booking) throw new Error('Booking not found');
+
+    const meetingLink = `https://meet.jit.si/LittleHands-${uuidv4()}`;
+
+    booking.status = 'meeting_booked';
+    booking.meeting_slot_id = meetingData.meeting_schedule_id;
+    booking.meeting_link = meetingLink;
+
+    await booking.save();
+
+    const caregiver = await CareGiver.findById(booking.caregiver_id);
+    const parent = await Parent.findById(booking.parent_id);
+
+    const message = `📅 تم حجز اجتماع بتاريخ ${booking.session_start_date.toISOString().split('T')[0]}، من ${booking.session_start_time} إلى ${booking.session_end_time}`;
+
+    await NotificationService.sendTypedNotification({
+      user_id: parent._id.toString(),
+      user_type: 'Parent',
+      title: '📞 تم حجز موعد اجتماع',
+      message: message,
+      fcm_token: parent.fcm_token,
+      type: 'meeting_booked',
+      data: {
+        booking_id: booking._id.toString(),
+        meeting_link: booking.meeting_link,
+        status: 'meeting_booked',
+      },
+    });
+
+    await NotificationService.sendTypedNotification({
+      user_id: caregiver._id.toString(),
+      user_type: 'CareGiver',
+      title: '📞 تم حجز موعد اجتماع',
+      message: message,
+      fcm_token: caregiver.fcm_token,
+      type: 'meeting_booked',
+      data: {
+        booking_id: booking._id.toString(),
+        meeting_link: booking.meeting_link,
+        status: 'meeting_booked',
+      },
+    });
+
+    io.to(parent._id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: booking._id.toString(),
+      status: 'meeting_booked',
+    });
+    io.to(caregiver._id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: booking._id.toString(),
+      status: 'meeting_booked',
+    });
+// 📨 Send meeting emails
+const meetingDate = booking.session_start_date.toISOString().split('T')[0];
+const meetingTime = `${booking.session_start_time} - ${booking.session_end_time}`;
+
+// Email to parent
+await sendEmail({
+  to: parent.email,
+  subject: '📞 Your Babysitting Meeting is Scheduled',
+  html: getParentMeetingEmail(meetingLink, meetingDate, meetingTime, caregiver.first_name),
 });
 
+// Email to babysitter
+await sendEmail({
+  to: caregiver.email,
+  subject: '📞 Meeting Scheduled with Parent',
+  html: getBabysitterMeetingEmail(meetingLink, meetingDate, meetingTime, parent.firstName),
+});
+    return booking;
+  }
+
+  static async cancelBooking(bookingId, cancelledBy) {
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: 'cancelled', cancelled_by: cancelledBy },
+      { new: true }
+    );
+    if (!updated) throw new Error('Booking not found');
+    return updated;
+  }
+
+  static async markCompleted(bookingId) {
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status: 'completed' },
+      { new: true }
+    );
+    if (!updated) throw new Error('Booking not found');
+    return updated;
+  }
+
+  static async markAsPaid(bookingId) {
+    const updated = await Booking.findByIdAndUpdate(
+      bookingId,
+      { payment_status: 'paid' },
+      { new: true }
+    );
+    if (!updated) throw new Error('Booking not found');
+    return updated;
+  }
+
+  static async #notifyCaregiver(booking, caregiver_id, parent_id, service_type, session_time, city,io) {
+    const caregiver = await CareGiver.findById(caregiver_id);
+    if (!caregiver) return;
+
+    const parent = await Parent.findById(parent_id);
+
+    await NotificationService.sendTypedNotification({
+      user_id: caregiver_id,
+      user_type: 'CareGiver',
+      title: '🔔 طلب حجز جديد',
+      message: `لديك طلب جديد لرعاية الأطفال.`,
+      fcm_token: caregiver.fcm_token,
+      type: 'booking_request',
+      data: {
+        booking_id: booking._id.toString(),
+        parent_id: parent_id.toString(),
+        parent_name: `${parent?.firstName} ${parent?.lastName}`,
+        session_date: booking.session_start_date?.toISOString(),
+        session_start_time: booking.session_start_time,
+        session_end_time: booking.session_end_time,
+        city,
+        neighborhood: booking.neighborhood,
+        address: {
+          street: booking.street,
+          building: booking.building,
+        },
+        children_ages: booking.children_ages,
+      },
+    });
+  }
+
+  static async #notifyParent(booking, parent_id, caregiver_id, session_time, city,io) {
+    const parent = await Parent.findById(parent_id);
+    const caregiver = await CareGiver.findById(caregiver_id);
+    if (!parent) return;
+
+    await NotificationService.sendTypedNotification({
+      user_id: parent_id,
+      user_type: 'Parent',
+      title: '📅 تم إرسال طلبك بنجاح',
+      message: `تم إرسال طلبك إلى الجليسة ${caregiver?.first_name ?? ''}.`,
+      fcm_token: parent.fcm_token,
+      type: 'booking_request',
+      data: {
+        booking_id: booking._id.toString(),
+        parent_id: parent_id.toString(),
+        caregiver_id: caregiver_id.toString(),
+        caregiver_name: `${caregiver?.first_name ?? ''} ${caregiver?.last_name ?? ''}`,
+        session_date: booking.session_start_date?.toISOString(),
+        session_start_time: booking.session_start_time,
+        session_end_time: booking.session_end_time,
+        city,
+        neighborhood: booking.neighborhood,
+        address: {
+          street: booking.street,
+          building: booking.building,
+        },
+        children_ages: booking.children_ages,
+      },
+    });
   }
 }
 

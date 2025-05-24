@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Parent/Home/online_meetings_page.dart';
 import 'package:flutter_app/services/socket_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -69,7 +70,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     switch (status) {
       case 'pending':
         return 'بانتظار الرد';
-      case 'confirmed':
+      case 'accepted':
         return 'تم القبول';
       case 'rejected':
         return 'مرفوض';
@@ -199,6 +200,70 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                   '⏰ الوقت: من ${booking['session_start_time']} حتى ${booking['session_end_time']}',
                 ),
                 const SizedBox(height: 8),
+                if (status == 'accepted') ...[
+                  const SizedBox(height: 10),
+                  const Text(
+                    '📌 إكمال الطلب',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NotoSansArabic',
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => OnlineMeetingsPage(
+                                      booking: booking,
+                                      caregiver: booking['caregiver_id'],
+                                    ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.video_call),
+                          label: const Text('حجز اجتماع'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blueAccent,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/payment_page',
+                              arguments: booking,
+                            );
+                          },
+                          icon: const Icon(Icons.payment),
+                          label: const Text('الدفع الآن'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+
                 Align(
                   alignment: Alignment.centerLeft,
                   child: TextButton(
