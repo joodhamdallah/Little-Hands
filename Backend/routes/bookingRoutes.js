@@ -1,20 +1,44 @@
+// routes/bookingRoutes.js
 const express = require('express');
 const router = express.Router();
-const bookingController = require('../controllers/bookingController');
-const  authMiddleware  = require('../middleware/authMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// 🧑‍👧‍👦 إنشاء حجز
-router.post('/bookings', authMiddleware, bookingController.createBooking);
-// routes/bookingRoutes.js
-router.get('/caregiver/bookings', authMiddleware, bookingController.getBookingsForCaregiver);
+const generalBookingController = require('../controllers/bookings/generalBookingController');
+const bookingBabysitterController = require('../controllers/bookings/bookingBabysitterController');
 
-// get caregiver bookings by caregiver id
-router.get('/bookings/caregiver/:id', bookingController.getBookingsByCaregiverId);
+// 👪 Get all bookings for the logged-in parent
+router.get('/bookings/parent', authMiddleware, generalBookingController.getParentBookings);
 
-router.patch('/bookings/:id/confirm', authMiddleware, bookingController.confirmBooking);
+// 🧑‍⚕️ Get all bookings for the logged-in caregiver (all statuses)
+router.get('/caregiver/bookings', authMiddleware, generalBookingController.getBookingsForCaregiver);
 
-//router.patch('/bookings/:id/reject', authMiddleware, bookingController.rejectBooking); // ✅ NEW LINE
+// 📅 Get confirmed bookings for a caregiver by their ID (used for calendars)
+router.get('/bookings/caregiver/:id', generalBookingController.getBookingsByCaregiverId);
 
-router.get('/bookings/parent', authMiddleware, bookingController.getParentBookings);
+
+/////////////////Babysitter Service//////////////////////
+// 👶 Create a babysitter booking request (by parent)
+router.post('/bookings', authMiddleware, bookingBabysitterController.createBooking);
+
+// ✅ Confirm a babysitter booking (by parent)
+router.patch('/bookings/:id/confirm', authMiddleware, bookingBabysitterController.confirmBooking);
+
+// ❌ Reject a babysitter booking (by caregiver)
+router.patch('/bookings/:id/reject', authMiddleware, bookingBabysitterController.rejectBooking);
+
+// 👍 Accept a babysitter booking (by caregiver)
+router.patch('/bookings/:id/accept', authMiddleware, bookingBabysitterController.acceptBooking);
+
+// 📆 Book a meeting with the babysitter (by parent)
+router.patch('/bookings/:id/book-meeting', authMiddleware, bookingBabysitterController.bookMeeting);
+
+// 🔁 Cancel a babysitter booking (by either party)
+router.patch('/bookings/:id/cancel', authMiddleware, bookingBabysitterController.cancelBooking);
+
+// 🏁 Mark a babysitting session as completed
+router.patch('/bookings/:id/mark-completed', authMiddleware, bookingBabysitterController.markCompleted);
+
+// 💰 Mark a babysitting session as paid (after payment success)
+router.patch('/bookings/:id/payment-success', authMiddleware, bookingBabysitterController.markAsPaid);
 
 module.exports = router;

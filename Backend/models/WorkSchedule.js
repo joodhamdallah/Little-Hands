@@ -12,7 +12,7 @@ const workScheduleSchema = new mongoose.Schema({
     enum: [
       'السبت',
       'الأحد',
-      'الإثنين',
+      'الاثنين',
       'الثلاثاء',
       'الأربعاء',
       'الخميس',
@@ -38,7 +38,7 @@ const workScheduleSchema = new mongoose.Schema({
     type: String,
     enum: ['meeting', 'work'],
     required: true,
-    default: 'work', 
+    default: 'meeting', 
   }
   
 

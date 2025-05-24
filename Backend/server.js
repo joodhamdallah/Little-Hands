@@ -11,7 +11,9 @@ const io = new Server(server, {
   cors: {
     origin: '*', // or specify your frontend domain for security
     methods: ['GET', 'POST']
-  }
+  },
+  transports: ['websocket']
+
 });
 app.set('io', io); // ✅ make io accessible inside controllers
 
