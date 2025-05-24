@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_home_page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
+import 'package:flutter_app/services/socket_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; // ✅
 import 'config.dart'; // loginUsers = "${url}auth/login";
@@ -293,6 +294,16 @@ Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
         //by Jood
         // ✅ Check role and save caregiver role if exists
         final user = jsonData["user"];
+        final userId = user["id"]; // 🔥 Mongo ID
+        await prefs.setString('userId', userId); // ✅ store for socket later
+
+        try {
+          SocketService().connect(userId);
+          print("🧠 Connecting to socket with userId: $userId");
+        } catch (e) {
+          print("❌ Failed to connect to socket: $e");
+        }
+
         final type = user["type"]; // "caregiver" or "parent"
         final role = user["role"]; // ممكن تكون null أو String
 

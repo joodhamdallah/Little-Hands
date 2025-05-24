@@ -8,8 +8,8 @@ exports.createBooking = async (req, res) => {
       ...req.body,
       parent_id: parentId
     };
-
-    const newBooking = await BookingServices.createBooking(bookingData);
+const io = req.app.get('io'); // 👈 get io instance
+const newBooking = await BookingServices.createBooking(bookingData, io);
     
     res.status(201).json({
       status: true,
@@ -78,10 +78,29 @@ exports.confirmBooking = async (req, res) => {
     if (!updated) {
       return res.status(404).json({ message: 'الحجز غير موجود' });
     }
+console.log(`📡 Emitting booking_status_updated to ${updated.parent_id}`);
+
+    // 👇 emit to parent via their personal room
+    const io = req.app.get('io');
+    io.to(updated.parent_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'confirmed',
+    });
 
     res.status(200).json({ message: 'تم تأكيد الحجز', data: updated });
   } catch (err) {
     console.error("❌ Error in confirmBooking:", err.message);
     res.status(500).json({ message: 'خطأ في تأكيد الحجز' });
   }
+};
+
+
+exports.getParentBookings = async (req, res) => {
+  const parentId = req.user._id;
+  const bookings = await Booking.find({ parent_id: parentId })
+    .populate('caregiver_id', 'first_name last_name profile_image')
+    .sort({ session_start_date: 1 });
+
+  res.json({ status: true, data: bookings });
 };

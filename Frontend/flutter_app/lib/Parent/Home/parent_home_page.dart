@@ -1,6 +1,7 @@
 // lib/pages/parent/parent_home_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Parent/Home/parent_bookings_page.dart';
 import 'package:flutter_app/Parent/Home/parent_main_page.dart';
 import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
@@ -44,7 +45,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
           ).loadUnreadCount();
         },
       ),
-      // const BookingsPage(),
+      const ParentBookingsPage(),
       // const DashboardPage(),
       // const ContentPage(),
       // const AccountPage(),

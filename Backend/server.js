@@ -1,9 +1,20 @@
 require("dotenv").config(); // Load environment variables
 const express = require("express");
 const mongoose = require("mongoose");
+const http = require("http"); // ✅ for wrapping express
+const { Server } = require("socket.io"); // ✅ import Socket.IO
 const connectDB = require("./database/connection");
 
 const app = express();
+const server = http.createServer(app); // ✅ wrap app with HTTP server
+const io = new Server(server, {
+  cors: {
+    origin: '*', // or specify your frontend domain for security
+    methods: ['GET', 'POST']
+  }
+});
+app.set('io', io); // ✅ make io accessible inside controllers
+
 const port = process.env.PORT || 3000;
 
 const parentRoutes = require("./routes/parentRoutes");
@@ -53,22 +64,52 @@ app.use('/uploads', express.static('uploads'));
 
 // ✅ Connect to MongoDB then start the server
 connectDB()
-    .then(() => {
-        const server = app.listen(port, () => {
-            console.log(`🚀 Server running on http://localhost:${port}`);
-        });
-
-        // ✅ Graceful shutdown
-        process.on("SIGINT", async () => {
-            console.log("\n🛑 Server shutting down...");
-            await mongoose.disconnect();
-            server.close(() => {
-                console.log("✅ Database disconnected and server closed.");
-                process.exit(0);
-            });
-        });
-
-    }).catch(err => {
-        console.error("❌ Failed to connect to database:", err);
-        process.exit(1);
+  .then(() => {
+    server.listen(port, () => {
+      console.log(`🚀 Server + Socket.IO running at http://localhost:${port}`);
     });
+
+    // ✅ Handle Socket.IO connections
+    io.on('connection', (socket) => {
+      console.log('🧩 Client connected:', socket.id);
+
+      socket.on('join', (userId) => {
+        socket.join(userId);
+        console.log(`✅ User ${userId} joined their room`);
+      });
+
+      socket.on('disconnect', () => {
+        console.log('🚪 Client disconnected:', socket.id);
+      });
+    });
+
+    process.on("SIGINT", async () => {
+  console.log("\n🛑 Server shutting down...");
+
+  // ✅ Gracefully disconnect all active Socket.IO clients
+  io.sockets.sockets.forEach((socket) => {
+    socket.disconnect(true);
+  });
+
+  // ✅ Close MongoDB connection
+  await mongoose.disconnect();
+
+  // ✅ Stop accepting new connections and close the server
+  server.close(() => {
+    console.log("✅ Database disconnected and server closed.");
+    process.exit(0);
+  });
+
+  // 🕐 Optional failsafe: force exit after 5 seconds if stuck
+  setTimeout(() => {
+    console.warn("⚠️ Force shutdown due to timeout");
+    process.exit(1);
+  }, 5000);
+});
+
+
+  })
+  .catch(err => {
+    console.error("❌ Failed to connect to database:", err);
+    process.exit(1);
+  });
