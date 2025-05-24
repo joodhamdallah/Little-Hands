@@ -32,6 +32,7 @@ const specialNeedsRoutes = require('./routes/specialNeedsRoutes');
 const expertRoutes = require("./routes/expertRoutes");
 const workPreferenceRoutes = require('./routes/weeklyPreferenceRoutes');
 const specificDateRoutes = require('./routes/specificDateRoutes');
+const expertPostRoutes = require('./routes/expertPostRoutes');
 
 
 
@@ -56,6 +57,9 @@ app.use("/api", specialNeedsRoutes);
 app.use("/api", expertRoutes);
 app.use('/api', workPreferenceRoutes);
 app.use('/api', specificDateRoutes);
+app.use('/api/expert-posts', expertPostRoutes);
+app.use('/uploads', express.static('uploads'));
+
 
 
 // ✅ Connect to MongoDB then start the server
