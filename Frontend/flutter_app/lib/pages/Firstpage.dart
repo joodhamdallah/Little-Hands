@@ -204,7 +204,7 @@ class _FirstPageState extends State<FirstPage> {
                           const SizedBox(height: 10),
                           OutlinedButton(
                             onPressed: () {
-                              Navigator.pushNamed(context, '/login');
+                              Navigator.pushNamed(context, '/expertPostsPage');
                             },
                             style: OutlinedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
