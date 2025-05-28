@@ -45,6 +45,7 @@ dependencies:
   flutter_image_compress: ^2.1.0
   image_picker: ^1.0.4
   # file_picker: ^6.1.1
+  file_selector: ^1.0.0
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.2.4
   flutter_xlider: ^3.5.0

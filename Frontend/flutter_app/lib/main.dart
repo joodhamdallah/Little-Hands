@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_posts_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
@@ -152,6 +153,8 @@ class MyApp extends StatelessWidget {
        '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
         '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
         '/expertBioQ5': (context) => const ExpertBioPage(),
+        '/expertPostsPage': (context) => const ExpertPostsPage(),
+
 
         '/babysitter': (context) => const BabySitterPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
