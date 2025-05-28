@@ -1,10 +1,23 @@
 import 'package:flutter/material.dart';
 import '../../models/caregiver_profile_model.dart';
 
-class CaregiverProfilePage extends StatelessWidget {
+class CaregiverProfilePage extends StatefulWidget {
   final CaregiverProfileModel profile;
 
   const CaregiverProfilePage({super.key, required this.profile});
+
+  @override
+  State<CaregiverProfilePage> createState() => _CaregiverProfilePageState();
+}
+
+class _CaregiverProfilePageState extends State<CaregiverProfilePage> {
+  late CaregiverProfileModel profile;
+
+  @override
+  void initState() {
+    super.initState();
+    profile = widget.profile;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,12 +33,14 @@ class CaregiverProfilePage extends StatelessWidget {
           CircleAvatar(
             radius: 50,
             backgroundColor: Colors.orange.shade100,
-            backgroundImage: profile.image != null && profile.image!.isNotEmpty
-                ? NetworkImage(profile.image!)
-                : null,
-            child: profile.image == null || profile.image!.isEmpty
-                ? const Icon(Icons.person, size: 50, color: Colors.white)
-                : null,
+            backgroundImage:
+                profile.image != null && profile.image!.isNotEmpty
+                    ? NetworkImage(profile.image!)
+                    : null,
+            child:
+                profile.image == null || profile.image!.isEmpty
+                    ? const Icon(Icons.person, size: 50, color: Colors.white)
+                    : null,
           ),
           const SizedBox(height: 15),
           Text(
@@ -41,7 +56,8 @@ class CaregiverProfilePage extends StatelessWidget {
           const SizedBox(height: 20),
           if (profile.skillsAndServices.isNotEmpty) _buildSkillsCard(),
           const SizedBox(height: 20),
-          if (profile.trainingCertification.isNotEmpty) _buildCertificationsCard(),
+          if (profile.trainingCertification.isNotEmpty)
+            _buildCertificationsCard(),
           const SizedBox(height: 20),
           _buildBioCard(),
         ],
@@ -120,15 +136,16 @@ class CaregiverProfilePage extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: profile.skillsAndServices.map((skill) {
-                return Chip(
-                  backgroundColor: Colors.orange.shade100,
-                  label: Text(
-                    skill,
-                    style: const TextStyle(fontFamily: 'NotoSansArabic'),
-                  ),
-                );
-              }).toList(),
+              children:
+                  profile.skillsAndServices.map((skill) {
+                    return Chip(
+                      backgroundColor: Colors.orange.shade100,
+                      label: Text(
+                        skill,
+                        style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
+                    );
+                  }).toList(),
             ),
           ],
         ),
@@ -156,20 +173,26 @@ class CaregiverProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Column(
-              children: profile.trainingCertification.map((cert) {
-                return Row(
-                  children: [
-                    const Icon(Icons.check_circle_outline, color: Color(0xFFFF600A)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        cert,
-                        style: const TextStyle(fontFamily: 'NotoSansArabic'),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
+              children:
+                  profile.trainingCertification.map((cert) {
+                    return Row(
+                      children: [
+                        const Icon(
+                          Icons.check_circle_outline,
+                          color: Color(0xFFFF600A),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            cert,
+                            style: const TextStyle(
+                              fontFamily: 'NotoSansArabic',
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
             ),
           ],
         ),
@@ -205,10 +228,18 @@ class CaregiverProfilePage extends StatelessWidget {
               children: [
                 const Icon(Icons.attach_money, color: Color(0xFFFF600A)),
                 const SizedBox(width: 8),
-                Text(
-                  'الأجر للجلسة: ${profile.rateText}',
-                  style: const TextStyle(fontFamily: 'NotoSansArabic'),
-                ),
+                if (profile.ratePerHour != null)
+                  Text(
+                    profile.ratePerHour!['min'] == profile.ratePerHour!['max']
+                        ? "الأجر بالساعة: ${profile.ratePerHour!['min']} شيكل"
+                        : "الأجر بالساعة: من ${profile.ratePerHour!['min']} إلى ${profile.ratePerHour!['max']} شيكل",
+                    style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                  )
+                else
+                  Text(
+                    "الأجر للجلسة: ${profile.rateText}",
+                    style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                  ),
               ],
             ),
           ],

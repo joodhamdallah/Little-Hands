@@ -130,6 +130,8 @@ exports.getProfile = async (req, res) => {
         skills_and_services: babysitter.skills_and_services || [],
         training_certification: babysitter.training_certification || [],
         is_smoker: babysitter.is_smoker || false,
+       rate_per_hour: babysitter.rate_per_hour, // ✅ Add this line
+
       };
 
     } else if (caregiver.role === 'expert') {
