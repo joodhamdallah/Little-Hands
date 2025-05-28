@@ -5,7 +5,7 @@ import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
-import 'package:intl/date_symbol_data_local.dart'; 
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -112,15 +112,13 @@ void main() async {
           create: (_) {
             final provider = NotificationProvider();
             provider.loadUnreadCount();
-          //  provider.startAutoRefresh(); // 🔄 enable polling every 30s
+            //  provider.startAutoRefresh(); // 🔄 enable polling every 30s
             return provider;
           },
         ),
 
-              ChangeNotifierProvider(create: (_) => SpecialNeedsProvider()),
-              ChangeNotifierProvider(create: (_) => ExpertProvider()),
-
-
+        ChangeNotifierProvider(create: (_) => SpecialNeedsProvider()),
+        ChangeNotifierProvider(create: (_) => ExpertProvider()),
       ],
       child: const MyApp(),
     ),
@@ -150,7 +148,7 @@ class MyApp extends StatelessWidget {
         '/idverifyapi': (context) => const IDVerificationPage(),
 
         '/childConsult': (context) => const ChildConsultPage(),
-       '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
+        '/expertQualificationsQ3': (context) => const ExpertQualificationPage(),
         '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
         '/expertBioQ5': (context) => const ExpertBioPage(),
         '/expertPostsPage': (context) => const ExpertPostsPage(),
@@ -173,12 +171,10 @@ class MyApp extends StatelessWidget {
 
         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
 
-
-        '/send_price': (context) {
-  final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-  return SendPricePage(booking: args);
-},
-
+        //         '/send_price': (context) {
+        //   final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+        //   return SendPricePage(booking: args);
+        // },
       },
     );
   }

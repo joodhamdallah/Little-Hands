@@ -60,7 +60,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     _pages = [
       CaregiverHomeMainPage(profile: widget.profile),
       NotificationsPage(onMarkedRead: () => notifProvider.loadUnreadCount()),
-      CaregiverBookingsPage(),
+      CaregiverBookingsPage(profile: widget.profile),
       CaregiverControlPanelPage(),
       SingleChildScrollView(
         child: CaregiverProfilePage(profile: widget.profile),

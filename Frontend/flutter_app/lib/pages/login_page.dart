@@ -246,23 +246,22 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
-  final response = await http.get(
-    Uri.parse('${url}caregiver/profile'),
-    headers: {'Authorization': 'Bearer $token'},
-  );
+  Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
+    final response = await http.get(
+      Uri.parse('${url}caregiver/profile'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
 
-  print('📥 Status Code: ${response.statusCode}');
-  print('📥 Body: ${response.body}');
+    print('📥 Status Code: ${response.statusCode}');
+    print('📥 Body: ${response.body}');
 
-  if (response.statusCode == 200) {
-    final jsonData = json.decode(response.body);
-    return CaregiverProfileModel.fromJson(jsonData['profile']);
-  } else {
-    throw Exception('فشل في تحميل بيانات مقدم الرعاية');
+    if (response.statusCode == 200) {
+      final jsonData = json.decode(response.body);
+      return CaregiverProfileModel.fromJson(jsonData['profile']);
+    } else {
+      throw Exception('فشل في تحميل بيانات مقدم الرعاية');
+    }
   }
-}
-
 
   void loginUser() async {
     setState(() => isLoading = true);
@@ -336,7 +335,10 @@ Future<CaregiverProfileModel> fetchCaregiverProfile(String token) async {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CaregiverHomePage(profile: profile),
+                  builder:
+                      (_) => CaregiverHomePage(
+                        profile: profile,
+                      ), // ✅ make sure profile is not null
                 ),
               );
             } catch (e) {
