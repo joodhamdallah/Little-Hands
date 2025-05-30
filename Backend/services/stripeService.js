@@ -31,7 +31,34 @@ async function createCheckoutSession(userId, plan) {
 
   return session;
 }
+async function createBookingCheckoutSession(bookingId, amount) {
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    line_items: [{
+      price_data: {
+        currency: 'ils',
+        unit_amount: amount * 100, // Convert ₪ to agorot
+        product_data: {
+          name: '  حجز جليسة أطفال',
+        },
+      },
+      quantity: 1,
+    }],
+    success_url: `${process.env.CLIENT_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.CLIENT_URL}/cancel`,
+    metadata: {
+      booking_id: bookingId,
+    },
+  });
+console.log('📦 Session metadata:', session.metadata);
+
+  return session;
+}
+
 
 module.exports = {
-  createCheckoutSession,
+  createCheckoutSession, // for subscriptions
+  createBookingCheckoutSession, // for booking payments
 };
+
