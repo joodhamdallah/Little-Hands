@@ -330,6 +330,60 @@ await sendEmail({
       },
     });
   }
+
+   static async setPrice(bookingId, priceData) {
+    const {
+      is_hourly,
+      hourly_rate,
+      fixed_rate,
+      session_hours,
+      subtotal,
+      total,
+      additional_fees,
+    } = priceData;
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) throw new Error('Booking not found');
+
+    booking.price_details = {
+      is_hourly,
+      hourly_rate,
+      fixed_rate,
+      session_hours,
+      subtotal,
+      total,
+      additional_fees,
+    };
+
+    await booking.save();
+    return { status: true, message: 'Price saved successfully' };
+  }
+
+static async setPaymentMethod(bookingId, method, io) {
+  const booking = await Booking.findById(bookingId);
+  if (!booking) throw new Error('Booking not found');
+
+  booking.payment_method = method;
+  booking.payment_status = 'paid';
+  booking.status = 'confirmed';
+
+  await booking.save();
+
+  // // 🔔 Emit update to parent and caregiver via socket
+  // io.to(booking.parent_id.toString()).emit('booking_status_updated', {
+  //   bookingId,
+  //   newStatus: 'confirmed',
+  // });
+
+  // io.to(booking.caregiver_id.toString()).emit('booking_status_updated', {
+  //   bookingId,
+  //   newStatus: 'confirmed',
+  // });
+
+  return booking;
+}
+
+
 }
 
 module.exports = BabysitterBookingHandler;

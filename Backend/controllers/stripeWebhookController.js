@@ -1,4 +1,5 @@
 const CareGiver = require('../models/CareGiver');
+const Booking = require('../models/Booking'); // ✅ Required for booking updates
 
 exports.handleStripeWebhook = async (req, res) => {
   try {
@@ -12,6 +13,30 @@ exports.handleStripeWebhook = async (req, res) => {
     }
 
     const session = event.data.object;
+
+    // ✅ CASE 1: Booking Payment (online session)
+    const bookingId = session.metadata?.booking_id;
+    if (bookingId) {
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        bookingId,
+        {
+          payment_method: 'online',
+          payment_status: 'paid',
+          status: 'confirmed',
+        },
+        { new: true }
+      );
+
+      if (!updatedBooking) {
+        console.log('❌ Booking not found');
+        return res.status(404).json({ message: 'Booking not found' });
+      }
+
+      console.log(`✅ Booking ${bookingId} marked as paid & confirmed`);
+      return res.status(200).json({ success: true });
+    }
+
+    // ✅ CASE 2: Caregiver Subscription
     const userId = session.metadata?.user_id;
     const plan = session.metadata?.plan_type;
 
@@ -20,7 +45,7 @@ exports.handleStripeWebhook = async (req, res) => {
       return res.status(400).json({ message: 'Missing metadata' });
     }
 
-    const updated = await CareGiver.findByIdAndUpdate(
+    const updatedCaregiver = await CareGiver.findByIdAndUpdate(
       userId,
       {
         subscription_status: 'paid',
@@ -29,7 +54,7 @@ exports.handleStripeWebhook = async (req, res) => {
       { new: true }
     );
 
-    if (!updated) {
+    if (!updatedCaregiver) {
       console.log('❌ Caregiver not found');
       return res.status(404).json({ message: 'Caregiver not found' });
     }
