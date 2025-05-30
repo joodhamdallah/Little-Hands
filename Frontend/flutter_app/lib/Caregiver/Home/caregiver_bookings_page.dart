@@ -23,7 +23,6 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
 
   @override
   void initState() {
-    assert(widget.profile != null, "CaregiverProfileModel was not passed!");
 
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
@@ -67,6 +66,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
   Widget buildBookingCard(Map<String, dynamic> booking) {
     final isPending = booking['status'] == 'pending';
     final isAccepted = booking['status'] == 'accepted';
+    // ignore: unused_local_variable
     final isConfirmed = booking['status'] == 'confirmed';
     bool showExtraDetails = false;
 

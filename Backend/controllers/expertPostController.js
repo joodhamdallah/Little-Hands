@@ -1,89 +1,85 @@
 const fs = require('fs');
 const path = require('path');
 const pdfParse = require('pdf-parse');
-const { summarizePDF } = require('../services/ollamaService');
+const { summarizePDF } = require('../services/openaiService'); 
 const ExpertPost = require('../models/ExpertPost');
 
+// ✅ رفع منشور خبير جديد
 const uploadExpertPost = async (req, res) => {
   try {
     const expert_id = req.user._id;
-    const files = req.files;
+    const pdfFile = req.files?.pdf?.[0];
+    const imageFile = req.files?.image?.[0];
 
-    const pdfFile = files?.pdf?.[0];
-    const imageFile = files?.image?.[0];
+    if (!pdfFile) {
+      return res.status(400).json({ success: false, message: 'ملف PDF مطلوب' });
+    }
 
-    if (!pdfFile) return res.status(400).json({ error: 'PDF file is required' });
+    const filePath = path.join(__dirname, '..', 'uploads', pdfFile.filename);
+    const fileBuffer = fs.readFileSync(filePath);
+    const data = await pdfParse(fileBuffer);
 
-    const pdfPath = path.join(__dirname, '..', 'uploads', pdfFile.filename);
-    const pdfBuffer = fs.readFileSync(pdfPath);
-
-    const data = await pdfParse(pdfBuffer);
-    const text = data.text;
-
-    const { title, summary } = await summarizePDF(text);
+    const { title, summary } = await summarizePDF(data.text);
 
     const newPost = await ExpertPost.create({
       expert_id,
       title,
       summary,
       pdf_url: `/uploads/${pdfFile.filename}`,
-      image_url: imageFile ? `/uploads/${imageFile.filename}` : null
+      image_url: imageFile ? `/uploads/${imageFile.filename}` : null,
     });
 
-    res.status(201).json({ success: true, post: newPost });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Error uploading and processing post' });
+    return res.status(200).json({ success: true, post: newPost });
+
+  } catch (err) {
+    console.error("❌ Error uploading expert post:", err.message);
+    return res.status(500).json({ success: false, message: 'فشل في معالجة الملف' });
   }
 };
 
-
-
+// ✅ جلب كل المنشورات (لعرضها للآباء)
 const getAllExpertPosts = async (req, res) => {
   try {
-    const posts = await ExpertPost.find().sort({ created_at: -1 });
-    res.json({ success: true, posts });
+    const posts = await ExpertPost.find().populate('expert_id', 'first_name last_name image').sort({ created_at: -1 });
+    return res.status(200).json({ success: true, posts });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Failed to fetch expert posts" });
+    console.error("❌ Error fetching expert posts:", err.message);
+    return res.status(500).json({ success: false, message: 'فشل في جلب المنشورات' });
   }
 };
 
+// ✅ جلب منشورات الخبير المسجل حالياً
 const getMyExpertPosts = async (req, res) => {
   try {
     const expert_id = req.user._id;
     const posts = await ExpertPost.find({ expert_id }).sort({ created_at: -1 });
-    res.json({ success: true, posts });
+    return res.status(200).json({ success: true, posts });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Failed to fetch your posts" });
+    console.error("❌ Error fetching expert posts:", err.message);
+    return res.status(500).json({ success: false, message: 'فشل في جلب منشوراتك' });
   }
 };
 
+// ✅ حذف منشور خبير
 const deleteExpertPost = async (req, res) => {
   try {
+    const expert_id = req.user._id;
     const postId = req.params.id;
-    const userId = req.user._id;
 
     const post = await ExpertPost.findById(postId);
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({ success: false, message: 'المنشور غير موجود' });
     }
 
-    if (post.expert_id.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Unauthorized" });
+    if (post.expert_id.toString() !== expert_id.toString()) {
+      return res.status(403).json({ success: false, message: 'غير مصرح لك بحذف هذا المنشور' });
     }
-
-    // Delete the PDF file
-    const filePath = path.join(__dirname, '..', post.pdf_url);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     await post.deleteOne();
-
-    res.json({ success: true, message: "Post deleted successfully" });
+    return res.status(200).json({ success: true, message: 'تم حذف المنشور بنجاح' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, message: "Failed to delete post" });
+    console.error("❌ Error deleting post:", err.message);
+    return res.status(500).json({ success: false, message: 'فشل في حذف المنشور' });
   }
 };
 
