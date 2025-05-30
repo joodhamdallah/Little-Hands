@@ -13,8 +13,13 @@ import 'package:flutter_app/providers/notification_provider.dart';
 
 class CaregiverHomePage extends StatefulWidget {
   final CaregiverProfileModel profile;
+  final int initialTabIndex;
 
-  const CaregiverHomePage({super.key, required this.profile});
+  const CaregiverHomePage({
+    super.key,
+    required this.profile,
+    this.initialTabIndex = 0, // 0: default tab, 1: accepted bookings
+  });
 
   @override
   State<CaregiverHomePage> createState() => _CaregiverHomePageState();
@@ -29,6 +34,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
   @override
   void initState() {
     super.initState();
+    _currentIndex = widget.initialTabIndex;
 
     final notifProvider = Provider.of<NotificationProvider>(
       context,

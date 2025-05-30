@@ -213,9 +213,23 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                                           child: const Text("إلغاء"),
                                         ),
                                         ElevatedButton(
-                                          onPressed: () {
+                                          onPressed: () async {
                                             Navigator.pop(context);
-                                            acceptBooking(
+
+                                            // Then navigate to SendPricePage
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (context) => SendPricePage(
+                                                      booking: booking,
+                                                      babysitter:
+                                                          widget.profile,
+                                                    ),
+                                              ),
+                                            );
+                                            // Call the backend to accept the booking
+                                            await acceptBooking(
                                               booking['_id'],
                                               booking,
                                             );
@@ -403,6 +417,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                     bookingsList(filterBookingsByStatus('pending')),
                     bookingsList(filterBookingsByStatus('accepted')),
                     bookingsList(filterBookingsByStatus('rejected')),
+                    bookingsList(filterBookingsByStatus('confirmed')),
                   ],
                 ),
       ),

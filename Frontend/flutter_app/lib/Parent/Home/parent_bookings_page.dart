@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Home/online_meetings_page.dart';
+import 'package:flutter_app/Parent/Home/payment_booking_page.dart';
 import 'package:flutter_app/services/socket_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,13 +20,38 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
   List<Map<String, dynamic>> currentBookings = [];
   List<Map<String, dynamic>> bookingHistory = [];
   bool isLoading = true;
+
   String selectedStatusFilter = 'الكل';
+  final Map<String, Map<String, dynamic>> statusStyles = {
+    'pending': {
+      'label': 'بانتظار الرد',
+      'color': Colors.orange,
+      'icon': Icons.hourglass_empty,
+    },
+    'accepted': {
+      'label': 'تم القبول',
+      'color': Colors.lightBlue,
+      'icon': Icons.check_circle,
+    },
+    'meeting_booked': {
+      'label': 'تم حجز اجتماع',
+      'color': Colors.teal,
+      'icon': Icons.video_call,
+    },
+    'confirmed': {
+      'label': 'حجز مؤكد',
+      'color': Colors.green,
+      'icon': Icons.verified,
+    },
+    'rejected': {'label': 'مرفوض', 'color': Colors.red, 'icon': Icons.cancel},
+  };
 
   final Map<String, String?> statusMap = {
     'الكل': null,
     'بانتظار الرد': 'pending',
     'تم القبول': 'accepted',
     'تم حجز اجتماع': 'meeting_booked',
+    'تم التأكيد': 'confirmed',
   };
   String selectedServiceType = 'كل الخدمات';
 
@@ -36,11 +62,11 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'الخبير': 'expert',
   };
 
-  final Map<String, List<String>> statusOptionsByService = {
-    'babysitter': ['pending', 'accepted', 'meeting_booked'],
-    'special_needs': ['pending', 'accepted'],
-    'expert': ['pending', 'confirmed'],
-  };
+  // final Map<String, List<String>> statusOptionsByService = {
+  //   'babysitter': ['pending', 'accepted', 'meeting_booked', 'confirmed'],
+  //   'special_needs': ['pending', 'accepted'],
+  //   'expert': ['pending', 'confirmed'],
+  // };
 
   final Map<String, String> statusLabels = {
     'pending': 'بانتظار الرد',
@@ -105,24 +131,13 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     }
   }
 
-  List<String> getStatusOptions(String? serviceType) {
-    if (serviceType == null) return statusLabels.keys.toList();
-    return statusOptionsByService[serviceType] ?? [];
-  }
+  // List<String> getStatusOptions(String? serviceType) {
+  //   if (serviceType == null) return statusLabels.keys.toList();
+  //   return statusOptionsByService[serviceType] ?? [];
+  // }
 
   String _translateStatus(String status) {
-    switch (status) {
-      case 'pending':
-        return 'بانتظار الرد';
-      case 'accepted':
-        return 'تم القبول';
-      case 'rejected':
-        return 'مرفوض';
-      case 'meeting_booked':
-        return 'تم حجز اجتماع';
-      default:
-        return 'غير معروف';
-    }
+    return statusStyles[status]?['label'] ?? 'غير معروف';
   }
 
   void initSocket() async {
@@ -234,16 +249,6 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                       final caregiver = booking['caregiver_id'];
                       final status = booking['status'];
 
-                      Color statusColor = Colors.grey;
-                      if (status == 'accepted')
-                        statusColor = Colors.green;
-                      else if (status == 'pending')
-                        statusColor = Colors.orange;
-                      else if (status == 'rejected')
-                        statusColor = Colors.red;
-                      else if (status == 'meeting_booked')
-                        statusColor = Colors.blue;
-
                       return Card(
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -308,15 +313,24 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                       ],
                                     ),
                                   ),
-
                                   Chip(
+                                    avatar: Icon(
+                                      statusStyles[status]?['icon'] ??
+                                          Icons.help,
+                                      color: Colors.white,
+                                      size: 18,
+                                    ),
                                     label: Text(
                                       _translateStatus(status),
                                       style: const TextStyle(
                                         color: Colors.white,
+                                        fontFamily: 'NotoSansArabic',
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    backgroundColor: statusColor,
+                                    backgroundColor:
+                                        statusStyles[status]?['color'] ??
+                                        Colors.grey,
                                   ),
                                 ],
                               ),
@@ -358,7 +372,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                           );
                                         },
                                         icon: const Icon(Icons.video_call),
-                                        label: const Text('حجز اجتماع'),
+                                        label: const Text(' حجز اجتماع أولاً'),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.blueAccent,
                                           padding: const EdgeInsets.symmetric(
@@ -376,14 +390,19 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                     Expanded(
                                       child: ElevatedButton.icon(
                                         onPressed: () {
-                                          Navigator.pushNamed(
+                                          Navigator.push(
                                             context,
-                                            '/payment_page',
-                                            arguments: booking,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      BookingPaymentPage(
+                                                        booking: booking,
+                                                      ),
+                                            ),
                                           );
                                         },
                                         icon: const Icon(Icons.payment),
-                                        label: const Text('الدفع الآن'),
+                                        label: const Text('إتمام الحجز الآن'),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.green,
                                           padding: const EdgeInsets.symmetric(
@@ -400,7 +419,90 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                   ],
                                 ),
                               ],
-
+                              if (status == 'meeting_booked') ...[
+                                const SizedBox(height: 10),
+                                const Text(
+                                  '📌 إكمال الطلب',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'NotoSansArabic',
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (_) => OnlineMeetingsPage(
+                                                    booking: booking,
+                                                    caregiver:
+                                                        booking['caregiver_id'],
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.video_call),
+                                        label: const Text(' إلغاء الحجز '),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.redAccent,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      BookingPaymentPage(
+                                                        booking: booking,
+                                                      ),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.payment),
+                                        label: const Text('إتمام الحجز الآن'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green,
+                                          padding: const EdgeInsets.symmetric(
+                                            vertical: 12,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const Text(
+                                  '💡 يمكنك إتمام الحجز الآن، أو انتظار الاجتماع للإتفاق على التفاصيل .',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ],
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: TextButton(
