@@ -58,6 +58,8 @@ dependencies:
   firebase_core: ^2.32.0
   socket_io_client: ^2.0.3+1
   url_launcher: ^6.2.5
+  flutter_pdfview: ^1.2.3
+
 
 
 dev_dependencies:
