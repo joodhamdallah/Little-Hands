@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ViewExpertCardsPage extends StatefulWidget {
   const ViewExpertCardsPage({super.key});
@@ -14,6 +15,8 @@ class ViewExpertCardsPage extends StatefulWidget {
 class _ViewExpertCardsPageState extends State<ViewExpertCardsPage> {
   bool _isLoading = true;
   List<dynamic> _cards = [];
+
+  final Color primaryColor = const Color(0xFFFF600A);
 
   @override
   void initState() {
@@ -28,9 +31,7 @@ class _ViewExpertCardsPageState extends State<ViewExpertCardsPage> {
 
     final response = await http.get(
       Uri.parse("${url}expert-posts/mine"),
-      headers: {
-        'Authorization': 'Bearer $token'
-      },
+      headers: {'Authorization': 'Bearer $token'},
     );
 
     if (response.statusCode == 200) {
@@ -47,71 +48,81 @@ class _ViewExpertCardsPageState extends State<ViewExpertCardsPage> {
     }
   }
 
+  void openPdf(String pdfUrl) async {
+  final fullUrl = '$baseUrl$pdfUrl';
+  final uri = Uri.parse(fullUrl);
+
+  if (await canLaunchUrl(uri)) {
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  } else {
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('تعذر فتح ملف PDF')),
+    );
+  }
+}
+
   @override
   Widget build(BuildContext context) {
-    return _isLoading
-        ? const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 10),
-                Text('🧠 جارٍ تحويل النص إلى بطاقة... شكراً لصبرك')
-              ],
-            ),
-          )
-        : _cards.isEmpty
-            ? const Center(child: Text('لم يتم نشر أي بطاقات بعد'))
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _cards.length,
-                itemBuilder: (context, index) {
-                  final card = _cards[index];
-                  final imageUrl = card['image_url'] != null && card['image_url'] != ''
-                      ? '$baseUrl${card['image_url']}'
-                      : null;
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (imageUrl != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(10),
-                              child: Image.network(
-                                imageUrl,
-                                height: 160,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.broken_image, size: 80, color: Colors.grey),
-                              ),
-                            ),
-                          const SizedBox(height: 12),
-                          Text(
-                            card['title'] ?? '',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'NotoSansArabic'
-                            ),
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: _isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 10),
+                  Text('🧠 جارٍ تحويل النص إلى بطاقة... شكراً لصبرك')
+                ],
+              ),
+            )
+          : _cards.isEmpty
+              ? const Center(
+                  child: Text(
+                    'لم يتم نشر أي بطاقات بعد',
+                    style: TextStyle(fontFamily: 'NotoSansArabic'),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _cards.length,
+                  itemBuilder: (context, index) {
+                    final card = _cards[index];
+                    final imageUrl = card['image_url'] != null && card['image_url'] != ''
+                        ? '$baseUrl${card['image_url']}'
+                        : null;
+
+                    return GestureDetector(
+                        onTap: () => openPdf(card['pdf_url']),
+                        child: Card(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          elevation: 5,
+                          child: Column(
+                            children: [
+                              if (imageUrl != null)
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                  child: Image.network(imageUrl, height: 180, width: double.infinity, fit: BoxFit.cover),
+                                ),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(card['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                                    const SizedBox(height: 8),
+                                    Text(card['summary'], style: const TextStyle(fontSize: 15)),
+                                  ],
+                                ),
+                              )
+                            ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            card['summary'] ?? '',
-                            style: const TextStyle(fontSize: 15, fontFamily: 'NotoSansArabic'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
+                        ),
+                      );
+
+                  },
+                ),
+    );
   }
 }

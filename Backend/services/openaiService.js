@@ -24,7 +24,6 @@ async function summarizePDF(text) {
     );
 
     const raw = response.data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    console.log('📥 Gemini Raw Response:', raw);
 
     // ✅ معالجة العنوان والملخص
     let title = 'عنوان غير متوفر';

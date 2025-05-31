@@ -52,7 +52,6 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
     }
 
     final response = await request.send();
-    final result = await http.Response.fromStream(response);
 
     setState(() => _isUploading = false);
 
@@ -66,7 +65,7 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('فشل في الرفع: ${result.body}')),
+    SnackBar(content: Text('✅ تم رفع النصيحة بنجاح')),
       );
     }
   }
