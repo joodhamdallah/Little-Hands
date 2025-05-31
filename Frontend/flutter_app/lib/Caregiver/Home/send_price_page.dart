@@ -145,6 +145,7 @@ class _SendPricePageState extends State<SendPricePage> {
   Widget build(BuildContext context) {
     final booking = widget.booking;
     final profile = widget.babysitter;
+    // ignore: unused_local_variable
     final unsupported =
         (booking['additional_requirements'] ?? [])
             .where((req) => !profile.skillsAndServices.contains(req))
