@@ -1,6 +1,5 @@
 // services/booking/handlers/BabysitterBookingHandler.js
 const Booking = require('../../../models/Booking');
-const WorkSchedule = require('../../../models/WorkSchedule');
 const CareGiver = require('../../../models/CareGiver');
 const Parent = require('../../../models/Parent');
 const NotificationService = require('../../notificationService');
@@ -358,31 +357,104 @@ await sendEmail({
     await booking.save();
     return { status: true, message: 'Price saved successfully' };
   }
-
 static async setPaymentMethod(bookingId, method, io) {
-  const booking = await Booking.findById(bookingId);
-  if (!booking) throw new Error('Booking not found');
+  console.log('🚀 setPaymentMethod called with:', { bookingId, method });
 
+  const booking = await Booking.findById(bookingId);
+  if (!booking) {
+    console.error('❌ Booking not found in DB');
+    throw new Error('Booking not found');
+  }
+  console.log('📦 Booking found:', booking._id.toString());
+
+  // Update payment fields
   booking.payment_method = method;
   booking.payment_status = 'paid';
   booking.status = 'confirmed';
-
   await booking.save();
+  console.log('💾 Booking updated and saved with confirmed status and paid payment_status');
 
-  // // 🔔 Emit update to parent and caregiver via socket
-  // io.to(booking.parent_id.toString()).emit('booking_status_updated', {
-  //   bookingId,
-  //   newStatus: 'confirmed',
-  // });
+  // Fetch caregiver and parent data
+  const caregiver = await CareGiver.findById(booking.caregiver_id);
+  const parent = await Parent.findById(booking.parent_id);
 
-  // io.to(booking.caregiver_id.toString()).emit('booking_status_updated', {
-  //   bookingId,
-  //   newStatus: 'confirmed',
-  // });
+  if (!caregiver || !parent) {
+    console.error('❌ Caregiver or Parent not found');
+    throw new Error('Caregiver or Parent not found');
+  }
+  console.log('👤 Caregiver:', caregiver.first_name, '| 👪 Parent:', parent.firstName);
+
+  const sessionDate = booking.session_start_date?.toISOString().split('T')[0];
+  const sessionTime = `${booking.session_start_time} - ${booking.session_end_time}`;
+  console.log('📅 Session info:', { sessionDate, sessionTime });
+
+  // 📱 Send FCM Notifications
+console.log('🔔 Sending FCM notifications...');
+
+// ✅ Notify Parent
+await NotificationService.sendTypedNotification({
+  user_id: parent._id.toString(),
+  user_type: 'Parent',
+  title: '✅ تم تأكيد الحجز',
+  message: `الجليسة ${caregiver.first_name} أكدت جلستك. يمكنك الآن التواصل أو الاستعداد للجلسة.`,
+  fcm_token: parent.fcm_token,
+  type: 'booking_confirmed',
+  data: {
+    booking_id: booking._id.toString(),
+    status: 'confirmed',
+  },
+});
+
+// ✅ Notify Caregiver
+await NotificationService.sendTypedNotification({
+  user_id: caregiver._id.toString(),
+  user_type: 'CareGiver',
+  title: '💰 تم تأكيد الحجز والدفع',
+  message: `ولي الأمر ${parent.firstName} أكد الجلسة وتم الدفع.`,
+  fcm_token: caregiver.fcm_token,
+  type: 'booking_confirmed',
+  data: {
+    booking_id: booking._id.toString(),
+    status: 'confirmed',
+  },
+});
+  console.log('✅ FCM notifications sent');
+
+  // 📡 Real-time updates via Socket.IO
+  console.log('📡 Emitting real-time socket events...');
+  io.to(parent._id.toString()).emit('booking_status_updated', {
+    bookingId: booking._id.toString(),
+    newStatus: 'confirmed',
+  });
+
+  io.to(caregiver._id.toString()).emit('booking_status_updated', {
+    bookingId: booking._id.toString(),
+    newStatus: 'confirmed',
+  });
+  console.log('✅ Socket events emitted');
+
+  // 📧 Send Confirmation Emails
+  const {
+    getParentBookingConfirmedEmail,
+    getCaregiverBookingConfirmedEmail,
+  } = require('../../../utils/emailTemplates/bookingConfirmedTemplates');
+
+  console.log('📧 Sending confirmation emails...');
+  await sendEmail({
+    to: parent.email,
+    subject: '✅ تم تأكيد حجز جلستك',
+    html: getParentBookingConfirmedEmail(sessionDate, sessionTime, caregiver.first_name),
+  });
+
+  await sendEmail({
+    to: caregiver.email,
+    subject: '💰 تم تأكيد الجلسة من قبل ولي الأمر',
+    html: getCaregiverBookingConfirmedEmail(sessionDate, sessionTime, parent.firstName),
+  });
+  console.log('✅ Emails sent');
 
   return booking;
 }
-
 
 }
 

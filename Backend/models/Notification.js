@@ -20,6 +20,7 @@ type: {
     'booking_accepted',         // caregiver → parent
     'booking_rejected',
     'meeting_booked',
+    'booking_confirmed',        // caregiver → parent    
     'booking_cancelled_by_parent',
     'booking_cancelled_by_caregiver',
     'session_reminder',
