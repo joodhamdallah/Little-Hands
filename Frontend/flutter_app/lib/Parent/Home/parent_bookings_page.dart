@@ -44,6 +44,11 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
       'icon': Icons.verified,
     },
     'rejected': {'label': 'مرفوض', 'color': Colors.red, 'icon': Icons.cancel},
+    'cancelled': {
+      'label': 'تم الإلغاء',
+      'color': Colors.grey,
+      'icon': Icons.cancel_schedule_send, // or Icons.block or Icons.close
+    },
   };
 
   final Map<String, String?> statusMap = {
@@ -52,6 +57,8 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'تم القبول': 'accepted',
     'تم حجز اجتماع': 'meeting_booked',
     'تم التأكيد': 'confirmed',
+    'مرفوض': 'rejected',
+    'تم الإلغاء': 'cancelled',
   };
   String selectedServiceType = 'كل الخدمات';
 
@@ -74,6 +81,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'meeting_booked': 'تم حجز اجتماع',
     'confirmed': 'تم التأكيد',
     'rejected': 'مرفوض',
+    'cancelled': 'تم الإلغاء',
   };
   final Map<String, String> serviceTypeLabels = {
     'babysitter': ' مجالسة أطفال',
@@ -341,7 +349,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                               Text(
                                 '⏰ الوقت: من ${booking['session_start_time']} حتى ${booking['session_end_time']}',
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 12),
                               if (status == 'accepted') ...[
                                 const SizedBox(height: 10),
                                 const Text(
@@ -449,7 +457,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                           );
                                         },
                                         icon: const Icon(Icons.video_call),
-                                        label: const Text(' إلغاء الحجز '),
+                                        label: const Text(' تغيير الموعد '),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.redAccent,
                                           padding: const EdgeInsets.symmetric(
@@ -502,15 +510,54 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                     color: Colors.black54,
                                   ),
                                 ),
+                                const SizedBox(height: 10),
                               ],
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: TextButton(
-                                  onPressed: () {
-                                    // TODO: Navigate to booking details page
-                                  },
-                                  child: const Text('عرض التفاصيل'),
-                                ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  if ([
+                                    'pending',
+                                    'accepted',
+                                    'meeting_booked',
+                                    'confirmed',
+                                  ].contains(status))
+                                    TextButton.icon(
+                                      onPressed:
+                                          () => _confirmCancel(
+                                            booking['_id'],
+                                            status,
+                                          ),
+                                      icon: const Icon(
+                                        Icons.cancel,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      label: const Text(
+                                        'إلغاء الحجز',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        backgroundColor:
+                                            Colors.red, // 🔴 Background color
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  TextButton(
+                                    onPressed: () {
+                                      // TODO: Navigate to booking details page
+                                    },
+                                    child: const Text('عرض التفاصيل'),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -521,5 +568,171 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
         ),
       ],
     );
+  }
+
+  void _confirmCancel(String bookingId, String status) async {
+    final shouldAskForReason = [
+      'accepted',
+      'meeting_booked',
+      'confirmed',
+    ].contains(status);
+    final bool showWarning = ['meeting_booked', 'confirmed'].contains(status);
+
+    if (!shouldAskForReason) {
+      final confirm = await showDialog<bool>(
+        context: context,
+        builder:
+            (context) => AlertDialog(
+              title: const Text('تأكيد الإلغاء'),
+              content: const Text('هل أنت متأكد من رغبتك في إلغاء هذا الحجز؟'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('لا'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context, true);
+                    _cancelBooking(bookingId, 'تم الإلغاء بدون تحديد سبب');
+                  },
+                  child: const Text(
+                    'نعم، إلغاء',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+      );
+
+      return;
+    }
+
+    String selectedReason = 'ظروف طارئة';
+    TextEditingController otherReasonController = TextEditingController();
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => Directionality(
+            textDirection: TextDirection.rtl,
+            child: StatefulBuilder(
+              builder:
+                  (context, setState) => AlertDialog(
+                    title: const Text('سبب الإلغاء'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (showWarning)
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.red.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                status == 'confirmed'
+                                    ? '⚠️ تم تأكيد هذا الحجز، وقد يكون مدفوعًا. لن تسترد المبلغ إذا ألغيت الآن.'
+                                    : '⚠️ لقد حجزت اجتماعًا مع مقدم الرعاية. إذا ألغيت الآن، سيتم إعلامه فورًا.',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          const Text('يرجى اختيار سبب الإلغاء:'),
+                          const SizedBox(height: 8),
+                          RadioListTile<String>(
+                            title: const Text('ظروف طارئة'),
+                            value: 'ظروف طارئة',
+                            groupValue: selectedReason,
+                            onChanged:
+                                (value) =>
+                                    setState(() => selectedReason = value!),
+                          ),
+                          RadioListTile<String>(
+                            title: const Text('لم أعد بحاجة للخدمة'),
+                            value: 'لم أعد بحاجة للخدمة',
+                            groupValue: selectedReason,
+                            onChanged:
+                                (value) =>
+                                    setState(() => selectedReason = value!),
+                          ),
+                          RadioListTile<String>(
+                            title: const Text('أخرى'),
+                            value: 'أخرى',
+                            groupValue: selectedReason,
+                            onChanged:
+                                (value) =>
+                                    setState(() => selectedReason = value!),
+                          ),
+                          if (selectedReason == 'أخرى')
+                            TextField(
+                              controller: otherReasonController,
+                              decoration: const InputDecoration(
+                                hintText: 'اكتب السبب...',
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('إلغاء'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          final reason =
+                              selectedReason == 'أخرى'
+                                  ? otherReasonController.text.trim()
+                                  : selectedReason;
+                          Navigator.pop(context, true);
+                          _cancelBooking(bookingId, reason);
+                        },
+                        child: const Text(
+                          'تأكيد الإلغاء',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ],
+                  ),
+            ),
+          ),
+    );
+
+    if (confirmed != true) return;
+  }
+
+  Future<void> _cancelBooking(String bookingId, String reason) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+
+    final response = await http.patch(
+      Uri.parse('${url}bookings/$bookingId/cancel'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'cancelledBy': 'parent', // ✅ Correct field name
+        'reason': reason, // ✅ Correct field name
+      }),
+    );
+    print(jsonEncode({'cancelledBy': 'parent', 'reason': reason}));
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تم إلغاء الحجز بنجاح')));
+      fetchBookings();
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('فشل في إلغاء الحجز')));
+    }
   }
 }
