@@ -38,8 +38,23 @@ exports.bookMeeting = async (req, res) => {
 };
 
 exports.cancelBooking = async (req, res) => {
-  const updated = await BabysitterBookingHandler.cancelBooking(req.params.id, req.body.cancelledBy);
-  res.status(200).json({ message: 'Booking canceled.', data: updated });
+  const { cancelledBy, reason } = req.body;
+console.log('🔸 Cancel request body:', req.body);
+console.log('🔸 Cancelled by:', cancelledBy);
+console.log('🔸 Reason:', reason);
+
+
+  try {
+    const updated = await BabysitterBookingHandler.cancelBooking(
+      req.params.id,
+      cancelledBy,
+      reason // Pass reason to handler
+    );
+
+    res.status(200).json({ message: 'Booking canceled.', data: updated });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Failed to cancel booking' });
+  }
 };
 
 exports.markCompleted = async (req, res) => {

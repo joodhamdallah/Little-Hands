@@ -238,15 +238,26 @@ await sendEmail({
     return booking;
   }
 
-  static async cancelBooking(bookingId, cancelledBy) {
-    const updated = await Booking.findByIdAndUpdate(
-      bookingId,
-      { status: 'cancelled', cancelled_by: cancelledBy },
-      { new: true }
-    );
-    if (!updated) throw new Error('Booking not found');
-    return updated;
-  }
+static async cancelBooking(bookingId, cancelledBy, reason = null) {
+  const updated = await Booking.findByIdAndUpdate(
+    bookingId,
+    {
+      status: 'cancelled',
+      cancelled_by: cancelledBy,
+      cancellation_reason: reason || null,
+    },
+    { new: true }
+  );
+console.log('📝 Updating booking with:', {
+  status: 'cancelled',
+  cancelled_by: cancelledBy,
+  cancellation_reason: reason,
+});
+
+  if (!updated) throw new Error('Booking not found');
+  return updated;
+}
+
 
   static async markCompleted(bookingId) {
     const updated = await Booking.findByIdAndUpdate(

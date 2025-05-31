@@ -20,12 +20,32 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
   late TabController _tabController;
   List<dynamic> allBookings = [];
   bool isLoading = true;
+  String dropdownStatus = 'meeting_booked';
+
+  final Map<String, Color> statusColors = {
+    'pending': Colors.orange,
+    'accepted': Colors.blue,
+    'rejected': Colors.red,
+    'meeting_booked': Colors.purple,
+    'confirmed': Colors.green,
+    'cancelled': Colors.grey,
+    'completed': Colors.teal,
+  };
+
+  final Map<String, String> statusLabels = {
+    'pending': 'قيد الانتظار',
+    'accepted': 'تم القبول',
+    'rejected': 'مرفوض',
+    'meeting_booked': 'تم حجز اجتماع',
+    'confirmed': 'مؤكد',
+    'cancelled': 'ملغي',
+    'completed': 'سجل الحجوزات',
+  };
 
   @override
   void initState() {
-
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 7, vsync: this);
     fetchBookings();
   }
 
@@ -61,13 +81,12 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
         .where((b) => (b['status'] ?? 'pending') == status)
         .toList();
   }
-  // Updated CaregiverBookingsPage with parent info, toggle details, confirmation dialogs, and تحديد السعر button for accepted
 
   Widget buildBookingCard(Map<String, dynamic> booking) {
-    final isPending = booking['status'] == 'pending';
-    final isAccepted = booking['status'] == 'accepted';
-    // ignore: unused_local_variable
-    final isConfirmed = booking['status'] == 'confirmed';
+    final status = booking['status'] ?? 'pending';
+    final isPending = status == 'pending';
+    final isAccepted = status == 'accepted';
+    final isConfirmed = status == 'confirmed';
     bool showExtraDetails = false;
 
     return StatefulBuilder(
@@ -86,21 +105,47 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "نوع الخدمة: ${booking['service_type']}",
-                    style: boldOrangeTitle(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "نوع الخدمة: ${booking['service_type']}",
+                        style: boldOrangeTitle(),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColors[status] ?? Colors.grey,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          statusLabels[status] ?? status,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   Text(
                     "📅 تاريخ الجلسة: ${booking['session_start_date']?.substring(0, 10) ?? 'غير محدد'}",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   RichText(
                     textDirection: TextDirection.rtl,
                     text: TextSpan(
-                      style: TextStyle(fontSize: 16, color: Colors.black),
+                      style: const TextStyle(fontSize: 16, color: Colors.black),
                       children: [
-                        TextSpan(
+                        const TextSpan(
                           text: 'وقت الجلسة: ',
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -117,7 +162,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                   ),
                   Text(
                     "📍 العنوان: ${booking['city']} - ${booking['neighborhood']}",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
                     (booking['rate_min'] == null || booking['rate_max'] == null)
@@ -215,8 +260,6 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                                         ElevatedButton(
                                           onPressed: () async {
                                             Navigator.pop(context);
-
-                                            // Then navigate to SendPricePage
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -228,7 +271,6 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                                                     ),
                                               ),
                                             );
-                                            // Call the backend to accept the booking
                                             await acceptBooking(
                                               booking['_id'],
                                               booking,
@@ -302,6 +344,21 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                         foregroundColor: Colors.white,
                       ),
                     ),
+                  if ([
+                    'accepted',
+                    'confirmed',
+                    'meeting_booked',
+                  ].contains(status))
+                    ElevatedButton.icon(
+                      onPressed:
+                          () => showCancelDialog(context, booking['_id']),
+                      icon: const Icon(Icons.cancel),
+                      label: const Text("إلغاء الحجز"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.redAccent,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -309,16 +366,95 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     );
   }
 
+  void showCancelDialog(BuildContext context, String bookingId) {
+    final TextEditingController reasonController = TextEditingController();
+    String selectedReason = '';
+
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text("سبب الإلغاء"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                DropdownButtonFormField<String>(
+                  decoration: const InputDecoration(labelText: "اختر سببًا"),
+                  items:
+                      [
+                            'الوقت غير مناسب',
+                            'ظرف طارئ',
+                            'الطلب غير مناسب',
+                            'سبب آخر',
+                          ]
+                          .map(
+                            (reason) => DropdownMenuItem(
+                              value: reason,
+                              child: Text(reason),
+                            ),
+                          )
+                          .toList(),
+                  onChanged: (value) => selectedReason = value ?? '',
+                ),
+                TextField(
+                  controller: reasonController,
+                  decoration: const InputDecoration(
+                    labelText: "سبب إضافي (اختياري)",
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("إلغاء"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final reason =
+                      selectedReason.isNotEmpty
+                          ? selectedReason
+                          : reasonController.text.trim();
+                  if (reason.isEmpty) return;
+                  cancelBooking(bookingId, reason);
+                  Navigator.pop(context);
+                },
+                child: const Text("تأكيد الإلغاء"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> cancelBooking(String bookingId, String reason) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+    if (token == null) return;
+
+    final response = await http.patch(
+      Uri.parse('${url}bookings/$bookingId/cancel'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'reason': reason}),
+    );
+
+    if (response.statusCode == 200) {
+      await fetchBookings();
+    } else {
+      print("❌ فشل في إلغاء الحجز");
+    }
+  }
+
   String formatTime(String timeStr) {
     try {
-      final inputFormat = intl.DateFormat.jm(); // e.g., 9:00 AM
+      final inputFormat = intl.DateFormat.jm();
       final time = inputFormat.parse(timeStr);
-      final outputFormat = intl.DateFormat(
-        'hh:mm a',
-      ); // or 'HH:mm' for 24h format
+      final outputFormat = intl.DateFormat('hh:mm a');
       return outputFormat.format(time);
     } catch (e) {
-      return timeStr; // fallback if parsing fails
+      return timeStr;
     }
   }
 
@@ -337,7 +473,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
 
     if (response.statusCode == 200) {
       await fetchBookings();
-      _tabController.animateTo(1); // ✅ انتقل إلى تبويب "مؤكد"
+      _tabController.animateTo(1);
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -382,7 +518,6 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     fontWeight: FontWeight.bold,
     fontFamily: 'NotoSansArabic',
   );
-
   @override
   Widget build(BuildContext context) {
     return Directionality(
@@ -399,11 +534,11 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
               Tab(text: "مقبول"),
               Tab(text: "مرفوض"),
               Tab(text: "مؤكد"),
-              // Tab(text: "ملغي"),
-              // Tab(text: "مكتمل"),
+              Tab(text: "أخرى"),
             ],
             labelStyle: const TextStyle(fontFamily: 'NotoSansArabic'),
             indicatorColor: Colors.white,
+            isScrollable: true,
           ),
         ),
         body:
@@ -418,6 +553,51 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                     bookingsList(filterBookingsByStatus('accepted')),
                     bookingsList(filterBookingsByStatus('rejected')),
                     bookingsList(filterBookingsByStatus('confirmed')),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                "اختر الحالة:",
+                                style: TextStyle(fontFamily: 'NotoSansArabic'),
+                              ),
+                              DropdownButton<String>(
+                                value: dropdownStatus,
+                                dropdownColor: Colors.white,
+                                style: const TextStyle(
+                                  fontFamily: 'NotoSansArabic',
+                                  color: Colors.black,
+                                ),
+                                items:
+                                    ['meeting_booked', 'cancelled', 'completed']
+                                        .map(
+                                          (status) => DropdownMenuItem(
+                                            value: status,
+                                            child: Text(
+                                              statusLabels[status] ?? status,
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                onChanged: (value) {
+                                  if (value != null) {
+                                    setState(() => dropdownStatus = value);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: bookingsList(
+                            filterBookingsByStatus(dropdownStatus),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
       ),
