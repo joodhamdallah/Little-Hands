@@ -1,6 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Home/caregiver_home_page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
+import 'package:flutter_app/pages/config.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart' as intl;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SendPricePage extends StatefulWidget {
   final Map<String, dynamic> booking;
@@ -286,14 +292,26 @@ class _SendPricePageState extends State<SendPricePage> {
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    await sendPriceToBackend();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("✅ تم إرسال السعر إلى ولي الأمر"),
                       ),
                     );
-                    // TODO: Send to backend
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (_) => CaregiverHomePage(
+                              profile: profile,
+                              initialTabIndex:
+                                  2, // 👈 Open "accepted bookings" tab
+                            ), // ✅ make sure profile is not null
+                      ),
+                    );
                   },
+
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -306,6 +324,48 @@ class _SendPricePageState extends State<SendPricePage> {
         ),
       ),
     );
+  }
+
+  Future<void> sendPriceToBackend() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+    if (token == null) return;
+
+    final uri = Uri.parse('${url}setPrice/${widget.booking['_id']}');
+    final headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+
+    final body = {
+      'is_hourly': isHourly,
+      'hourly_rate':
+          isHourly ? double.tryParse(_hourlyRateController.text) : null,
+      'fixed_rate': !isHourly ? subtotal : null,
+      'session_hours': sessionHours,
+      'subtotal': subtotal,
+      'total': total,
+      'additional_fees':
+          _requirementControllers.entries
+              .map(
+                (e) => {
+                  'label': e.key,
+                  'amount': double.tryParse(e.value.text) ?? 0,
+                },
+              )
+              .toList(),
+    };
+
+    final response = await http.post(
+      uri,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+    if (response.statusCode == 200) {
+      print("✅ Price sent successfully");
+    } else {
+      print("❌ Failed to send price: ${response.body}");
+    }
   }
 
   Widget _buildSectionTitle(String title) => Padding(

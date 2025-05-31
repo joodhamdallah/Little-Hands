@@ -51,7 +51,8 @@ class _OnlineMeetingsPageState extends State<OnlineMeetingsPage> {
               return s['type'] == 'meeting' &&
                   DateTime.parse(
                     s['date'],
-                  ).isBefore(sessionDate.subtract(const Duration(days: 1)));
+                  ).isBefore(sessionDate.subtract(const Duration(days: 1))) &&
+                  DateTime.parse(s['date']).isAfter(DateTime.now());
             } catch (_) {
               return false;
             }
@@ -88,7 +89,6 @@ class _OnlineMeetingsPageState extends State<OnlineMeetingsPage> {
     );
 
     if (response.statusCode == 200) {
-
       Navigator.pop(context, true);
       ScaffoldMessenger.of(
         context,

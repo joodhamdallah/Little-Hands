@@ -41,4 +41,12 @@ router.patch('/bookings/:id/mark-completed', authMiddleware, bookingBabysitterCo
 // 💰 Mark a babysitting session as paid (after payment success)
 router.patch('/bookings/:id/payment-success', authMiddleware, bookingBabysitterController.markAsPaid);
 
+// set price by caregiver
+router.post('/setPrice/:bookingId', authMiddleware, bookingBabysitterController.setPrice);
+
+// Set payment method (cash or online)
+router.patch('/bookings/:id/payment-method', authMiddleware, bookingBabysitterController.setPaymentMethod);
+
+
+
 module.exports = router;

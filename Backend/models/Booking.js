@@ -82,16 +82,28 @@ cancelled_by: {
   default: null
 },
 
-payment_status: {
-  type: String,
-  enum: ['unpaid', 'paid'],
-  default: 'unpaid'
-},
 meeting_slot_id: {
   type: mongoose.Schema.Types.ObjectId,
   ref: 'WorkSchedule',
   default: null
 },
+
+price_details: {
+  is_hourly: Boolean,
+  hourly_rate: Number,        // nullable if fixed
+  fixed_rate: Number,         // nullable if hourly
+  session_hours: Number,
+  subtotal: Number,
+  additional_fees: [
+    {
+      label: String,
+      amount: Number
+    }
+  ],
+  total: Number
+},
+payment_status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
+payment_method: { type: String, enum: ['cash', 'online'], default: null },
 
 }, { timestamps: true });
 

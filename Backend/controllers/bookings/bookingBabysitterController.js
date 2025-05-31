@@ -51,3 +51,22 @@ exports.markAsPaid = async (req, res) => {
   const updated = await BabysitterBookingHandler.markAsPaid(req.params.id);
   res.status(200).json({ message: 'Payment marked as successful.', data: updated });
 };
+
+exports.setPrice = async (req, res) => {
+ const result = await BabysitterBookingHandler.setPrice(req.params.bookingId, req.body);
+  res.status(200).json({ message: 'Price set successfully.', data: result });
+};
+
+exports.setPaymentMethod = async (req, res) => {
+  try {
+    const bookingId = req.params.id;
+    const { method } = req.body; // expecting 'cash' or 'online'
+    const io = req.app.get('io');
+
+    const updated = await BabysitterBookingHandler.setPaymentMethod(bookingId, method, io);
+    res.status(200).json({ message: 'Payment method set and booking confirmed.', data: updated });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to set payment method.', error: err.message });
+  }
+};
+
