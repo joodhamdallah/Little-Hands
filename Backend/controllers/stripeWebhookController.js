@@ -1,5 +1,6 @@
 const CareGiver = require('../models/CareGiver');
 const Booking = require('../models/Booking'); // ✅ Required for booking updates
+const BabysitterBookingHandler = require('../services/booking/handlers/BabysitterBookingHandler');
 
 exports.handleStripeWebhook = async (req, res) => {
   try {
@@ -15,26 +16,33 @@ exports.handleStripeWebhook = async (req, res) => {
     const session = event.data.object;
 
     // ✅ CASE 1: Booking Payment (online session)
-    const bookingId = session.metadata?.booking_id;
-    if (bookingId) {
-      const updatedBooking = await Booking.findByIdAndUpdate(
-        bookingId,
-        {
-          payment_method: 'online',
-          payment_status: 'paid',
-          status: 'confirmed',
-        },
-        { new: true }
-      );
+const bookingId = session?.metadata?.booking_id;
 
-      if (!updatedBooking) {
-        console.log('❌ Booking not found');
-        return res.status(404).json({ message: 'Booking not found' });
-      }
+if (bookingId) {
+  try {
+    // Dummy IO object since we don't have Socket.IO in this context
+    const dummyIO = {
+      to: () => ({ emit: () => {} }),
+    };
 
-      console.log(`✅ Booking ${bookingId} marked as paid & confirmed`);
-      return res.status(200).json({ success: true });
+    const updatedBooking = await BabysitterBookingHandler.setPaymentMethod(
+      bookingId,
+      'online',
+      dummyIO
+    );
+
+    if (!updatedBooking) {
+      console.log('❌ Booking not found');
+      return res.status(404).json({ message: 'Booking not found' });
     }
+
+    console.log(`✅ Booking ${bookingId} marked as paid & confirmed`);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('❌ Failed to confirm booking via handler:', err.message);
+    return res.status(500).json({ message: 'Booking confirmation failed' });
+  }
+}
 
     // ✅ CASE 2: Caregiver Subscription
     const userId = session.metadata?.user_id;
