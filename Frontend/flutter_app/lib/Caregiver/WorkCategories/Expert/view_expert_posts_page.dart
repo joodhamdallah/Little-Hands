@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/pdf_viewer_page.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class ViewExpertCardsPage extends StatefulWidget {
   const ViewExpertCardsPage({super.key});
@@ -48,19 +48,37 @@ class _ViewExpertCardsPageState extends State<ViewExpertCardsPage> {
     }
   }
 
-  void openPdf(String pdfUrl) async {
-  final fullUrl = '$baseUrl$pdfUrl';
-  final uri = Uri.parse(fullUrl);
 
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  } else {
-    // ignore: use_build_context_synchronously
+Future<void> deletePost(String id) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('accessToken');
+  final uri = Uri.parse("${url}expert-posts/$id");
+
+  final response = await http.delete(
+    uri,
+    headers: {'Authorization': 'Bearer $token'},
+  );
+
+  if (response.statusCode == 200) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('تعذر فتح ملف PDF')),
+      const SnackBar(content: Text('✅ تم حذف البطاقة')),
+    );
+    fetchMyExpertPosts(); // 🔄 تحديث القائمة
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('❌ فشل في حذف البطاقة')),
     );
   }
 }
+
+ void openPdf(String pdfUrl) {
+  final fullUrl = '$baseUrl$pdfUrl';
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => PdfViewerPage(pdfUrl: fullUrl)),
+  );
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -87,41 +105,80 @@ class _ViewExpertCardsPageState extends State<ViewExpertCardsPage> {
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _cards.length,
-                  itemBuilder: (context, index) {
-                    final card = _cards[index];
-                    final imageUrl = card['image_url'] != null && card['image_url'] != ''
-                        ? '$baseUrl${card['image_url']}'
-                        : null;
+                 itemBuilder: (context, index) {
+  final card = _cards[index];
+  final imageUrl = card['image_url'] != null && card['image_url'] != ''
+      ? '$baseUrl${card['image_url']}'
+      : null;
 
-                    return GestureDetector(
-                        onTap: () => openPdf(card['pdf_url']),
-                        child: Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 5,
-                          child: Column(
-                            children: [
-                              if (imageUrl != null)
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                                  child: Image.network(imageUrl, height: 180, width: double.infinity, fit: BoxFit.cover),
-                                ),
-                              Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(card['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                                    const SizedBox(height: 8),
-                                    Text(card['summary'], style: const TextStyle(fontSize: 15)),
-                                  ],
-                                ),
-                              )
-                            ],
-                          ),
-                        ),
-                      );
+  return Stack(
+    children: [
+      Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 5,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => openPdf(card['pdf_url']),
+          child: Column(
+            children: [
+              if (imageUrl != null)
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Image.network(imageUrl, height: 180, width: double.infinity, fit: BoxFit.cover),
+                ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      card['title'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        fontFamily: 'NotoSansArabic',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      card['summary'],
+                      style: const TextStyle(fontSize: 15, fontFamily: 'NotoSansArabic'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      // 🗑 زر الحذف
+      Positioned(
+        top: 8,
+        left: 8,
+        child: IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: () async {
+            final confirm = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('تأكيد الحذف'),
+                content: const Text('هل أنت متأكد من حذف هذه البطاقة؟'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+                  TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('حذف')),
+                ],
+              ),
+            );
+            if (confirm == true) {
+              await deletePost(card['_id']);
+            }
+          },
+        ),
+      ),
+    ],
+  );
+},
 
-                  },
                 ),
     );
   }

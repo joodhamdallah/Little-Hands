@@ -14,7 +14,7 @@ const parentSchema  = new mongoose.Schema({
         unique: true, 
         lowercase: true, 
         match: [emailRegex, "Invalid email format"]
-    },
+    }, 
     password: { 
         type: String, 
         required: true, 
