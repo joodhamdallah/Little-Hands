@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Home/parent_bookings_page.dart';
 import 'package:flutter_app/Parent/Home/parent_main_page.dart';
+import 'package:flutter_app/Parent/Home/view_all_expert_cards_page.dart';
 import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
 import 'package:flutter_app/pages/notifications_page.dart';
@@ -35,21 +36,23 @@ class _ParentHomePageState extends State<ParentHomePage> {
     notifProvider.loadUnreadCount();
     notifProvider.startAutoRefresh();
 
-    _pages = [
-      const ParentHomeMainContent(),
-      NotificationsPage(
-        onMarkedRead: () {
-          Provider.of<NotificationProvider>(
-            context,
-            listen: false,
-          ).loadUnreadCount();
-        },
-      ),
-      const ParentBookingsPage(),
-      // const DashboardPage(),
-      // const ContentPage(),
-      // const AccountPage(),
-    ];
+ _pages = [
+  const ParentHomeMainContent(),
+  NotificationsPage(
+    onMarkedRead: () {
+      Provider.of<NotificationProvider>(
+        context,
+        listen: false,
+      ).loadUnreadCount();
+    },
+  ),
+  const ParentBookingsPage(),
+  const SizedBox(), // لوحة التحكم (غير مفعّلة بعد)
+  const ViewAllExpertCardsPage(), // ✅ صفحة المحتوى (الكروت)
+  const SizedBox(), // حسابي (غير مفعّل بعد)
+];
+
+
   }
 
   @override
