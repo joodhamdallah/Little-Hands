@@ -1,11 +1,15 @@
-require("dotenv").config(); // Load environment variables
+require("dotenv").config(); 
 const express = require("express");
 const mongoose = require("mongoose");
-const http = require("http"); // ✅ for wrapping express
-const { Server } = require("socket.io"); // ✅ import Socket.IO
+const http = require("http");
+const { Server } = require("socket.io");
+const cors = require("cors"); // ✅ Add this line
+
 const connectDB = require("./database/connection");
 
 const app = express();
+app.use(cors()); // ✅ Add this line BEFORE any routes
+
 const server = http.createServer(app); // ✅ wrap app with HTTP server
 const io = new Server(server, {
   cors: {
@@ -35,6 +39,7 @@ const expertRoutes = require("./routes/expertRoutes");
 const workPreferenceRoutes = require('./routes/weeklyPreferenceRoutes');
 const specificDateRoutes = require('./routes/specificDateRoutes');
 const expertPostRoutes = require('./routes/expertPostRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 
 
@@ -61,6 +66,8 @@ app.use('/api', workPreferenceRoutes);
 app.use('/api', specificDateRoutes);
 app.use('/api/expert-posts', expertPostRoutes);
 app.use('/uploads', express.static('uploads'));
+app.use('/api/admin', adminRoutes);
+
 
 
 
