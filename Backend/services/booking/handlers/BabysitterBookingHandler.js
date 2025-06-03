@@ -68,7 +68,9 @@ class BabysitterBookingHandler {
       special_needs_support,
       preferred_contact_method,
       session_duration_minutes,
-      status: 'pending',
+      status: 'pending',  
+      session_end_datetime:null,  // ✅ Explicitly set
+
     });
 
     await this.#notifyCaregiver(newBooking, caregiver_id, parent_id, service_type, session_start_time, city,io);
@@ -238,7 +240,7 @@ await sendEmail({
     return booking;
   }
 
-static async cancelBooking(bookingId, cancelledBy, reason = null) {
+static async cancelBooking(bookingId, cancelledBy, reason = null, io) {
   const updated = await Booking.findByIdAndUpdate(
     bookingId,
     {
@@ -253,6 +255,17 @@ console.log('📝 Updating booking with:', {
   cancelled_by: cancelledBy,
   cancellation_reason: reason,
 });
+  // 📡 Real-time update
+    io.to(updated.parent_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'cancelled',
+    });
+    io.to(updated.caregiver_id.toString()).emit('newNotification', {
+      type: 'booking_status_updated',
+      booking_id: updated._id.toString(),
+      status: 'cancelled',
+    });
 
   if (!updated) throw new Error('Booking not found');
   return updated;
@@ -378,10 +391,22 @@ static async setPaymentMethod(bookingId, method, io) {
   }
   console.log('📦 Booking found:', booking._id.toString());
 
+  const sessionDateStr = booking.session_start_date.toISOString().split('T')[0];
+const [time, meridian] = booking.session_end_time.split(' '); // e.g., "2:00", "PM"
+let [hours, minutes] = time.split(':').map(Number);
+
+if (meridian === 'PM' && hours < 12) hours += 12;
+if (meridian === 'AM' && hours === 12) hours = 0;
+
+const sessionEndDateTime = new Date(booking.session_start_date);
+sessionEndDateTime.setHours(hours, minutes, 0, 0);
+
   // Update payment fields
   booking.payment_method = method;
   booking.payment_status = 'paid';
   booking.status = 'confirmed';
+  booking.session_end_datetime = sessionEndDateTime;
+
   await booking.save();
   console.log('💾 Booking updated and saved with confirmed status and paid payment_status');
 

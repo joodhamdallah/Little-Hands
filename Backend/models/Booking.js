@@ -108,6 +108,11 @@ price_details: {
 payment_status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
 payment_method: { type: String, enum: ['cash', 'online'], default: null },
 
+session_end_datetime: {
+  type: Date,
+  default: null  // ✅ Makes field always present
+},
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

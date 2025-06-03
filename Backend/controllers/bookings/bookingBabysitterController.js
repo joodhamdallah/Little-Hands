@@ -42,13 +42,15 @@ exports.cancelBooking = async (req, res) => {
 console.log('🔸 Cancel request body:', req.body);
 console.log('🔸 Cancelled by:', cancelledBy);
 console.log('🔸 Reason:', reason);
+    const io = req.app.get('io');
 
 
   try {
     const updated = await BabysitterBookingHandler.cancelBooking(
       req.params.id,
       cancelledBy,
-      reason // Pass reason to handler
+      reason, // Pass reason to handler
+       io
     );
 
     res.status(200).json({ message: 'Booking canceled.', data: updated });

@@ -39,8 +39,10 @@ const expertRoutes = require("./routes/expertRoutes");
 const workPreferenceRoutes = require('./routes/weeklyPreferenceRoutes');
 const specificDateRoutes = require('./routes/specificDateRoutes');
 const expertPostRoutes = require('./routes/expertPostRoutes');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
+const scheduleCompleteBookingsJob = require('./services/cron/completeBookingsJob');
 
 
 app.use('/api/stripe', stripeWebhookRoute);
@@ -49,6 +51,7 @@ app.use(express.json({ limit: '30mb' }));
 app.use(express.urlencoded({ extended: true, limit: '30mb' }));
 
 // ✅ تفعيل باقي الراوتات
+app.use('/api', notificationRoutes); 
 app.use("/api", parentRoutes);
 app.use("/api/caregiver", caregiverRoutes);
 app.use("/api/auth", authRoutes);
@@ -58,14 +61,14 @@ app.use('/api/babysitter', babysitterRoutes);
 app.use('/api', subscriptionRoutes);
 app.use('/api/schedule', workScheduleRoutes);
 app.use('/api', matchRoutes); 
- app.use('/api', bookingRoutes); 
- app.use('/api', notificationRoutes); 
+app.use('/api', bookingRoutes); 
 app.use("/api", specialNeedsRoutes);
 app.use("/api", expertRoutes);
 app.use('/api', workPreferenceRoutes);
 app.use('/api', specificDateRoutes);
 app.use('/api/expert-posts', expertPostRoutes);
 app.use('/uploads', express.static('uploads'));
+app.use('/api/feedback', feedbackRoutes);
 app.use('/api/admin', adminRoutes);
 
 
@@ -73,7 +76,10 @@ app.use('/api/admin', adminRoutes);
 
 // ✅ Connect to MongoDB then start the server
 connectDB()
-  .then(() => {
+  .then(() => {    
+    
+    scheduleCompleteBookingsJob();
+
     server.listen(port, () => {
       console.log(`🚀 Server + Socket.IO running at http://localhost:${port}`);
     });

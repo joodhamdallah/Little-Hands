@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Home/online_meetings_page.dart';
+import 'package:flutter_app/Parent/Home/parent_feedback_page.dart';
 import 'package:flutter_app/Parent/Home/payment_booking_page.dart';
 import 'package:flutter_app/services/socket_service.dart';
 import 'package:http/http.dart' as http;
@@ -49,6 +50,11 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
       'color': Colors.grey,
       'icon': Icons.cancel_schedule_send, // or Icons.block or Icons.close
     },
+    'completed': {
+      'label': 'تمت الجلسة',
+      'color': Colors.green, // ✅ Indicates success/completion
+      'icon': Icons.check_circle_outline, // ✅ Clear and positive
+    },
   };
 
   final Map<String, String?> statusMap = {
@@ -59,6 +65,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'تم التأكيد': 'confirmed',
     'مرفوض': 'rejected',
     'تم الإلغاء': 'cancelled',
+    'تمت الجلسة': 'completed',
   };
   String selectedServiceType = 'كل الخدمات';
 
@@ -82,6 +89,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'confirmed': 'تم التأكيد',
     'rejected': 'مرفوض',
     'cancelled': 'تم الإلغاء',
+    'completed': 'تمت الجلسة',
   };
   final Map<String, String> serviceTypeLabels = {
     'babysitter': ' مجالسة أطفال',
@@ -122,16 +130,28 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
       });
 
       setState(() {
+        final now = DateTime.now();
+
         currentBookings =
             allBookings.where((b) {
-              final date = DateTime.parse(b['session_start_date']);
-              return b['status'] != 'rejected' && date.isAfter(now);
+              final sessionDate = DateTime.parse(b['session_start_date']);
+              final status = b['status'];
+
+              return [
+                    'pending',
+                    'accepted',
+                    'meeting_booked',
+                    'confirmed',
+                  ].contains(status) &&
+                  !sessionDate.isBefore(now);
             }).toList();
 
         bookingHistory =
             allBookings.where((b) {
-              final date = DateTime.parse(b['session_start_date']);
-              return b['status'] == 'rejected' || date.isBefore(now);
+              final status = b['status'];
+              return status == 'completed' ||
+                  status == 'cancelled' ||
+                  status == 'rejected';
             }).toList();
 
         isLoading = false;
@@ -538,8 +558,58 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                         style: TextStyle(color: Colors.white),
                                       ),
                                       style: TextButton.styleFrom(
-                                        backgroundColor:
-                                            Colors.red, // 🔴 Background color
+                                        backgroundColor: Colors.red,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  else if ((status == 'completed') ||
+                                      (status == 'cancelled' &&
+                                          booking['cancelled_by'] ==
+                                              'caregiver'))
+                                    TextButton.icon(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (_) => BabysitterFeedbackPage(
+                                                  babysitterName:
+                                                      booking['caregiver_id']['first_name'] ??
+                                                      'بدون اسم',
+                                                  sessionDate: DateTime.parse(
+                                                    booking['session_start_date'],
+                                                  ),
+                                                  bookingId: booking['_id'],
+                                                  caregiverId:
+                                                      booking['caregiver_id']['_id'],
+                                                  isCancelledByCaregiver:
+                                                      booking['status'] ==
+                                                          'cancelled' &&
+                                                      booking['cancelled_by'] ==
+                                                          'caregiver',
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.star_rate,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                      label: const Text(
+                                        'قيّم مقدم الرعاية',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: Colors.orange,
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 12,
                                           vertical: 8,
@@ -551,6 +621,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                         ),
                                       ),
                                     ),
+
                                   TextButton(
                                     onPressed: () {
                                       // TODO: Navigate to booking details page
@@ -733,6 +804,114 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('فشل في إلغاء الحجز')));
+    }
+  }
+
+  void showFeedbackDialog(Map<String, dynamic> booking) {
+    double rating = 0;
+    TextEditingController feedbackController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("قيّم الجلسة", textDirection: TextDirection.rtl),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "يرجى تقييم تجربتك:",
+                textDirection: TextDirection.rtl,
+              ),
+              const SizedBox(height: 8),
+              Directionality(
+                textDirection: TextDirection.ltr,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    return IconButton(
+                      icon: Icon(
+                        index < rating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          rating = index + 1.0;
+                        });
+                        // update dialog with new state
+                        Navigator.of(context).pop();
+                        showFeedbackDialog(
+                          booking,
+                        ); // re-show with updated stars
+                      },
+                    );
+                  }),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: feedbackController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: "اكتب ملاحظاتك هنا...",
+                  border: OutlineInputBorder(),
+                ),
+                textDirection: TextDirection.rtl,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("إلغاء"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                submitFeedback(
+                  booking['_id'],
+                  rating.toInt(),
+                  feedbackController.text.trim(),
+                );
+              },
+              child: const Text("إرسال"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> submitFeedback(
+    String bookingId,
+    int rating,
+    String comment,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+
+    final response = await http.post(
+      Uri.parse('${url}feedbacks'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'booking_id': bookingId,
+        'rating': rating,
+        'comment': comment,
+        'written_by': 'parent',
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('تم إرسال التقييم بنجاح')));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('حدث خطأ أثناء إرسال التقييم')),
+      );
     }
   }
 }
