@@ -101,3 +101,69 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+exports.getAllBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find()
+      .populate('parent_id', 'firstName lastName')
+      .populate('caregiver_id', 'first_name last_name')
+      .sort({ createdAt: -1 });
+
+    const result = bookings.map(b => ({
+      parent: {
+        name: `${b.parent_id?.firstName || ''} ${b.parent_id?.lastName || ''}`
+      },
+      caregiver: {
+        name: `${b.caregiver_id?.first_name || ''} ${b.caregiver_id?.last_name || ''}`
+      },
+      service_type: b.service_type,
+      session_start_date: b.session_start_date,
+      status: b.status,
+      price_details: b.price_details
+    }));
+
+    res.json(result);
+  } catch (err) {
+    console.error('❌ Failed to get bookings:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+
+exports.getAllExpertPosts = async (req, res) => {
+  try {
+    const posts = await ExpertPost.find()
+      .populate('expert_id', 'first_name last_name') // only get name
+      .sort({ created_at: -1 });
+
+    const formatted = posts.map(post => ({
+      _id: post._id,
+      title: post.title,
+      summary: post.summary,
+      expertName: `${post.expert_id?.first_name || 'Unknown'} ${post.expert_id?.last_name || ''}`,
+      pdf_url: post.pdf_url,
+      image_url: post.image_url,
+      createdAt: post.created_at
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error('❌ Failed to get expert posts:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.deleteExpertPost = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const deleted = await ExpertPost.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.json({ message: 'Post deleted successfully' });
+  } catch (err) {
+    console.error('❌ Failed to delete expert post:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
