@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Home/caregiver_feedback_page.dart';
 import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
 import 'package:flutter_app/pages/config.dart';
@@ -39,7 +40,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     'meeting_booked': 'تم حجز اجتماع',
     'confirmed': 'مؤكد',
     'cancelled': 'ملغي',
-    'completed': 'سجل الحجوزات',
+    'completed': ' جلسات مكتملة',
   };
 
   @override
@@ -86,6 +87,10 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     final status = booking['status'] ?? 'pending';
     final isPending = status == 'pending';
     final isAccepted = status == 'accepted';
+    final isCompleted = status == 'completed';
+    final isCancelledByParent =
+        status == 'cancelled' && booking['cancelled_by'] == 'parent';
+
     final isConfirmed = status == 'confirmed';
     bool showExtraDetails = false;
 
@@ -220,10 +225,8 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("👤 معلومات ولي الأمر", style: boldOrangeTitle()),
-                        Text("الاسم: ${booking['parent_name'] ?? 'غير معروف'}"),
-                        Text(
-                          "رقم الهاتف: ${booking['parent_phone'] ?? 'غير متوفر'}",
-                        ),
+                        Text("الاسم: ${booking['parentName'] ?? 'غير معروف'}"),
+
                         const SizedBox(height: 6),
                         ElevatedButton.icon(
                           onPressed: () {},
@@ -357,6 +360,36 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
                         foregroundColor: Colors.white,
+                      ),
+                    ),
+                  if (isCompleted || isCancelledByParent)
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (_) => RateParentPage(
+                                  booking: booking,
+                                ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.rate_review, color: Colors.white),
+                      label: const Text(
+                        "قيّم هذه التجربة",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          247,
+                          202,
+                          56,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                 ],

@@ -76,3 +76,13 @@ exports.getMe = async (req, res, next) => {
         res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
+
+exports.getParentById = async (req, res) => {
+  try {
+    const parent = await Parent.findById(req.params.id).select("firstName lastName");
+    if (!parent) return res.status(404).json({ message: "Parent not found" });
+    res.json(parent);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};

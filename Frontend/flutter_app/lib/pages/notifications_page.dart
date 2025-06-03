@@ -41,7 +41,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   }
 
   Future<void> markAsRead(String id) async {
-    await http.put(Uri.parse('$url$id/read'));
+    await http.put(Uri.parse('${url}notifications/$id/read'));
     widget.onMarkedRead?.call();
     fetchNotifications();
   }
