@@ -32,17 +32,15 @@ class _BabysitterFeedbackPageState extends State<BabysitterFeedbackPage> {
   final Map<String, int> _ratings = {
     'punctuality': 0,
     'communication': 0,
-    'interaction': 0,
     'safety': 0,
-    'satisfaction': 0,
     'price_fairness': 0,
     'additional_reqs': 0, // ✅ New
+    'satisfaction': 0,
   };
 
   final Map<String, TextEditingController> _sectionComments = {
     'punctuality': TextEditingController(),
     'communication': TextEditingController(),
-    'interaction': TextEditingController(),
     'safety': TextEditingController(),
     'additional_reqs': TextEditingController(), // ✅ New
     'satisfaction': TextEditingController(),
@@ -335,11 +333,7 @@ class _BabysitterFeedbackPageState extends State<BabysitterFeedbackPage> {
                     'هل كانت وسيلة التواصل معك واضحة وفعّالة طوال فترة التنسيق أو الجلسة؟',
                     'communication',
                   ),
-                  _buildRatingCard(
-                    '🧸 التفاعل مع الطفل (اختياري)',
-                    'هل تفاعلت مع طفلك بشكل إيجابي؟ استخدم هذا التقييم فقط إذا كنت حاضراً.',
-                    'interaction',
-                  ),
+
                   _buildRatingCard(
                     '🛡️ السلامة والمسؤولية (اختياري)',
                     'هل شعرت أن طفلك كان في بيئة آمنة؟',

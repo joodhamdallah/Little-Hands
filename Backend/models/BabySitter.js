@@ -40,7 +40,14 @@ location: {
     required: true,
   }
 },
-
+  average_rating: {
+    type: Number,
+    default: null,
+  },
+  ratings_count: {
+    type: Number,
+    default: 0,
+  }
 }, {
   timestamps: true
 });

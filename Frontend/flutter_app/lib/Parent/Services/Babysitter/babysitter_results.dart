@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_profile_parent.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/feedbacks.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -53,6 +54,7 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
         final data = jsonDecode(response.body);
 
         final rawList = List<Map<String, dynamic>>.from(data['data']);
+        print("👀 Raw sitter list: ${jsonEncode(rawList)}");
 
         for (final sitter in rawList) {
           if (sitter['location'] != null) {
@@ -222,13 +224,28 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                         Row(
                                           children: List.generate(
                                             5,
-                                            (starIndex) => const Icon(
+                                            (starIndex) => Icon(
                                               Icons.star,
                                               size: 18,
-                                              color: Color(0xFFFFA726),
+                                              color:
+                                                  starIndex <
+                                                          (sitter['average_rating'] ??
+                                                                  0)
+                                                              .round()
+                                                      ? Color(0xFFFFA726)
+                                                      : Colors.grey.shade300,
                                             ),
                                           ),
                                         ),
+                                        if ((sitter['ratings_count'] ?? 0) == 0)
+                                          const Text(
+                                            "لم يتم التقييم بعد",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey,
+                                              fontFamily: 'NotoSansArabic',
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ),
@@ -303,57 +320,98 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                               const SizedBox(height: 12),
                               SizedBox(
                                 width: double.infinity,
-                                child: ElevatedButton(
-                             onPressed: () {
-                                  final userId = sitter['user_id'];
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          final userId = sitter['user_id'];
+                                          if (userId == null) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "حدث خطأ: لا يمكن تحديد الجليسة",
+                                                ),
+                                              ),
+                                            );
+                                            return;
+                                          }
 
-                                  // ✅ تحقق من وجود user_id
-                                  if (userId == null) {
-                                    print("🚨 sitter['user_id'] is null! sitter = $sitter");
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text("حدث خطأ: لا يمكن تحديد الجليسة")),
-                                    );
-                                    return;
-                                  }
-
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      transitionDuration: const Duration(milliseconds: 400),
-                                      pageBuilder: (context, animation, secondaryAnimation) =>
-                                        BabysitterProfilePage(
-                                        babysitterId: sitter['user_id'] is String
-                                        ? sitter['user_id']
-                                        : sitter['user_id']['\$oid'],
-                                          jobDetails: widget.jobDetails,
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (
+                                                    context,
+                                                  ) => BabysitterProfilePage(
+                                                    babysitterId:
+                                                        userId is String
+                                                            ? userId
+                                                            : userId['\$oid'],
+                                                    jobDetails:
+                                                        widget.jobDetails,
+                                                  ),
+                                            ),
+                                          );
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Color(0xFFFF600A),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
                                         ),
-                                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                        final tween = Tween(begin: const Offset(1, 0), end: Offset.zero);
-                                        final curveTween = CurveTween(curve: Curves.easeInOut);
-                                        return SlideTransition(
-                                          position: animation.drive(curveTween).drive(tween),
-                                          child: child,
-                                        );
-                                      },
+                                        child: const Text(
+                                          " عرض ملف الجليسة",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: 'NotoSansArabic',
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  );
-                                },
-
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFFF600A),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(30),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: OutlinedButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) =>
+                                                      BabysitterFeedbacks(
+                                                        sitter: sitter,
+                                                      ),
+                                            ),
+                                          );
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(
+                                            color: Color(0xFFFF600A),
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          "قراءة التقييمات",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: 'NotoSansArabic',
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFFF600A),
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  child: const Text(
-                                    "عرض الملف الشخصي",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: 'NotoSansArabic',
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ],

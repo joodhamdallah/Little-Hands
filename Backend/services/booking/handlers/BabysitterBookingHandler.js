@@ -9,6 +9,7 @@ const {
   getParentMeetingEmail,
   getBabysitterMeetingEmail
 } = require('../../../utils/emailTemplates/meetingLinkTemplates');
+const CancellationStats = require('../../../models/CancellationStats');
 
 class BabysitterBookingHandler {
   static async createBooking(bookingData, io) {
@@ -240,37 +241,52 @@ await sendEmail({
     return booking;
   }
 
+
 static async cancelBooking(bookingId, cancelledBy, reason = null, io) {
-  const updated = await Booking.findByIdAndUpdate(
-    bookingId,
+  const booking = await Booking.findById(bookingId);
+  if (!booking) throw new Error('Booking not found');
+
+  const currentStage = booking.status; // e.g., 'pending', 'accepted', etc.
+  const userField = cancelledBy === 'parent' ? 'parent_id' : 'caregiver_id';
+  const userId = booking[userField];
+
+  // 🔄 Update booking status
+  booking.status = 'cancelled';
+  booking.cancelled_by = cancelledBy;
+  booking.cancellation_reason = reason || null;
+  booking.cancelled_at_stage = currentStage;
+  booking.cancelled_at = new Date();
+
+  console.log('❌ Booking cancelled at stage:', currentStage);
+
+  await booking.save();
+
+  // ✅ Update cancellation stats in the new collection
+  await CancellationStats.findOneAndUpdate(
+    { user_id: userId, role: cancelledBy },
     {
-      status: 'cancelled',
-      cancelled_by: cancelledBy,
-      cancellation_reason: reason || null,
+      $inc: {
+        [`stats.${currentStage}`]: 1,
+        'stats.total': 1,
+      },
     },
-    { new: true }
+    { upsert: true, new: true }
   );
-console.log('📝 Updating booking with:', {
-  status: 'cancelled',
-  cancelled_by: cancelledBy,
-  cancellation_reason: reason,
-});
-  // 📡 Real-time update
-    io.to(updated.parent_id.toString()).emit('newNotification', {
-      type: 'booking_status_updated',
-      booking_id: updated._id.toString(),
-      status: 'cancelled',
-    });
-    io.to(updated.caregiver_id.toString()).emit('newNotification', {
-      type: 'booking_status_updated',
-      booking_id: updated._id.toString(),
-      status: 'cancelled',
-    });
 
-  if (!updated) throw new Error('Booking not found');
-  return updated;
+  // 📡 Emit socket notifications
+  io.to(booking.parent_id.toString()).emit('newNotification', {
+    type: 'booking_status_updated',
+    booking_id: booking._id.toString(),
+    status: 'cancelled',
+  });
+  io.to(booking.caregiver_id.toString()).emit('newNotification', {
+    type: 'booking_status_updated',
+    booking_id: booking._id.toString(),
+    status: 'cancelled',
+  });
+
+  return booking;
 }
-
 
   static async markCompleted(bookingId) {
     const updated = await Booking.findByIdAndUpdate(

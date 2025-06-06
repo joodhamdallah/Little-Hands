@@ -1,55 +1,113 @@
 // services/feedbackService.js
 const Feedback = require('../models/Feedback');
 const Parent = require('../models/Parent');
-const CareGiver = require('../models/CareGiver');
+const BabySitter = require('../models/BabySitter');
 
 function calculateOverallRating(ratings) {
-  const values = Object.values(ratings).filter(v => typeof v === 'number');
+  const values = Object.values(ratings)
+    .filter(v => typeof v === 'number' && v > 0); // ✅ تجاهل القيم 0
+
   if (values.length === 0) return null;
 
   const total = values.reduce((sum, v) => sum + v, 0);
   const average = total / values.length;
-  return parseFloat(average.toFixed(1)); // e.g., 3.7
+  return parseFloat(average.toFixed(1));
 }
+
 
 module.exports = {
   // ✅ 1. Submit new feedback
-  async submitFeedback(req) {
-    const {
-      booking_id,
-      to_user_id,
-      to_role,
-      from_role,
-      ratings,
-      comments,
-      type,
-    } = req.body;
+async submitFeedback(req) {  console.log("📥 Feedback submission initiated...");
+
+  const {
+    booking_id,
+    to_user_id,
+    to_role,
+    from_role,
+    ratings,
+    comments,
+    type,
+  } = req.body;
+
+  console.log("📥 Feedback submission initiated...");
+  console.log("🧾 Booking ID:", booking_id);
+  console.log("👤 From (user_id):", req.user._id);
+  console.log("👤 To (user_id):", to_user_id);
+  console.log("📌 From Role:", from_role, "→ To Role:", to_role);
+  console.log("📊 Ratings:", ratings);
+  console.log("🗣️ Comments:", comments);
+  console.log("📁 Type:", type);
 
   const overall_rating =
-      type === 'completed' && ratings
-        ? calculateOverallRating(ratings)
-        : null;
+    type === 'completed' && ratings
+      ? calculateOverallRating(ratings)
+      : null;
 
-        
-    const feedback = new Feedback({
-      booking_id,
-      from_user_id: req.user._id,
+  console.log("⭐ Calculated overall rating:", overall_rating);
+
+  const feedback = new Feedback({
+    booking_id,
+    from_user_id: req.user._id,
+    to_user_id,
+    from_role,
+    to_role,
+    ratings,
+    comments,
+    overall_rating,
+    type,
+  });
+
+  await feedback.save();
+  console.log("✅ Feedback saved to DB:", feedback._id);
+
+  // ✅ Recalculate average rating and update the corresponding model
+  if (type === 'completed' && overall_rating !== null) {
+    console.log("🔁 Recalculating average rating for:", to_role);
+
+    const allFeedbacks = await Feedback.find({
       to_user_id,
-      from_role,
       to_role,
-      ratings,
-      comments,
-      overall_rating,
-      type,
+      type: 'completed',
+      overall_rating: { $ne: null },
     });
 
-    await feedback.save();
-    return {
-      status: 200,
-      data: { message: 'Feedback submitted successfully', feedback },
-    };
+    console.log(`📦 Found ${allFeedbacks.length} relevant feedbacks.`);
 
-  },
+    const ratings = allFeedbacks.map(f => f.overall_rating);
+    const sum = ratings.reduce((acc, val) => acc + val, 0);
+    const avg = ratings.length > 0 ? parseFloat((sum / ratings.length).toFixed(1)) : null;
+
+    console.log("📐 New average:", avg);
+
+    if (to_role === 'caregiver') {
+      const update = await BabySitter.findOneAndUpdate(
+        { user_id: to_user_id },
+        {
+          average_rating: avg,
+          ratings_count: ratings.length,
+        },
+        { new: true }
+      );
+      console.log("🍼 Updated babysitter average:", update);
+    } else if (to_role === 'parent') {
+      const update = await Parent.findByIdAndUpdate(
+        to_user_id,
+        {
+          avg_rating: avg,
+          num_reviews: ratings.length,
+        },
+        { new: true }
+      );
+      console.log("👨‍👩‍👧 Updated parent average:", update);
+    }
+  }
+
+  return {
+    status: 200,
+    data: { message: 'Feedback submitted successfully', feedback },
+  };
+}
+,
 
   // ✅ 2. Get all feedback *received* by caregiver (admin/internal use)
   async getForCaregiver(caregiverId) {
@@ -64,15 +122,27 @@ module.exports = {
   },
 
   // ✅ 4. Public feedback for caregiver (seen by parents before booking)
-  async getPublicFeedbackForCaregiver(caregiverId) {
-    return await Feedback.find({
-      to_user_id: caregiverId,
-      to_role: 'caregiver',
-      type: 'completed',
+ async getPublicFeedbackForCaregiver(caregiverId) {
+  console.log('📥 Getting public feedback for caregiver:', caregiverId);
+
+  const feedbacks = await Feedback.find({
+    to_user_id: caregiverId,
+    to_role: 'caregiver',
+type: { $in: ['completed', 'cancelled'] },
+    from_role: 'parent' // ✅ Only populate if from_role is parent
+  })
+    .populate({
+      path: 'from_user_id',
+      model: 'Parent', // ✅ Static model name
+      select: 'firstName lastName image',
     })
-      .select('-from_user_id') // hide reviewer ID
-      .sort({ created_at: -1 });
-  },
+    .sort({ overall_rating: -1 });
+
+  console.log(`✅ Fetched ${feedbacks.length} feedback(s). Sample:`, feedbacks[0]);
+
+  return feedbacks;
+}
+,
 
   // ✅ 5. Public feedback for parent (seen by caregivers before accepting)
   async getPublicFeedbackForParent(parentId) {
