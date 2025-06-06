@@ -118,6 +118,7 @@ class MatchService {
           rateText: priceText,
           score,
           matchingPercentage,
+          
           distanceInKm: distanceInKm ? distanceInKm.toFixed(1) : null,
            location: sitter.location?.coordinates
     ? {
@@ -125,6 +126,8 @@ class MatchService {
         lng: sitter.location.coordinates[0],
       }
     : null,
+    average_rating: sitter.average_rating ?? null,      // ⭐ Include this
+    ratings_count: sitter?.ratings_count ?? 0,           // ⭐ Optionally includ
         };
       });
 

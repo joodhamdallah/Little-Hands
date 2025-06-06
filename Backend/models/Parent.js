@@ -51,6 +51,9 @@ const parentSchema  = new mongoose.Schema({
     passwordResetToken: { type: String, default: null },
     passwordResetExpires: { type: Date, default: null },
 
+    avg_rating: { type: Number, default: 0 },
+    num_reviews: { type: Number, default: 0 },
+
 }, { timestamps: true });
 
 parentSchema.pre("save", async function (next) {

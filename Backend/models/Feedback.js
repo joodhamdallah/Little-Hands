@@ -14,10 +14,11 @@ const FeedbackSchema = new Schema({
     required: true,
   },
 
-  from_user_id: {
-    type: Schema.Types.ObjectId,
-    required: true,
-  },
+ from_user_id: {
+  type: mongoose.Schema.Types.ObjectId,
+  refPath: 'from_role',
+  required: true
+},
 
   to_user_id: {
     type: Schema.Types.ObjectId,

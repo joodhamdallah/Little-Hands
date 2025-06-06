@@ -16,10 +16,10 @@ router.get('/caregiver/:id', auth, feedbackController.getForCaregiver);
 router.get('/parent/:id', auth, feedbackController.getForParent);
 
 // 📥 Public (visible) caregiver feedback (for parents to see)
-router.get('/about/caregiver/:id', auth, feedbackController.getPublicFeedbackForCaregiver);
+router.get('/about/caregiver/:id', feedbackController.getPublicFeedbackForCaregiver);
 
 // 📥 Public (visible) parent feedback (for caregivers to see)
-router.get('/about/parent/:id', auth, feedbackController.getPublicFeedbackForParent);
+router.get('/about/parent/:id', feedbackController.getPublicFeedbackForParent);
 
 // ✅ Check if booking already has feedback
 router.get('/booking/:bookingId', auth, feedbackController.checkFeedbackForBooking);

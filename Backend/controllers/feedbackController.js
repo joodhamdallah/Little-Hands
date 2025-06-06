@@ -14,7 +14,7 @@ exports.submitFeedback = async (req, res) => {
 // ✅ Get all feedback for a caregiver (given to them)
 exports.getForCaregiver = async (req, res) => {
   try {
-    const result = await feedbackService.getForCaregiver(req.params.id);
+    const result = await feedbackService.getForCaregiver(req.user._id);
     res.json({ feedbacks: result });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch caregiver feedback' });
@@ -24,7 +24,7 @@ exports.getForCaregiver = async (req, res) => {
 // ✅ Get all feedback for a parent (given to them)
 exports.getForParent = async (req, res) => {
   try {
-    const result = await feedbackService.getForParent(req.params.id);
+    const result = await feedbackService.getForParent(req.user._id);
     res.json({ feedbacks: result });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch parent feedback' });

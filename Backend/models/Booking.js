@@ -81,10 +81,22 @@ cancelled_by: {
   enum: ['parent', 'caregiver', null],
   default: null
 },
+cancelled_at: {
+  type: Date,
+  default: null
+},
+
 cancellation_reason: {
   type: String,
   default: null,
+
 },
+cancelled_at_stage: {
+  type: String,
+  enum: ['pending', 'accepted', 'meeting_booked', 'confirmed', 'other'],
+  default: null
+},
+
 meeting_slot_id: {
   type: mongoose.Schema.Types.ObjectId,
   ref: 'WorkSchedule',
