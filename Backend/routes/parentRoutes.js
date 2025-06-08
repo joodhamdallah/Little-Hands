@@ -11,7 +11,7 @@ router.get("/verifyEmail", ParentController.verifyEmail);
 
 router.get('/me', authMiddleware, ParentController.getMe);
  
-router.get('/:id', ParentController.getParentById); // /api/parents/:id
+router.get("/parentprof/:id", ParentController.getParentById); // /api/parents/:id
 
 
 // ✅ Export the router

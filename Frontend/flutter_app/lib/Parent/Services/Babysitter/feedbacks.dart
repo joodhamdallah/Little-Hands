@@ -28,8 +28,6 @@ class _BabysitterFeedbacksState extends State<BabysitterFeedbacks> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      final feedbacks = data['feedbacks'] ?? [];
-
       // // ✅ Sort by rating (from highest to lowest)
       // feedbacks.sort(
       //   (a, b) =>
