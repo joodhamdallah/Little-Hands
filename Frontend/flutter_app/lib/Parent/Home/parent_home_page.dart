@@ -1,6 +1,7 @@
 // lib/pages/parent/parent_home_page.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Parent/Home/my_feedbacks_page.dart';
 import 'package:flutter_app/Parent/Home/parent_bookings_page.dart';
 import 'package:flutter_app/Parent/Home/parent_main_page.dart';
 import 'package:flutter_app/Parent/Home/view_all_expert_cards_page.dart';
@@ -36,23 +37,21 @@ class _ParentHomePageState extends State<ParentHomePage> {
     notifProvider.loadUnreadCount();
     notifProvider.startAutoRefresh();
 
- _pages = [
-  const ParentHomeMainContent(),
-  NotificationsPage(
-    onMarkedRead: () {
-      Provider.of<NotificationProvider>(
-        context,
-        listen: false,
-      ).loadUnreadCount();
-    },
-  ),
-  const ParentBookingsPage(),
-  const SizedBox(), // لوحة التحكم (غير مفعّلة بعد)
-  const ViewAllExpertCardsPage(), // ✅ صفحة المحتوى (الكروت)
-  const SizedBox(), // حسابي (غير مفعّل بعد)
-];
-
-
+    _pages = [
+      const ParentHomeMainContent(),
+      NotificationsPage(
+        onMarkedRead: () {
+          Provider.of<NotificationProvider>(
+            context,
+            listen: false,
+          ).loadUnreadCount();
+        },
+      ),
+      const ParentBookingsPage(),
+      ParentMyFeedbacksPage(), // ✅ Added here
+      const ViewAllExpertCardsPage(), // ✅ صفحة المحتوى (الكروت)
+      const SizedBox(), // حسابي (غير مفعّل بعد)
+    ];
   }
 
   @override
@@ -80,9 +79,10 @@ class _ParentHomePageState extends State<ParentHomePage> {
               label: 'الحجوزات',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_customize_outlined),
-              label: 'لوحة التحكم',
+              icon: Icon(Icons.feedback),
+              label: 'تقييماتي',
             ),
+
             BottomNavigationBarItem(
               icon: Icon(Icons.menu_book_outlined),
               label: 'المحتوى',

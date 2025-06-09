@@ -145,16 +145,22 @@ type: { $in: ['completed', 'cancelled'] },
 ,
 
   // ✅ 5. Public feedback for parent (seen by caregivers before accepting)
-  async getPublicFeedbackForParent(parentId) {
-    return await Feedback.find({
-      to_user_id: parentId,
-      to_role: 'parent',
-      type: 'completed',
+async getPublicFeedbackForParent(parentId) {
+  return await Feedback.find({
+    to_user_id: parentId,
+    to_role: 'parent',
+    type: 'completed',
+  })
+    .populate({
+      path: 'to_user_id',
+      model: 'Parent',
+      select: 'firstName lastName'
     })
-      .select('-from_user_id')
-      .sort({ created_at: -1 });
-  },
+    .select('-from_user_id')
+    .sort({ overall_rating: -1 });
+}
 
+,
   // ✅ 6. Check if current user already submitted feedback for a booking
   async checkFeedbackForBooking(req) {
     const existing = await Feedback.findOne({
@@ -168,7 +174,19 @@ type: { $in: ['completed', 'cancelled'] },
   // ✅ 7. Get all feedbacks submitted by current user
   async getMyFeedbacks(userId) {
     return await Feedback.find({ from_user_id: userId })
-      .sort({ created_at: -1 });
+      .sort({ created_at: -1 })
+     .populate([
+  {
+    path: 'to_user_id',
+    model: 'CareGiver',
+    select: 'first_name last_name role',
+  },
+  {
+    path: 'booking_id',
+    model: 'Booking',
+    select: 'session_start_date',
+  }
+]);
   },
 
   // ✅ 8. Update feedback (optional)
@@ -193,4 +211,22 @@ type: { $in: ['completed', 'cancelled'] },
       data: { message: 'Feedback updated', feedback },
     };
   },
+
+  async  getRatedBookingIds(userId) {
+  const feedbacks = await Feedback.find({
+    from_user_id: userId,
+    // from_role: 'parent',
+  }).select('booking_id');
+
+  return feedbacks.map(fb => fb.booking_id.toString());
+}
+// ,
+//   async  getRatedBookingIds(userId) {
+//   const feedbacks = await Feedback.find({
+//     from_user_id: userId,
+//     from_role: 'caregiver',
+//   }).select('booking_id');
+
+//   return feedbacks.map(fb => fb.booking_id.toString());
+// }
 };

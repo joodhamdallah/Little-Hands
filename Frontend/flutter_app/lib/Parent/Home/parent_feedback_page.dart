@@ -105,7 +105,11 @@ class _BabysitterFeedbackPageState extends State<BabysitterFeedbackPage> {
         ),
       );
 
-      Navigator.pop(context);
+      await Future.delayed(
+        const Duration(seconds: 2),
+      ); // ⏳ مهلة قصيرة لعرض الرسالة
+
+      Navigator.pop(context, widget.bookingId); // بدل pushAndRemoveUntil مؤقتًا
     } else {
       print("❌ Feedback submission failed: ${response.body}");
       ScaffoldMessenger.of(context).showSnackBar(

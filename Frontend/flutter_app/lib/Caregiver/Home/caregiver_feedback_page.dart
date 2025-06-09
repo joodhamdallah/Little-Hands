@@ -128,23 +128,38 @@ class _RateParentPageState extends State<RateParentPage> {
   }
 
   Future<void> fetchParentData() async {
-    final parentId = widget.booking['parent_id'];
-    if (parentId == null) return;
+    final parent = widget.booking['parent_id'];
+
+    // Safely extract the ID whether it's a Map or already a String
+    final parentId = parent is Map ? parent['_id'] : parent;
+
+    print("🧠 Fetching parent data for ID: $parentId");
+
+    if (parentId == null) {
+      print("❌ parentId is null — cannot fetch data");
+      return;
+    }
 
     try {
-      final response = await http.get(Uri.parse('$url$parentId'));
+      final response = await http.get(Uri.parse('${url}parentprof/$parentId'));
+
+      print("📡 Response status: ${response.statusCode}");
+
       if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        print("✅ Parent data loaded: $decoded");
+
         setState(() {
-          parentData = json.decode(response.body);
+          parentData = decoded;
           isLoading = false;
         });
       } else {
+        print("❌ Failed to fetch parent data — status: ${response.statusCode}");
         setState(() => isLoading = false);
-        print("❌ Failed to fetch parent data");
       }
     } catch (e) {
+      print("❌ Exception while fetching parent data: $e");
       setState(() => isLoading = false);
-      print("❌ Error fetching parent data: $e");
     }
   }
 

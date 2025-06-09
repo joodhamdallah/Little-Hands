@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_feedback_page.dart';
+import 'package:flutter_app/Caregiver/Home/feedbacks_about_parent.dart';
 import 'package:flutter_app/Caregiver/Home/send_price_page.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
 import 'package:flutter_app/pages/config.dart';
@@ -22,6 +23,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
   List<dynamic> allBookings = [];
   bool isLoading = true;
   String dropdownStatus = 'meeting_booked';
+  Set<String> ratedBookings = {};
 
   final Map<String, Color> statusColors = {
     'pending': Colors.orange,
@@ -48,6 +50,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     super.initState();
     _tabController = TabController(length: 7, vsync: this);
     fetchBookings();
+    fetchRatedBookings();
   }
 
   Future<void> fetchBookings() async {
@@ -77,6 +80,34 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     }
   }
 
+  Future<void> fetchRatedBookings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+    if (token == null) return;
+
+    try {
+      final response = await http.get(
+        Uri.parse('${url}feedback/my-rated-bookings'),
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final decoded = jsonDecode(response.body);
+        final bookingIds = decoded['booking_ids'] as List<dynamic>;
+
+        print("📥 Rated Bookings Received: $bookingIds"); // 🔍 Debug Print
+
+        setState(() {
+          ratedBookings = bookingIds.whereType<String>().toSet();
+        });
+      } else {
+        print("❌ Failed to fetch rated bookings");
+      }
+    } catch (e) {
+      print("❌ Error fetching rated bookings: $e");
+    }
+  }
+
   List<dynamic> filterBookingsByStatus(String status) {
     return allBookings
         .where((b) => (b['status'] ?? 'pending') == status)
@@ -91,7 +122,12 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     final isCancelledByParent =
         status == 'cancelled' && booking['cancelled_by'] == 'parent';
 
-    final isConfirmed = status == 'confirmed';
+    final isRated = ratedBookings.contains(booking['_id'].toString());
+    print("👤 isRated: $isRated");
+
+    final parent = booking['parent_id'];
+    print("👤 Parent Info: $parent");
+
     bool showExtraDetails = false;
 
     return StatefulBuilder(
@@ -225,11 +261,29 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text("👤 معلومات ولي الأمر", style: boldOrangeTitle()),
-                        Text("الاسم: ${booking['parentName'] ?? 'غير معروف'}"),
-
+                        Text(
+                          "الاسم: ${parent?['firstName'] ?? 'غير معروف'} ${parent?['lastName'] ?? ''}",
+                        ),
+                        Text("📞 الهاتف: ${parent?['phone'] ?? 'غير متوفر'}"),
+                        Text(
+                          "📧 البريد الإلكتروني: ${parent?['email'] ?? 'غير متوفر'}",
+                        ),
                         const SizedBox(height: 6),
                         ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {
+                            final parent = booking['parent_id'];
+                            if (parent != null && parent['_id'] != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => FeedbackAboutParentPage(
+                                        parentId: parent['_id'],
+                                      ),
+                                ),
+                              );
+                            }
+                          },
                           icon: const Icon(Icons.reviews),
                           label: const Text("عرض التقييمات"),
                           style: ElevatedButton.styleFrom(
@@ -241,6 +295,37 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                     ),
                   ),
                   const SizedBox(height: 10),
+                  if (status == 'cancelled') ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        booking['cancelled_by'] == 'caregiver'
+                            ? '🛑 تم الإلغاء من قبلك'
+                            : '🛑 تم الإلغاء من قبل الأهل ',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ),
+                    if (booking['cancellation_reason'] != null &&
+                        booking['cancellation_reason']
+                            .toString()
+                            .trim()
+                            .isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '📋 السبب: ${booking['cancellation_reason']}\n',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                  ],
                   if (isPending)
                     Row(
                       children: [
@@ -362,16 +447,48 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                         foregroundColor: Colors.white,
                       ),
                     ),
-                  if (isCompleted || isCancelledByParent)
+
+                  if ((isCompleted || isCancelledByParent) && isRated)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange[100],
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.orange,
+                              size: 18,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              "تم التقييم",
+                              style: TextStyle(
+                                color: Colors.orange,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                fontFamily: 'NotoSansArabic',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  else if ((isCompleted || isCancelledByParent) && !isRated)
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (_) => RateParentPage(
-                                  booking: booking,
-                                ),
+                            builder: (_) => RateParentPage(booking: booking),
                           ),
                         );
                       },

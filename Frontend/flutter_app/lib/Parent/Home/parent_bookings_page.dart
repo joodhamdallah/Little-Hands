@@ -21,6 +21,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
   List<Map<String, dynamic>> currentBookings = [];
   List<Map<String, dynamic>> bookingHistory = [];
   bool isLoading = true;
+  Set<String> ratedBookings = {};
 
   String selectedStatusFilter = 'الكل';
   final Map<String, Map<String, dynamic>> statusStyles = {
@@ -76,12 +77,6 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'الخبير': 'expert',
   };
 
-  // final Map<String, List<String>> statusOptionsByService = {
-  //   'babysitter': ['pending', 'accepted', 'meeting_booked', 'confirmed'],
-  //   'special_needs': ['pending', 'accepted'],
-  //   'expert': ['pending', 'confirmed'],
-  // };
-
   final Map<String, String> statusLabels = {
     'pending': 'بانتظار الرد',
     'accepted': 'تم القبول',
@@ -102,6 +97,8 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     fetchBookings();
+    fetchRatedBookings(); // ✅ Add this if not already
+
     initSocket();
   }
 
@@ -117,7 +114,6 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body)['data'];
-      final now = DateTime.now();
 
       List<Map<String, dynamic>> allBookings = List<Map<String, dynamic>>.from(
         data,
@@ -159,10 +155,24 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     }
   }
 
-  // List<String> getStatusOptions(String? serviceType) {
-  //   if (serviceType == null) return statusLabels.keys.toList();
-  //   return statusOptionsByService[serviceType] ?? [];
-  // }
+  Future<void> fetchRatedBookings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken') ?? '';
+
+    final response = await http.get(
+      Uri.parse('${url}feedback/my-rated-bookings'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final decoded = jsonDecode(response.body);
+      final bookingIds = decoded['booking_ids'] as List<dynamic>;
+
+      setState(() {
+        ratedBookings = bookingIds.whereType<String>().toSet();
+      });
+    }
+  }
 
   String _translateStatus(String status) {
     return statusStyles[status]?['label'] ?? 'غير معروف';
@@ -276,6 +286,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                       final booking = filteredBookings[index];
                       final caregiver = booking['caregiver_id'];
                       final status = booking['status'];
+                      final bookingId = booking['_id'];
 
                       return Card(
                         shape: RoundedRectangleBorder(
@@ -569,67 +580,135 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                           ),
                                         ),
                                       ),
-                                    )
-                                  else if ((status == 'completed') ||
-                                      (status == 'cancelled' &&
-                                          booking['cancelled_by'] ==
-                                              'caregiver'))
-                                    TextButton.icon(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder:
-                                                (_) => BabysitterFeedbackPage(
-                                                  babysitterName:
-                                                      booking['caregiver_id']['first_name'] ??
-                                                      'بدون اسم',
-                                                  sessionDate: DateTime.parse(
-                                                    booking['session_start_date'],
-                                                  ),
-                                                  bookingId: booking['_id'],
-                                                  caregiverId:
-                                                      booking['caregiver_id']['_id'],
-                                                  isCancelledByCaregiver:
-                                                      booking['status'] ==
-                                                          'cancelled' &&
-                                                      booking['cancelled_by'] ==
-                                                          'caregiver',
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(
-                                        Icons.star_rate,
-                                        color: Colors.white,
-                                        size: 20,
-                                      ),
-                                      label: const Text(
-                                        'قيّم مقدم الرعاية',
-                                        style: TextStyle(color: Colors.white),
-                                      ),
-                                      style: TextButton.styleFrom(
-                                        backgroundColor: Colors.orange,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 8,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                      ),
                                     ),
-
-                                  TextButton(
-                                    onPressed: () {
-                                      // TODO: Navigate to booking details page
-                                    },
-                                    child: const Text('عرض التفاصيل'),
-                                  ),
                                 ],
                               ),
+
+                              if (status == 'cancelled') ...[
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    booking['cancelled_by'] == 'parent'
+                                        ? '🛑 تم الإلغاء من قبلك'
+                                        : '🛑 تم الإلغاء من قبل مقدم الرعاية',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.redAccent,
+                                    ),
+                                  ),
+                                ),
+                                if (booking['cancellation_reason'] != null &&
+                                    booking['cancellation_reason']
+                                        .toString()
+                                        .trim()
+                                        .isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Text(
+                                      '📋 السبب: ${booking['cancellation_reason']}',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+
+                              if ((status == 'completed') ||
+                                  (status == 'cancelled' &&
+                                      booking['cancelled_by'] == 'caregiver'))
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child:
+                                      ratedBookings.contains(bookingId)
+                                          ? Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 8,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.orange[100],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.check_circle,
+                                                  color: Colors.orange,
+                                                  size: 20,
+                                                ),
+                                                SizedBox(width: 6),
+                                                Text(
+                                                  'تم التقييم',
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.orange,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                          : TextButton.icon(
+                                            onPressed: () async {
+                                              final result = await Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder:
+                                                      (
+                                                        _,
+                                                      ) => BabysitterFeedbackPage(
+                                                        babysitterName:
+                                                            caregiver['first_name'] ??
+                                                            'بدون اسم',
+                                                        sessionDate: DateTime.parse(
+                                                          booking['session_start_date'],
+                                                        ),
+                                                        bookingId: bookingId,
+                                                        caregiverId:
+                                                            caregiver['_id'],
+                                                        isCancelledByCaregiver:
+                                                            status ==
+                                                                'cancelled' &&
+                                                            booking['cancelled_by'] ==
+                                                                'caregiver',
+                                                      ),
+                                                ),
+                                              );
+                                              if (result != null &&
+                                                  result is String) {
+                                                setState(() {
+                                                  ratedBookings.add(result);
+                                                });
+                                              }
+                                            },
+                                            icon: const Icon(
+                                              Icons.star_rate,
+                                              color: Colors.white,
+                                            ),
+                                            label: const Text(
+                                              'قيّم مقدم الرعاية',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            style: TextButton.styleFrom(
+                                              backgroundColor: Colors.orange,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 8,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                          ),
+                                ),
                             ],
                           ),
                         ),
@@ -804,114 +883,6 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('فشل في إلغاء الحجز')));
-    }
-  }
-
-  void showFeedbackDialog(Map<String, dynamic> booking) {
-    double rating = 0;
-    TextEditingController feedbackController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("قيّم الجلسة", textDirection: TextDirection.rtl),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "يرجى تقييم تجربتك:",
-                textDirection: TextDirection.rtl,
-              ),
-              const SizedBox(height: 8),
-              Directionality(
-                textDirection: TextDirection.ltr,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(5, (index) {
-                    return IconButton(
-                      icon: Icon(
-                        index < rating ? Icons.star : Icons.star_border,
-                        color: Colors.amber,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          rating = index + 1.0;
-                        });
-                        // update dialog with new state
-                        Navigator.of(context).pop();
-                        showFeedbackDialog(
-                          booking,
-                        ); // re-show with updated stars
-                      },
-                    );
-                  }),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: feedbackController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  hintText: "اكتب ملاحظاتك هنا...",
-                  border: OutlineInputBorder(),
-                ),
-                textDirection: TextDirection.rtl,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("إلغاء"),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                submitFeedback(
-                  booking['_id'],
-                  rating.toInt(),
-                  feedbackController.text.trim(),
-                );
-              },
-              child: const Text("إرسال"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> submitFeedback(
-    String bookingId,
-    int rating,
-    String comment,
-  ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('accessToken');
-
-    final response = await http.post(
-      Uri.parse('${url}feedbacks'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'booking_id': bookingId,
-        'rating': rating,
-        'comment': comment,
-        'written_by': 'parent',
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('تم إرسال التقييم بنجاح')));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('حدث خطأ أثناء إرسال التقييم')),
-      );
     }
   }
 }

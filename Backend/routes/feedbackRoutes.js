@@ -27,4 +27,7 @@ router.get('/booking/:bookingId', auth, feedbackController.checkFeedbackForBooki
 // 👤 Optional: View my own submitted feedbacks
 router.get('/mine', auth, feedbackController.getMyFeedbacks);
 
+
+router.get('/my-rated-bookings', auth, feedbackController.getRatedBookings);
+
 module.exports = router;
