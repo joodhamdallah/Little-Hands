@@ -3,6 +3,7 @@ import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_posts_page.da
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:flutter_app/pages/FallbackCandidatesPage.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -152,7 +153,6 @@ class MyApp extends StatelessWidget {
         '/expertBioQ5': (context) => const ExpertBioPage(),
         '/expertPostsPage': (context) => const ExpertPostsPage(),
 
-
         '/babysitter': (context) => const BabySitterPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
 
@@ -169,6 +169,7 @@ class MyApp extends StatelessWidget {
             (context) => const BabysitterSessionAddressPage(),
 
         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
+        '/fallback-candidates': (context) => const FallbackCandidatesPage(),
 
         //         '/send_price': (context) {
         //   final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

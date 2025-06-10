@@ -587,7 +587,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'reason': reason}),
+      body: jsonEncode({'cancelledBy': 'caregiver', 'reason': reason}),
     );
 
     if (response.statusCode == 200) {

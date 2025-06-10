@@ -20,7 +20,8 @@ const io = new Server(server, {
 
 });
 app.set('io', io); // ✅ make io accessible inside controllers
-
+// ✅✅✅ ADD THIS LINE BELOW:
+global.onlineUsersMap = {}; // 🧠 Initialize the online user map
 const port = process.env.PORT || 3000;
 
 const parentRoutes = require("./routes/parentRoutes");
@@ -41,6 +42,7 @@ const specificDateRoutes = require('./routes/specificDateRoutes');
 const expertPostRoutes = require('./routes/expertPostRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const fallbackRoutes = require('./routes/fallbackRoutes');
 
 const scheduleCompleteBookingsJob = require('./services/cron/completeBookingsJob');
 
@@ -70,6 +72,7 @@ app.use('/api/expert-posts', expertPostRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api', fallbackRoutes);
 
 
 
@@ -85,18 +88,28 @@ connectDB()
     });
 
     // ✅ Handle Socket.IO connections
-    io.on('connection', (socket) => {
-      console.log('🧩 Client connected:', socket.id);
+ io.on('connection', (socket) => {
+  console.log('🧩 Client connected:', socket.id);
 
-      socket.on('join', (userId) => {
-        socket.join(userId);
-        console.log(`✅ User ${userId} joined their room`);
-      });
+  socket.on('join', (userId) => {
+    global.onlineUsersMap[userId] = socket.id; // ✅ Store socket ID
+    socket.join(userId); // Optional: use room for later if needed
+    console.log(`✅ User ${userId} joined. Socket ID: ${socket.id}`);
+  });
 
-      socket.on('disconnect', () => {
-        console.log('🚪 Client disconnected:', socket.id);
-      });
-    });
+  socket.on('disconnect', () => {
+    // 🔁 Clean up map
+    for (const [uid, sid] of Object.entries(global.onlineUsersMap)) {
+      if (sid === socket.id) {
+        delete global.onlineUsersMap[uid];
+        console.log(`🕳 Removed user ${uid} from online map`);
+        break;
+      }
+    }
+
+    console.log('🚪 Client disconnected:', socket.id);
+  });
+});
 
     process.on("SIGINT", async () => {
   console.log("\n🛑 Server shutting down...");

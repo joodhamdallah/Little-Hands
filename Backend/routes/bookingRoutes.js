@@ -47,6 +47,7 @@ router.post('/setPrice/:bookingId', authMiddleware, bookingBabysitterController.
 // Set payment method (cash or online)
 router.patch('/bookings/:id/payment-method', authMiddleware, bookingBabysitterController.setPaymentMethod);
 
+router.post('/fallback-booking', authMiddleware, bookingBabysitterController.createFallbackBooking);
 
 
 module.exports = router;

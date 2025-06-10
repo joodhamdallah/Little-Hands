@@ -10,6 +10,7 @@ const {
   getBabysitterMeetingEmail
 } = require('../../../utils/emailTemplates/meetingLinkTemplates');
 const CancellationStats = require('../../../models/CancellationStats');
+const FallbackService = require('../../fallbackService');
 
 class BabysitterBookingHandler {
   static async createBooking(bookingData, io) {
@@ -261,6 +262,13 @@ static async cancelBooking(bookingId, cancelledBy, reason = null, io) {
 
   await booking.save();
 
+  // ✅ Check for fallback trigger
+if (cancelledBy === 'caregiver' && currentStage === 'confirmed') {
+  console.log('🔔 Triggering fallback offer logic...');
+  await FallbackService.broadcastFallbackOffer(booking, io);
+  
+}
+
   // ✅ Update cancellation stats in the new collection
   await CancellationStats.findOneAndUpdate(
     { user_id: userId, role: cancelledBy },
@@ -508,6 +516,44 @@ await NotificationService.sendTypedNotification({
   return booking;
 }
 
+ static async createFallbackBooking(originalBookingId, newCaregiverId) {
+    const original = await Booking.findById(originalBookingId);
+    if (!original) throw new Error('Original booking not found');
+
+    const fallbackBooking = await Booking.create({
+      parent_id: original.parent_id,
+      caregiver_id: newCaregiverId,
+      service_type: original.service_type,
+      session_address_type: original.session_address_type,
+      city: original.city,
+      neighborhood: original.neighborhood,
+      street: original.street,
+      building: original.building,
+      session_start_date: original.session_start_date,
+      session_end_date: original.session_end_date,
+      session_start_time: original.session_start_time,
+      session_end_time: original.session_end_time,
+      session_days: original.session_days,
+      children_ages: original.children_ages,
+      has_medical_condition: original.has_medical_condition,
+      medical_condition_details: original.medical_condition_details,
+      takes_medicine: original.takes_medicine,
+      medicine_details: original.medicine_details,
+      additional_notes: original.additional_notes,
+      rate_min: original.rate_min,
+      rate_max: original.rate_max,
+      additional_requirements: original.additional_requirements,
+      consultation_topic: original.consultation_topic,
+      special_needs_support: original.special_needs_support,
+      preferred_contact_method: original.preferred_contact_method,
+      session_duration_minutes: original.session_duration_minutes,
+      status: 'accepted',
+      is_fallback: true,
+      original_booking_id: original._id
+    });
+
+    return fallbackBooking;
+  }
 }
 
 module.exports = BabysitterBookingHandler;

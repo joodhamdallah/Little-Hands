@@ -614,6 +614,42 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                       ),
                                     ),
                                   ),
+
+                                // ✅ Show "إيجاد بديل" button only if cancelled by caregiver
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 10),
+                                  child: ElevatedButton(
+                                    style: TextButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                        255,
+                                        243,
+                                        192,
+                                        116,
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 40,
+                                        vertical: 8,
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/fallback-candidates',
+                                        arguments:
+                                            booking['id'], // Or booking['_id'] depending on your model
+                                      );
+                                    },
+                                    child: const Text(
+                                      'إيجاد بديل',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ],
 
                               if ((status == 'completed') ||

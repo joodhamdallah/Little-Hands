@@ -9,6 +9,7 @@ import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
 import 'package:flutter_app/pages/notifications_page.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
+import 'package:flutter_app/services/socket_service.dart';
 import 'package:provider/provider.dart';
 // import 'package:flutter_app/pages/parent/notifications_page.dart';
 // import 'package:flutter_app/pages/parent/bookings_page.dart';
@@ -36,6 +37,41 @@ class _ParentHomePageState extends State<ParentHomePage> {
     );
     notifProvider.loadUnreadCount();
     notifProvider.startAutoRefresh();
+
+    SocketService().onFallbackCandidatesReady((data) {
+      print('⚡️ بدائل جديدة للجلسة: $data');
+
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder:
+            (_) => AlertDialog(
+              title: const Text('جلسة بديلة متاحة'),
+              content: const Text(
+                'يوجد جليسات أطفال مستعدون لاستلام الجلسة بعد الإلغاء.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('لاحقًا'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                      context,
+                      '/fallback-candidates',
+                      arguments:
+                          data['booking_id'], // ⬅️ Make sure booking_id is sent from backend
+                    );
+                  },
+                  child: const Text('عرض البدائل'),
+                ),
+              ],
+            ),
+      );
+    });
 
     _pages = [
       const ParentHomeMainContent(),

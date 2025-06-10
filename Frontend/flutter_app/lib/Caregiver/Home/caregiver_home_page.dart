@@ -1,15 +1,21 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_bookings_page.dart';
 import 'package:flutter_app/Caregiver/Home/ControlPanel/caregiver_control_panel_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_main_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_profile_model.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
+import 'package:flutter_app/pages/config.dart';
 import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
 import 'package:flutter_app/pages/notifications_page.dart';
 import 'package:flutter_app/services/socket_service.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class CaregiverHomePage extends StatefulWidget {
   final CaregiverProfileModel profile;
@@ -62,6 +68,130 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
       );
     });
 
+    SocketService().onFallbackOffer((data) {
+      if (!mounted) return;
+
+      print("📩 Fallback offer received: $data");
+
+      final String rawDate = data['session_date'];
+      final DateTime parsedDate =
+          DateTime.tryParse(rawDate)?.toLocal() ?? DateTime.now();
+
+      final formattedDate = intl.DateFormat(
+        'EEEE، d MMMM y',
+        'ar',
+      ).format(parsedDate);
+      // 🕒 Format time nicely in Arabic (e.g., ٩:٠٠ ص - ٢:٠٠ م)
+      DateTime? startTimeObj;
+      DateTime? endTimeObj;
+
+      try {
+        startTimeObj = intl.DateFormat.jm().parse(data['start_time']);
+        endTimeObj = intl.DateFormat.jm().parse(data['end_time']);
+      } catch (e) {
+        print("❌ Error parsing times: $e");
+      }
+
+      final formattedStart =
+          startTimeObj != null
+              ? intl.DateFormat(
+                'h:mm a',
+                'ar',
+              ).format(startTimeObj).replaceAll('AM', 'ص').replaceAll('PM', 'م')
+              : data['start_time'];
+
+      final formattedEnd =
+          endTimeObj != null
+              ? intl.DateFormat(
+                'h:mm a',
+                'ar',
+              ).format(endTimeObj).replaceAll('AM', 'ص').replaceAll('PM', 'م')
+              : data['end_time'];
+
+      final timeRange = "$formattedStart - $formattedEnd";
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder:
+            (_) => Directionality(
+              textDirection: TextDirection.rtl, // 👈 RTL for Arabic
+              child: AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                title: const Text(
+                  "فرصة لجلسة بديلة",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'NotoSansArabic',
+                  ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "تم إلغاء جلسة مؤكدة.",
+                      style: TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "هل ترغب بتنفيذ جلسة بديلة؟",
+                      style: TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      "📅 التاريخ: $formattedDate",
+                      style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
+                    Text(
+                      "🕒 الوقت: $timeRange",
+                      style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
+                    if (data['city'] != null)
+                      Text(
+                        "📍 المدينة: ${data['city']}",
+                        style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
+                    if (data['requirements'] != null &&
+                        data['requirements'].isNotEmpty)
+                      Text(
+                        "🧩 المتطلبات: ${data['requirements'].join(', ')}",
+                        style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
+                    if (data['children_ages'] != null &&
+                        data['children_ages'].isNotEmpty)
+                      Text(
+                        "👶 أعمار الأطفال: ${data['children_ages'].join(', ')}",
+                        style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text(
+                      "لا",
+                      style: TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      respondToFallback(data['booking_id']);
+                    },
+                    child: const Text(
+                      "نعم، أرغب",
+                      style: TextStyle(fontFamily: 'NotoSansArabic'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+      );
+    });
+
     // ✅ Initialize pages after socket setup
     _pages = [
       CaregiverHomeMainPage(profile: widget.profile),
@@ -72,6 +202,35 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
         child: CaregiverProfilePage(profile: widget.profile),
       ),
     ];
+  }
+
+  void respondToFallback(String bookingId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('accessToken');
+
+    final response = await http.post(
+      Uri.parse('${url}fallbacks/respond'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        'booking_id': bookingId,
+        'message': 'أرغب بتنفيذ هذه الجلسة',
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('✅ Fallback response sent successfully');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("تم إرسال الموافقة على الجلسة البديلة")),
+      );
+    } else {
+      print('❌ Failed to respond to fallback');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("فشل في إرسال الرد")));
+    }
   }
 
   @override

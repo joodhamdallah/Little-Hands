@@ -558,6 +558,7 @@ class _AvailableAppointmentsPageState extends State<AvailableAppointmentsPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("📩 تم إرسال طلب الجلسة للمربية")),
       );
+      Navigator.pop(context);
       // Navigate or reset state if needed
     } else {
       ScaffoldMessenger.of(

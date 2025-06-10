@@ -87,3 +87,13 @@ exports.setPaymentMethod = async (req, res) => {
   }
 };
 
+exports.createFallbackBooking = async (req, res) => {
+  try {
+    const { originalBookingId, newCaregiverId } = req.body;
+    const fallbackBooking = await BabysitterBookingHandler.createFallbackBooking(originalBookingId, newCaregiverId);
+    res.status(201).json({ message: 'Fallback booking created successfully.', data: fallbackBooking });
+  } catch (error) {
+    console.error("❌ Error in createFallbackBooking:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
