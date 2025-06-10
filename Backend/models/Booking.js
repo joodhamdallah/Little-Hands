@@ -125,6 +125,17 @@ session_end_datetime: {
   default: null  // ✅ Makes field always present
 },
 
+is_fallback: {
+  type: Boolean,
+  default: false
+},
+
+original_booking_id: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Booking',
+  default: null
+},
+
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

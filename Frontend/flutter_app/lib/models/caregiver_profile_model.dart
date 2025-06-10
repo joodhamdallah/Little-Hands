@@ -14,6 +14,19 @@ class CaregiverProfileModel {
   final Map<String, dynamic>? location;
   final double? distanceInKm;
 
+  final int totalBookings;
+  final int totalFeedbacks;
+  final double averageRating;
+  final int todaySessions;
+
+  final double totalIncome;
+  final double averageSessionRate;
+  final List<Map<String, dynamic>> sessionsChart;
+
+  final Map<String, dynamic>? todaySessionInfo;
+  final Map<String, dynamic>? highlightedFeedback;
+  final List<Map<String, dynamic>>? highlightedComments;
+
   CaregiverProfileModel({
     required this.firstName,
     required this.lastName,
@@ -28,6 +41,16 @@ class CaregiverProfileModel {
     this.ratePerHour, // ✅
     this.location,
     this.distanceInKm,
+    this.totalBookings = 0,
+    this.totalFeedbacks = 0,
+    this.averageRating = 0,
+    this.todaySessions = 0,
+    this.totalIncome = 0.0,
+    this.averageSessionRate = 0.0,
+    this.sessionsChart = const [],
+    this.todaySessionInfo,
+    this.highlightedFeedback,
+    this.highlightedComments,
   });
 
   factory CaregiverProfileModel.fromJson(Map<String, dynamic> json) {
@@ -54,6 +77,20 @@ class CaregiverProfileModel {
           json['rate_per_hour'], // ✅ this will be a Map<String, dynamic>
       location: json['location'],
       distanceInKm: json['distanceInKm']?.toDouble(),
+      totalBookings: json['totalBookings'] ?? 0,
+      totalFeedbacks: json['totalFeedbacks'] ?? 0,
+      averageRating: (json['averageRating'] ?? 0).toDouble(),
+      todaySessions: json['todaySessions'] ?? 0,
+      totalIncome: (json['totalIncome'] ?? 0).toDouble(),
+      averageSessionRate: (json['averageSessionRate'] ?? 0).toDouble(),
+      sessionsChart: List<Map<String, dynamic>>.from(
+        json['sessions_chart'] ?? [],
+      ),
+      todaySessionInfo: json['today_session_info'],
+      highlightedFeedback: json['highlighted_feedback'],
+      highlightedComments: List<Map<String, dynamic>>.from(
+        json['highlighted_feedback']?['comments'] ?? [],
+      ),
     );
   }
 }
