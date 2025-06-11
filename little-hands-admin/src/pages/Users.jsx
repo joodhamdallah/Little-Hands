@@ -7,6 +7,14 @@ const Users = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [cityFilter, setCityFilter] = useState('all');
 
+  const roleOptions = [
+    { label: 'All', value: 'all' },
+    { label: 'Parents', value: 'parent' },
+    { label: 'Babysitters', value: 'babysitter' },
+    { label: 'Experts', value: 'expert' },
+    { label: 'Special Needs', value: 'special_needs' },
+  ];
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -39,7 +47,7 @@ const Users = () => {
   const allCities = [...new Set(users.map(u => u.city).filter(Boolean))];
 
   const filteredUsers = users.filter(u => {
-    const roleMatch = roleFilter === 'all' || u.type === roleFilter;
+    const roleMatch = roleFilter === 'all' || u.role === roleFilter;
     const cityMatch = cityFilter === 'all' || u.city === cityFilter;
     return roleMatch && cityMatch;
   });
@@ -52,9 +60,9 @@ const Users = () => {
         <div>
           <label style={labelStyle}>Filter by Role:</label><br />
           <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={selectStyle}>
-            <option value="all">All</option>
-            <option value="parent">Parents</option>
-            <option value="caregiver">Caregivers</option>
+            {roleOptions.map((option, idx) => (
+              <option key={idx} value={option.value}>{option.label}</option>
+            ))}
           </select>
         </div>
         <div>
