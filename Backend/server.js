@@ -43,6 +43,8 @@ const expertPostRoutes = require('./routes/expertPostRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const fallbackRoutes = require('./routes/fallbackRoutes');
+const messageRoutes = require('./routes/messageRoutes');
+
 
 const scheduleCompleteBookingsJob = require('./services/cron/completeBookingsJob');
 
@@ -73,6 +75,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', fallbackRoutes);
+app.use('/api/messages', messageRoutes); // ✅ Add message routes
 
 
 
@@ -95,6 +98,19 @@ connectDB()
     global.onlineUsersMap[userId] = socket.id; // ✅ Store socket ID
     socket.join(userId); // Optional: use room for later if needed
     console.log(`✅ User ${userId} joined. Socket ID: ${socket.id}`);
+  });
+
+     socket.on('send_message', (data) => {
+    const { senderId, receiverId, content, timestamp } = data;
+
+    // ✅ broadcast to receiver
+    io.to(receiverId).emit('receive_message', {
+      senderId,
+      receiverId,
+      content,
+      timestamp,
+      isRead: false,
+    });
   });
 
   socket.on('disconnect', () => {

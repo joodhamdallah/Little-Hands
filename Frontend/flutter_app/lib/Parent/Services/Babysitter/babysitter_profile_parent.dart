@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/available_appointments_page.dart';
 import 'package:flutter_app/pages/config.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../models/caregiver_profile_model.dart';
 
 class BabysitterProfilePage extends StatefulWidget {
@@ -222,14 +223,18 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
                                 children: [
                                   Expanded(
                                     child: ElevatedButton(
-                                    onPressed: () {
+                                      onPressed: () {
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                            builder: (context) => AvailableAppointmentsPage(
-                                              babysitterId: widget.babysitterId,
-                                              jobDetails: widget.jobDetails,
-                                            ),
+                                            builder:
+                                                (context) =>
+                                                    AvailableAppointmentsPage(
+                                                      babysitterId:
+                                                          widget.babysitterId,
+                                                      jobDetails:
+                                                          widget.jobDetails,
+                                                    ),
                                           ),
                                         );
                                       },
@@ -255,7 +260,40 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: OutlinedButton(
-                                      onPressed: () {},
+                                      onPressed: () async {
+                                        final prefs =
+                                            await SharedPreferences.getInstance();
+                                        final currentUserId = prefs.getString(
+                                          'userId',
+                                        );
+                                        final otherUserName =
+                                            "${profile!.firstName} ${profile!.lastName}";
+
+                                        if (currentUserId != null &&
+                                            widget.babysitterId.isNotEmpty) {
+                                          Navigator.pushNamed(
+                                            context,
+                                            '/chat',
+                                            arguments: {
+                                              'myId': currentUserId,
+                                              'otherId': widget.babysitterId,
+                                              'otherUserName':
+                                                  otherUserName, // 👈 Add name here
+                                            },
+                                          );
+                                        } else {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                "حدث خطأ في تحميل بيانات المستخدم أو الجليسة",
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      },
                                       style: OutlinedButton.styleFrom(
                                         side: const BorderSide(
                                           color: Color(0xFFFF600A),

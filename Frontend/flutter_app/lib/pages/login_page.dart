@@ -304,8 +304,24 @@ class _LoginPageState extends State<LoginPage> {
         }
 
         final type = user["type"]; // "caregiver" or "parent"
+        await prefs.setString('userType', type); // ✅ Save user type
+
         final role = user["role"]; // ممكن تكون null أو String
 
+        print("🔍 Login user object: $user");
+
+        /////////////////////
+        if (type == "caregiver") {
+          final fullName = "${user["firstName"]} ${user["lastName"]}";
+          await prefs.setString('caregiverFullName', fullName);
+          print('🧑‍⚕️ Caregiver Full Name Saved: $fullName');
+        } else if (type == "parent") {
+          final fullName = "${user["firstName"]} ${user["lastName"]}";
+          await prefs.setString('parentFullName', fullName);
+          print('👨‍👩‍👧 Parent Full Name Saved: $fullName');
+        }
+
+        /////////////////////
         // ✅ خزّن الرول فقط إذا كان موجود
         if (type == "caregiver" && role != null) {
           await prefs.setString('caregiverRole', role);
