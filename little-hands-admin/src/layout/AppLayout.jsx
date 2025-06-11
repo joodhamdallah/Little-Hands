@@ -4,9 +4,14 @@ import { Outlet } from 'react-router-dom';
 
 const AppLayout = () => {
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', height: '100vh', backgroundColor: '#F5F7FA' }}>
       <Sidebar />
-      <main style={{ flex: 1, padding: '20px', backgroundColor: '#f8f8f8' }}>
+      <main style={{
+        flex: 1,
+        padding: '30px',
+        overflowY: 'auto',
+        fontFamily: 'Arial, sans-serif',
+      }}>
         <Outlet />
       </main>
     </div>
