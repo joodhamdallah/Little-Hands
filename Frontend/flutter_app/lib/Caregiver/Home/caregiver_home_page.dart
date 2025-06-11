@@ -16,6 +16,7 @@ import 'package:intl/intl.dart' as intl;
 import 'package:provider/provider.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_posts_page.dart';
 
 class CaregiverHomePage extends StatefulWidget {
   final CaregiverProfileModel profile;
@@ -35,8 +36,8 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
   int _currentIndex = 0;
 
   late final List<Widget> _pages;
+  late List<BottomNavigationBarItem> _navItems;
 
-  @override
   @override
   void initState() {
     super.initState();
@@ -193,15 +194,53 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     });
 
     // ✅ Initialize pages after socket setup
-    _pages = [
-      CaregiverHomeMainPage(profile: widget.profile),
-      NotificationsPage(onMarkedRead: () => notifProvider.loadUnreadCount()),
-      CaregiverBookingsPage(profile: widget.profile),
-      CaregiverControlPanelPage(),
-      SingleChildScrollView(
-        child: CaregiverProfilePage(profile: widget.profile),
-      ),
-    ];
+    SharedPreferences.getInstance().then((prefs) {
+      final role = prefs.getString('caregiverRole');
+      final isExpert = role == 'expert';
+
+      setState(() {
+        _pages = [
+          CaregiverHomeMainPage(profile: widget.profile),
+          NotificationsPage(
+            onMarkedRead: () => notifProvider.loadUnreadCount(),
+          ),
+          CaregiverBookingsPage(profile: widget.profile),
+          CaregiverControlPanelPage(),
+          if (isExpert) ExpertPostsPage(),
+          SingleChildScrollView(
+            child: CaregiverProfilePage(profile: widget.profile),
+          ),
+        ];
+
+        _navItems = [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'الرئيسية',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'الإشعارات',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'الحجوزات',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_customize),
+            label: 'لوحة التحكم',
+          ),
+          if (isExpert)
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.library_books),
+              label: 'المحتوى ',
+            ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'حسابي',
+          ),
+        ];
+      });
+    });
   }
 
   void respondToFallback(String bookingId) async {
@@ -241,28 +280,16 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
         backgroundColor: const Color(0xFFF7F7F7),
         appBar: CustomAppBar(title: 'Little Hands'),
         body: _pages[_currentIndex],
-        bottomNavigationBar: CustomBottomNavBar(
-          currentIndex: _currentIndex,
-          onTap: (index) {
-            setState(() => _currentIndex = index);
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'الرئيسية'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.notifications),
-              label: 'الإشعارات',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: 'الحجوزات',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_customize),
-              label: 'لوحة التحكم',
-            ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'حسابي'),
-          ],
-        ),
+        bottomNavigationBar:
+            _pages.isEmpty
+                ? null
+                : CustomBottomNavBar(
+                  currentIndex: _currentIndex,
+                  onTap: (index) {
+                    setState(() => _currentIndex = index);
+                  },
+                  items: _navItems,
+                ),
       ),
     );
   }

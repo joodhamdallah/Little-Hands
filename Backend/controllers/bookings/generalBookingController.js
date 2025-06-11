@@ -12,7 +12,8 @@ exports.getParentBookings = async (req, res) => {
 exports.getBookingsForCaregiver = async (req, res) => {
   const caregiverId = req.user._id;
 
-  const bookings = await Booking.find({ caregiver_id: caregiverId })
+  const bookings = await Booking.find({ caregiver_id: caregiverId,  status: { $in: ['accepted', 'confirmed','meeting_booked'] }
+ })
     .populate('parent_id', 'firstName lastName email phone')  // ✅ populate parent info
     .sort({ createdAt: -1 });
   res.status(200).json({ status: true, data: bookings });
@@ -20,7 +21,7 @@ exports.getBookingsForCaregiver = async (req, res) => {
 
 exports.getBookingsByCaregiverId = async (req, res) => {
   const caregiverId = req.params.id;
-  const bookings = await Booking.find({ caregiver_id: caregiverId, status: 'confirmed' });
+  const bookings = await Booking.find({ caregiver_id: caregiverId, status: { $in: ['accepted', 'confirmed','meeting_booked'] }});
 
   res.status(200).json({ status: true, data: bookings });
 };

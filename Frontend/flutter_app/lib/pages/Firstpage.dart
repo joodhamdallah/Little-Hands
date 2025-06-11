@@ -16,13 +16,13 @@ class _FirstPageState extends State<FirstPage> {
   final List<Map<String, String>> _pages = [
     {
       'image': 'assets/images/im4.jpeg',
-      'title': 'سلامة طفلك  من أولويتنا',
+      'title': 'سلامة طفلك أولويتنا',
       'desc': 'نحن هنا لنساعدك في البحث والتواصل والتوظيف بأمان.',
     },
     {
       'image': 'assets/images/im2.jpeg',
       'title': 'اعثر على الرعاية التي تحتاجها الآن',
-      'desc': 'رعاية أطفال، أصحاب الهمم، الكبار في السن، إستشارات وأكثر.',
+      'desc': 'رعاية أطفال، أصحاب الهمم، إستشارات وأكثر.',
     },
     {
       'image': 'assets/images/im1.jpeg',

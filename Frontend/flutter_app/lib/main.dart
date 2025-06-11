@@ -4,6 +4,9 @@ import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
 import 'package:flutter_app/pages/FallbackCandidatesPage.dart';
+import 'package:flutter_app/pages/chat_page.dart';
+import 'package:flutter_app/pages/complaint_page.dart';
+import 'package:flutter_app/pages/my_messages_page.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -170,6 +173,23 @@ class MyApp extends StatelessWidget {
 
         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
         '/fallback-candidates': (context) => const FallbackCandidatesPage(),
+        '/my-messages': (context) => const MyMessagesPage(),
+        '/chat': (context) {
+          final args =
+              ModalRoute.of(context)!.settings.arguments
+                  as Map<String, dynamic>;
+
+          final String myId = args['myId'] ?? '';
+          final String otherId = args['otherId'] ?? '';
+          final String? otherUserName = args['otherUserName']; // 👈 Optional
+
+          return ChatPage(
+            myId: myId,
+            otherId: otherId,
+            otherName: otherUserName, // 👈 Pass it to ChatPage
+          );
+        },
+        '/complaint': (context) => const ComplaintPage(),
 
         //         '/send_price': (context) {
         //   final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

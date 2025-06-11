@@ -20,9 +20,11 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
   final Color orange = const Color(0xFFFF600A);
 
   Future<void> _pickPdfFile() async {
-    final file = await openFile(acceptedTypeGroups: [
-      XTypeGroup(label: 'PDF', extensions: ['pdf'])
-    ]);
+    final file = await openFile(
+      acceptedTypeGroups: [
+        XTypeGroup(label: 'PDF', extensions: ['pdf']),
+      ],
+    );
     if (file != null) {
       setState(() => _pdfFile = File(file.path));
     }
@@ -48,7 +50,9 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
 
     request.files.add(await http.MultipartFile.fromPath('pdf', _pdfFile!.path));
     if (_imageFile != null) {
-      request.files.add(await http.MultipartFile.fromPath('image', _imageFile!.path));
+      request.files.add(
+        await http.MultipartFile.fromPath('image', _imageFile!.path),
+      );
     }
 
     final response = await request.send();
@@ -56,17 +60,17 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
     setState(() => _isUploading = false);
 
     if (response.statusCode == 201) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ تم رفع النصيحة بنجاح')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('✅ تم رفع النصيحة بنجاح')));
       setState(() {
         _pdfFile = null;
         _imageFile = null;
       });
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text('✅ تم رفع النصيحة بنجاح')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('✅ تم رفع النصيحة بنجاح')));
     }
   }
 
@@ -82,12 +86,9 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
             const Icon(Icons.upload_file, size: 64, color: Colors.orange),
             const SizedBox(height: 10),
             const Text(
-              '  📌يمكنك رفع أي ملف : يحتوي على بحث او نصيحة ونسقوم بتحويله الى بطاقة نصيحة مختصرة تظهر للآباء ',
+              '  📌يمكنك رفع أي ملف : يحتوي على بحث او نصيحة وسنقوم  بتحويله الى بطاقة نصيحة مختصرة تظهر للآباء ',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontFamily: 'NotoSansArabic',
-              ),
+              style: TextStyle(fontSize: 16, fontFamily: 'NotoSansArabic'),
             ),
             const SizedBox(height: 25),
 
@@ -95,19 +96,26 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _pickPdfFile,
               icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('اختيار ملف PDF',
-                  style: TextStyle(fontFamily: 'NotoSansArabic')),
+              label: const Text(
+                'اختيار ملف PDF',
+                style: TextStyle(fontFamily: 'NotoSansArabic'),
+              ),
             ),
             if (_pdfFile != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
                   '📄 تم اختيار: ${_pdfFile!.path.split('/').last}',
-                  style: const TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'NotoSansArabic',
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -118,19 +126,26 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: _pickImage,
               icon: const Icon(Icons.image),
-              label: const Text('اختيار صورة للبطاقة',
-                  style: TextStyle(fontFamily: 'NotoSansArabic')),
+              label: const Text(
+                'اختيار صورة للبطاقة',
+                style: TextStyle(fontFamily: 'NotoSansArabic'),
+              ),
             ),
             if (_imageFile != null)
               Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
                   '🖼 تم اختيار: ${_imageFile!.path.split('/').last}',
-                  style: const TextStyle(fontSize: 14, fontFamily: 'NotoSansArabic'),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontFamily: 'NotoSansArabic',
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -141,19 +156,27 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: orange,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               onPressed: _isUploading ? null : _uploadPost,
               icon: const Icon(Icons.send),
-              label: _isUploading
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text('رفع النصيحة',
-                      style: TextStyle(fontFamily: 'NotoSansArabic')),
+              label:
+                  _isUploading
+                      ? const SizedBox(
+                        height: 18,
+                        width: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                      : const Text(
+                        'رفع النصيحة',
+                        style: TextStyle(fontFamily: 'NotoSansArabic'),
+                      ),
             ),
           ],
         ),

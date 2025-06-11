@@ -122,6 +122,85 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
               ),
             ],
           ),
+          const SizedBox(height: 20),
+          buildSectionTitle('تواصل معنا '),
+
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade50,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Color(0xFFFF600A), width: 1.2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'خدمة العملاء',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'NotoSansArabic',
+                    color: Color(0xFFFF600A),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'هل واجهت مشكلة مع جلسة أو جليسة؟ يمكنك التواصل معنا أو تقديم شكوى بسهولة.',
+                  style: TextStyle(fontFamily: 'NotoSansArabic'),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFFF600A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        icon: const Icon(Icons.support_agent),
+                        label: const Text(
+                          'تواصل معنا',
+                          style: TextStyle(fontFamily: 'NotoSansArabic'),
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/support');
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFFF600A)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        icon: const Icon(
+                          Icons.report_problem_outlined,
+                          color: Color(0xFFFF600A),
+                        ),
+                        label: const Text(
+                          'تقديم شكوى',
+                          style: TextStyle(
+                            fontFamily: 'NotoSansArabic',
+                            color: Color(0xFFFF600A),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/complaint');
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
           buildPlatformIntroSection(),
           const SizedBox(height: 30),
           buildSectionTitle('نحرص على أمان طفلك وخصوصيتك'),
