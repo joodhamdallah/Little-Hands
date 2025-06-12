@@ -3,6 +3,11 @@ import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_posts_page.da
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_budget_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_info_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_session_details_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_specialist_type-page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Experts/experts_child_age.dart';
 import 'package:flutter_app/pages/FallbackCandidatesPage.dart';
 import 'package:flutter_app/pages/chat_page.dart';
 import 'package:flutter_app/pages/complaint_page.dart';
@@ -156,6 +161,7 @@ class MyApp extends StatelessWidget {
         '/expertBioQ5': (context) => const ExpertBioPage(),
         '/expertPostsPage': (context) => const ExpertPostsPage(),
 
+
         '/babysitter': (context) => const BabySitterPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
 
@@ -168,8 +174,16 @@ class MyApp extends StatelessWidget {
 
         '/parentHome': (context) => const ParentHomePage(),
         '/parentBabysitterInfo': (context) => const BabysittingInfoPage(),
-        '/parentBabysitteraddress':
-            (context) => const BabysitterSessionAddressPage(),
+        '/parentExpertInfo': (context) => const ExpertConsultationInfoPage(),
+        '/parentExpertStart': (context) => const ExpertSpecialistTypePage(),
+        '/parentExpertChildAgePage': (context) => const ChildAgeAndChallengesPage(),
+        '/parentExpertsessionPage': (context) => const ExpertSessionDetailsPage(),
+        '/parentExpertbudgetPage': (context) => const ExpertSessionBudgetPage(),
+
+
+
+         
+        '/parentBabysitteraddress':(context) => const BabysitterSessionAddressPage(),
 
         '/subscriptionpage': (context) => const SubscriptionPlanPage(),
         '/fallback-candidates': (context) => const FallbackCandidatesPage(),

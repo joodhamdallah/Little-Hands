@@ -541,7 +541,7 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
               if (title == 'رعاية الأطفال في المنزل') {
                 Navigator.pushNamed(context, '/parentBabysitterInfo');
               } else if (title == 'الاستشارات التربوية والنفسية') {
-                Navigator.pushNamed(context, '/counseling');
+                Navigator.pushNamed(context, '/parentExpertInfo');
               } else if (title == 'مساعدة الأطفال ذوي الاحتياجات') {
                 Navigator.pushNamed(context, '/specialNeeds');
               } else if (title == 'التدريس والتعليم المنزلي') {
