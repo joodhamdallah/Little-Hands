@@ -13,6 +13,8 @@ router.get('/me', authMiddleware, ParentController.getMe);
  
 router.get("/parentprof/:id", ParentController.getParentById); // /api/parents/:id
 
+router.put("/parents/update", authMiddleware, ParentController.updateProfile);
+
 
 // ✅ Export the router
 module.exports = router;

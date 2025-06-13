@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Home/my_feedbacks_page.dart';
 import 'package:flutter_app/Parent/Home/parent_bookings_page.dart';
 import 'package:flutter_app/Parent/Home/parent_main_page.dart';
+import 'package:flutter_app/Parent/Home/parent_profile_page.dart';
 import 'package:flutter_app/Parent/Home/view_all_expert_cards_page.dart';
 import 'package:flutter_app/pages/custom_app_bar.dart';
 import 'package:flutter_app/pages/custom_bottom_nav.dart';
@@ -86,7 +87,7 @@ class _ParentHomePageState extends State<ParentHomePage> {
       const ParentBookingsPage(),
       ParentMyFeedbacksPage(), // ✅ Added here
       const ViewAllExpertCardsPage(), // ✅ صفحة المحتوى (الكروت)
-      const SizedBox(), // حسابي (غير مفعّل بعد)
+     ParentProfilePage(), // حسابي (غير مفعّل بعد)
     ];
   }
 
