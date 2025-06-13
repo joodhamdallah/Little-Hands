@@ -543,7 +543,7 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
               } else if (title == 'الاستشارات التربوية والنفسية') {
                 Navigator.pushNamed(context, '/parentExpertInfo');
               } else if (title == 'مساعدة الأطفال ذوي الاحتياجات') {
-                Navigator.pushNamed(context, '/specialNeeds');
+                Navigator.pushNamed(context, '/shadowteacherInfo');
               } else if (title == 'التدريس والتعليم المنزلي') {
                 Navigator.pushNamed(context, '/tutoring');
               }
