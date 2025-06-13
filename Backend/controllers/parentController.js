@@ -86,3 +86,29 @@ exports.getParentById = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+
+
+exports.updateProfile = async (req, res, next) => {
+  try {
+    const parentId = req.user._id;
+    const { firstName, lastName, phone, address, dateOfBirth } = req.body;
+
+    const parent = await Parent.findById(parentId);
+    if (!parent) {
+      return res.status(404).json({ status: false, message: "Parent not found" });
+    }
+
+    if (firstName) parent.firstName = firstName;
+    if (lastName) parent.lastName = lastName;
+    if (phone) parent.phone = phone;
+    if (address) parent.address = address;
+    if (dateOfBirth) parent.dateOfBirth = dateOfBirth;
+
+    await parent.save();
+
+    res.status(200).json({ status: true, message: "Profile updated successfully" });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ status: false, message: "Failed to update profile", error: error.message });
+  }
+};
