@@ -8,6 +8,11 @@ import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_info_page.
 import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_session_details_page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_specialist_type-page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Experts/experts_child_age.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/special_needs_age_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/special_needs_schedule_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/specialneeds_Info_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/specialneeds_finalstep_page.dart';
+import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/specialneeds_type_page.dart';
 import 'package:flutter_app/pages/FallbackCandidatesPage.dart';
 import 'package:flutter_app/pages/chat_page.dart';
 import 'package:flutter_app/pages/complaint_page.dart';
@@ -171,6 +176,14 @@ class MyApp extends StatelessWidget {
         '/shadowteacherQ4': (context) => const ShadowTeacherStep4(),
         '/shadowteacherbio': (context) => const ShadowTeacherBioPage(),
         '/shadowteacherpricing': (context) => const ShadowTeacherPricingPage(),
+        '/shadowteacherInfo': (context) => const SpecialNeedsInfoPage(),
+        '/specialNeedsStart': (context) => const SpecialNeedsServiceTypePage(),
+        '/specialNeedsage': (context) => const SpecialNeedsDisabilityAndAgePage(),
+        '/specialNeedsschedule': (context) => const SpecialNeedsSchedulePage(),
+        '/specialNeedsFinalstep': (context) => const SpecialNeedsFinalStepPage(),
+
+
+
 
         '/parentHome': (context) => const ParentHomePage(),
         '/parentBabysitterInfo': (context) => const BabysittingInfoPage(),
