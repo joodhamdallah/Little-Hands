@@ -44,7 +44,7 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
 
-    final uri = Uri.parse('${baseUrl}/api/expert-posts/upload');
+    final uri = Uri.parse('$baseUrl/api/expert-posts/upload');
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] = 'Bearer $token';
 

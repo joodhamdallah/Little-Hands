@@ -3,6 +3,7 @@ import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_posts_page.da
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Shadow_Teacher/special_needs_provider.dart';
+import 'package:flutter_app/Parent/Home/chatbot_page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_budget_page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_info_page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Experts/expert_session_details_page.dart';
@@ -165,6 +166,8 @@ class MyApp extends StatelessWidget {
         '/expertExperienceQ4': (context) => const ExpertExperiencePage(),
         '/expertBioQ5': (context) => const ExpertBioPage(),
         '/expertPostsPage': (context) => const ExpertPostsPage(),
+        '/chatbot': (context) => const ChatbotPage(),
+
 
 
         '/babysitter': (context) => const BabySitterPage(),
