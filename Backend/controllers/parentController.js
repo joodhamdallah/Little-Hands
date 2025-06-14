@@ -66,6 +66,7 @@ exports.getMe = async (req, res, next) => {
                 city: parent.city,
                 address: parent.address,
                 phone: parent.phone,
+                dateOfBirth: parent.dateOfBirth,
             }
         });
     } catch (error) {
