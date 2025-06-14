@@ -7,7 +7,8 @@ class ExpertQualificationPage extends StatefulWidget {
   const ExpertQualificationPage({super.key});
 
   @override
-  State<ExpertQualificationPage> createState() => _ExpertQualificationPageState();
+  State<ExpertQualificationPage> createState() =>
+      _ExpertQualificationPageState();
 }
 
 class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
@@ -122,9 +123,9 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
   }
 
   Widget buildDivider() => const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: Divider(color: Colors.black12, thickness: 1),
-      );
+    padding: EdgeInsets.symmetric(horizontal: 16.0),
+    child: Divider(color: Colors.black12, thickness: 1),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +170,7 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
                   itemCount: selectedDegrees.length,
                   itemBuilder: (context, index) {
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 24),
+                      margin: const EdgeInsets.only(bottom: 5),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
@@ -219,15 +220,19 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
                             ),
                             value: selectedDegrees[index],
                             hint: const Text('اختر نوع الشهادة'),
-                            items: degreeOptions
-                                .map(
-                                  (degree) => DropdownMenuItem(
-                                    value: degree,
-                                    child: Text(degree),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) => setState(() => selectedDegrees[index] = value),
+                            items:
+                                degreeOptions
+                                    .map(
+                                      (degree) => DropdownMenuItem(
+                                        value: degree,
+                                        child: Text(degree),
+                                      ),
+                                    )
+                                    .toList(),
+                            onChanged:
+                                (value) => setState(
+                                  () => selectedDegrees[index] = value,
+                                ),
                           ),
                           if (selectedDegrees[index] == 'أخرى')
                             Padding(
@@ -286,9 +291,8 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
                 buildDivider(),
-                const SizedBox(height: 32),
+
                 const Text(
                   'هل تمتلك ترخيصاً أو عضوية في جهة مهنية معتمدة؟',
                   style: TextStyle(
@@ -317,7 +321,10 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
                 ),
                 if (hasLicense) ...[
                   const SizedBox(height: 12),
-                  const Text('اسم الجهة المانحة', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                  const Text(
+                    'اسم الجهة المانحة',
+                    style: TextStyle(fontFamily: 'NotoSansArabic'),
+                  ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: authorityNameController,
@@ -327,7 +334,10 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text('تاريخ انتهاء الترخيص', style: TextStyle(fontFamily: 'NotoSansArabic')),
+                  const Text(
+                    'تاريخ انتهاء الترخيص',
+                    style: TextStyle(fontFamily: 'NotoSansArabic'),
+                  ),
                   const SizedBox(height: 6),
                   TextField(
                     controller: expiryDateController,
@@ -357,39 +367,53 @@ class _ExpertQualificationPageState extends State<ExpertQualificationPage> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: isFormValid()
-                          ? () {
-                              final provider = Provider.of<ExpertProvider>(context, listen: false);
+                      onPressed:
+                          isFormValid()
+                              ? () {
+                                final provider = Provider.of<ExpertProvider>(
+                                  context,
+                                  listen: false,
+                                );
 
-                              final List<Map<String, dynamic>> degrees = [];
-                              for (int i = 0; i < selectedDegrees.length; i++) {
-                                degrees.add({
-                                  'degree': selectedDegrees[i] == 'أخرى'
-                                      ? otherDegreeControllers[i].text
-                                      : selectedDegrees[i],
-                                  'specialization': specializationControllers[i].text,
-                                  'institution': institutionControllers[i].text,
-                                  'attachment': attachedDegrees[i],
-                                });
+                                final List<Map<String, dynamic>> degrees = [];
+                                for (
+                                  int i = 0;
+                                  i < selectedDegrees.length;
+                                  i++
+                                ) {
+                                  degrees.add({
+                                    'degree':
+                                        selectedDegrees[i] == 'أخرى'
+                                            ? otherDegreeControllers[i].text
+                                            : selectedDegrees[i],
+                                    'specialization':
+                                        specializationControllers[i].text,
+                                    'institution':
+                                        institutionControllers[i].text,
+                                    'attachment': attachedDegrees[i],
+                                  });
+                                }
+
+                                Map<String, dynamic>? license;
+                                if (hasLicense) {
+                                  license = {
+                                    'authority': authorityNameController.text,
+                                    'expiry_date': expiryDateController.text,
+                                    'attachment': licenseAttachmentFileName,
+                                  };
+                                }
+
+                                provider.setQualificationsAndLicense(
+                                  degrees: degrees,
+                                  license: license,
+                                );
+
+                                Navigator.pushNamed(
+                                  context,
+                                  '/expertExperienceQ4',
+                                );
                               }
-
-                              Map<String, dynamic>? license;
-                              if (hasLicense) {
-                                license = {
-                                  'authority': authorityNameController.text,
-                                  'expiry_date': expiryDateController.text,
-                                  'attachment': licenseAttachmentFileName,
-                                };
-                              }
-
-                              provider.setQualificationsAndLicense(
-                                degrees: degrees,
-                                license: license,
-                              );
-
-                              Navigator.pushNamed(context, '/expertExperienceQ4');
-                            }
-                          : null,
+                              : null,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFF600A),
                         shape: RoundedRectangleBorder(

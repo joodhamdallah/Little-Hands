@@ -8,6 +8,9 @@ const cors = require("cors"); // ✅ Add this line
 const connectDB = require("./database/connection");
 
 const app = express();
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use(cors()); // ✅ Add this line BEFORE any routes
 
 const server = http.createServer(app); // ✅ wrap app with HTTP server

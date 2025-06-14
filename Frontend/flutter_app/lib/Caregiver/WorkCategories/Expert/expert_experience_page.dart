@@ -35,7 +35,8 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
     },
     {
       'label': 'كلاهما',
-      'description': 'يمكن تقديم الجلسات إما حضوريًا أو عن بُعد حسب رغبة الأهل.',
+      'description':
+          'يمكن تقديم الجلسات إما حضوريًا أو عن بُعد حسب رغبة الأهل.',
     },
   ];
 
@@ -46,9 +47,9 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
   ];
 
   Widget buildDivider() => const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        child: Divider(color: Colors.black12, thickness: 1),
-      );
+    padding: EdgeInsets.symmetric(horizontal: 16.0),
+    child: Divider(color: Colors.black12, thickness: 1),
+  );
 
   bool isFormValid() {
     return selectedSessionTypes.isNotEmpty &&
@@ -89,15 +90,25 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
                   fontFamily: 'NotoSansArabic',
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFFF600A), width: 1.5),
+                  border: Border.all(
+                    color: const Color(0xFFFF600A),
+                    width: 1.5,
+                  ),
                   boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 4)),
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Row(
@@ -105,7 +116,10 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
                   children: [
                     IconButton(
                       iconSize: 30,
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.grey),
+                      icon: const Icon(
+                        Icons.remove_circle_outline,
+                        color: Colors.grey,
+                      ),
                       onPressed: () {
                         if (yearsOfExperience > 0) {
                           setState(() => yearsOfExperience--);
@@ -122,15 +136,18 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
                     ),
                     IconButton(
                       iconSize: 30,
-                      icon: const Icon(Icons.add_circle_outline, color: Color(0xFFFF007A)),
+                      icon: const Icon(
+                        Icons.add_circle_outline,
+                        color: Color(0xFFFF007A),
+                      ),
                       onPressed: () => setState(() => yearsOfExperience++),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
               buildDivider(),
-              const SizedBox(height: 32),
+              // const SizedBox(height: 32),
               const Text(
                 'ما نوع الجلسات التي تقدمها؟',
                 style: TextStyle(
@@ -143,29 +160,33 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: sessionOptions.map((option) {
-                  final isSelected = selectedSessionTypes.contains(option);
-                  return ChoiceChip(
-                    label: Text(option, style: const TextStyle(fontFamily: 'NotoSansArabic')),
-                    selected: isSelected,
-                    selectedColor: const Color(0xFFFFE3D3),
-                    backgroundColor: Colors.grey[100],
-                    side: const BorderSide(color: Color(0xFFFF600A)),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          selectedSessionTypes.add(option);
-                        } else {
-                          selectedSessionTypes.remove(option);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
+                children:
+                    sessionOptions.map((option) {
+                      final isSelected = selectedSessionTypes.contains(option);
+                      return ChoiceChip(
+                        label: Text(
+                          option,
+                          style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                        ),
+                        selected: isSelected,
+                        selectedColor: const Color(0xFFFFE3D3),
+                        backgroundColor: Colors.grey[100],
+                        side: const BorderSide(color: Color(0xFFFF600A)),
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedSessionTypes.add(option);
+                            } else {
+                              selectedSessionTypes.remove(option);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 32),
               buildDivider(),
-              const SizedBox(height: 32),
+              // const SizedBox(height: 32),
               const Text(
                 'هل تقدم الجلسات حضوريًا أم عن بُعد؟',
                 style: TextStyle(
@@ -179,16 +200,23 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
                 isExpanded: true,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
                 value: deliveryMethod,
                 hint: const Text('حدد طريقة التقديم'),
-                items: sessionModes.map((option) {
-                  return DropdownMenuItem(
-                    value: option['label'],
-                    child: Text(option['label']!, style: const TextStyle(fontFamily: 'NotoSansArabic')),
-                  );
-                }).toList(),
+                items:
+                    sessionModes.map((option) {
+                      return DropdownMenuItem(
+                        value: option['label'],
+                        child: Text(
+                          option['label']!,
+                          style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                        ),
+                      );
+                    }).toList(),
                 onChanged: (value) => setState(() => deliveryMethod = value),
               ),
               if (deliveryMethod != null)
@@ -205,7 +233,7 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
                 ),
               const SizedBox(height: 32),
               buildDivider(),
-              const SizedBox(height: 32),
+              // const SizedBox(height: 32),
               const Text(
                 'ما الفئات العمرية التي تتعامل معها؟',
                 style: TextStyle(
@@ -218,46 +246,56 @@ class _ExpertExperiencePageState extends State<ExpertExperiencePage> {
               Wrap(
                 spacing: 12,
                 runSpacing: 12,
-                children: ageGroups.map((group) {
-                  final isSelected = selectedAges.contains(group);
-                  return ChoiceChip(
-                    label: Text(group, style: const TextStyle(fontFamily: 'NotoSansArabic')),
-                    selected: isSelected,
-                    selectedColor: const Color(0xFFFFE3D3),
-                    backgroundColor: Colors.grey[100],
-                    side: const BorderSide(color: Color(0xFFFF600A)),
-                    onSelected: (selected) {
-                      setState(() {
-                        if (selected) {
-                          selectedAges.add(group);
-                        } else {
-                          selectedAges.remove(group);
-                        }
-                      });
-                    },
-                  );
-                }).toList(),
+                children:
+                    ageGroups.map((group) {
+                      final isSelected = selectedAges.contains(group);
+                      return ChoiceChip(
+                        label: Text(
+                          group,
+                          style: const TextStyle(fontFamily: 'NotoSansArabic'),
+                        ),
+                        selected: isSelected,
+                        selectedColor: const Color(0xFFFFE3D3),
+                        backgroundColor: Colors.grey[100],
+                        side: const BorderSide(color: Color(0xFFFF600A)),
+                        onSelected: (selected) {
+                          setState(() {
+                            if (selected) {
+                              selectedAges.add(group);
+                            } else {
+                              selectedAges.remove(group);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
               ),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: isFormValid()
-                      ? () {
-                          final provider = Provider.of<ExpertProvider>(context, listen: false);
-                          provider.setExperienceDetails(
-                            yearsOfExperience: yearsOfExperience,
-                            sessionTypes: selectedSessionTypes,
-                            deliveryMethod: deliveryMethod!,
-                            ageGroups: selectedAges,
-                          );
-                          Navigator.pushNamed(context, '/expertBioQ5');
-                        }
-                      : null,
+                  onPressed:
+                      isFormValid()
+                          ? () {
+                            final provider = Provider.of<ExpertProvider>(
+                              context,
+                              listen: false,
+                            );
+                            provider.setExperienceDetails(
+                              yearsOfExperience: yearsOfExperience,
+                              sessionTypes: selectedSessionTypes,
+                              deliveryMethod: deliveryMethod!,
+                              ageGroups: selectedAges,
+                            );
+                            Navigator.pushNamed(context, '/expertBioQ5');
+                          }
+                          : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: const Text(
                     'التالي',

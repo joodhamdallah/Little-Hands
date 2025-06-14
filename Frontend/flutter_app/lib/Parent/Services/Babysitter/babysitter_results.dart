@@ -172,12 +172,15 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
                                     radius: 30,
                                     backgroundImage:
                                         sitter['image'] != null
-                                            ? NetworkImage(sitter['image'])
-                                            : const AssetImage(
-                                                  'assets/images/homepage/maha_test_pic.webp',
+                                            ? NetworkImage(
+                                                  '$baseUrl/${sitter['image'].toString().replaceAll('\\', '/')}',
                                                 )
-                                                as ImageProvider,
+                                                as ImageProvider
+                                            : const AssetImage(
+                                              'assets/images/homepage/maha_test_pic.webp',
+                                            ),
                                   ),
+
                                   const SizedBox(width: 16),
                                   Expanded(
                                     child: Column(

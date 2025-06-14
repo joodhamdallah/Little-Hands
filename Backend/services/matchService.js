@@ -176,6 +176,8 @@ class MatchService {
         lng: babysitter.location.coordinates[0] 
       }
     : null,
+averageRating: babysitter.average_rating,
+      
       };
     } catch (error) {
       throw error;

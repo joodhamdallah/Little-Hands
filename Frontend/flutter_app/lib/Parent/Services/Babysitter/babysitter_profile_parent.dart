@@ -68,6 +68,11 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final String? imagePath = profile?.image;
+    final String? imageUrl =
+        (imagePath != null && imagePath.isNotEmpty)
+            ? '$baseUrl/${imagePath.replaceAll('\\', '/')}'
+            : null;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -123,13 +128,11 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
                                     radius: 40,
                                     backgroundColor: Colors.orange.shade100,
                                     backgroundImage:
-                                        (profile!.image != null &&
-                                                profile!.image!.isNotEmpty)
-                                            ? NetworkImage(profile!.image!)
+                                        imageUrl != null
+                                            ? NetworkImage(imageUrl)
                                             : null,
                                     child:
-                                        (profile!.image == null ||
-                                                profile!.image!.isEmpty)
+                                        imageUrl == null
                                             ? const Icon(
                                               Icons.person,
                                               size: 40,
@@ -162,14 +165,35 @@ class _BabysitterProfilePageState extends State<BabysitterProfilePage> {
                                         ),
                                         const SizedBox(height: 8),
                                         Row(
-                                          children: List.generate(
-                                            5,
-                                            (index) => const Icon(
-                                              Icons.star,
-                                              size: 18,
-                                              color: Color(0xFFFFA726),
+                                          children: [
+                                            Row(
+                                              children: List.generate(5, (
+                                                index,
+                                              ) {
+                                                double rating =
+                                                    profile!.averageRating;
+                                                return Icon(
+                                                  index < rating.round()
+                                                      ? Icons.star
+                                                      : Icons.star_border,
+                                                  size: 18,
+                                                  color: const Color(
+                                                    0xFFFFA726,
+                                                  ),
+                                                );
+                                              }),
                                             ),
-                                          ),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              profile!.averageRating
+                                                  .toStringAsFixed(1),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ],
                                     ),
