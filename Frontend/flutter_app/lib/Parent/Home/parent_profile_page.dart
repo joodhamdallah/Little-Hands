@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Home/edit_parent_profile_page.dart';
-// ignore: library_prefixes
-import 'package:flutter_app/pages/config.dart' as Config;
+import 'package:flutter_app/pages/config.dart' ;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
@@ -16,12 +15,14 @@ class ParentProfilePage extends StatefulWidget {
 
 class _ParentProfilePageState extends State<ParentProfilePage> {
   Map<String, dynamic>? parentData;
+  Map<String, dynamic>? childRequest;
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     fetchParentData();
+    fetchChildRequest();
   }
 
   Future<void> fetchParentData() async {
@@ -30,7 +31,7 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
     print('🔑 Token: $token');
 
     final response = await http.get(
-      Uri.parse('${Config.baseUrl}/api/me'),
+      Uri.parse('${url}me'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
@@ -52,14 +53,43 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
     }
   }
 
-  void navigateToEditPage() async {
-    if (parentData != null) {
-      final updated = await Navigator.pushNamed(context, '/editParentProfile', arguments: parentData);
-      if (updated == true) {
-        fetchParentData(); // reload on return
-      }
+  Future<void> fetchChildRequest() async {
+    final prefs = await SharedPreferences.getInstance();
+    final parentId = prefs.getString('userId');
+
+    if (parentId == null) return;
+
+    final response = await http.get(
+      Uri.parse('${url}babysitter-requests/by-parent/$parentId'),
+    );
+
+    print("📡 Child Info Request URL: ${url}babysitter-requests/by-parent/$parentId");
+    print("📬 Response: ${response.statusCode} → ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      setState(() {
+        childRequest = data['data'];
+      });
     }
   }
+
+
+void navigateToEditPage() async {
+  if (parentData != null) {
+    final updated = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EditParentProfilePage(parentData: parentData!),
+      ),
+    );
+
+    if (updated == true) {
+      fetchParentData();
+      fetchChildRequest();
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -69,30 +99,21 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-              backgroundColor: const Color(0xFFFF600A),
-              title: const Text('الملف الشخصي', style: TextStyle(fontWeight: FontWeight.bold)),
-              centerTitle: true,
-          actions: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => EditParentProfilePage(parentData: parentData!),
-                    ),
-                  );
-                  if (result == true) fetchParentData(); // ✅ تحديث البيانات بعد الحفظ
-                },
-              )
-            ],
-
+        backgroundColor: const Color(0xFFFF600A),
+        title: const Text('الملف الشخصي', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: navigateToEditPage,
+          )
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Column(
+              child: ListView(
                 children: [
                   const SizedBox(height: 12),
                   CircleAvatar(
@@ -101,14 +122,18 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
                     child: const Icon(Icons.person, size: 60, color: Colors.white),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    '${parentData?['firstName'] ?? ''} ${parentData?['lastName'] ?? ''}',
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  Center(
+                    child: Text(
+                      '${parentData?['firstName'] ?? ''} ${parentData?['lastName'] ?? ''}',
+                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    parentData?['city'] ?? '',
-                    style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  Center(
+                    child: Text(
+                      parentData?['city'] ?? '',
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(height: 12),
                   const Divider(),
@@ -116,6 +141,29 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
                   buildInfoRow(Icons.phone, 'رقم الهاتف', parentData?['phone']),
                   buildInfoRow(Icons.cake, 'تاريخ الميلاد', birthDate),
                   buildInfoRow(Icons.location_pin, 'العنوان', parentData?['address']),
+
+                  const SizedBox(height: 24),
+                  const Divider(),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'معلومات الأطفال',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  ),
+                  const SizedBox(height: 8),
+                  if (childRequest != null) ...[
+                    buildInfoRow(Icons.child_care, 'أعمار الأطفال',
+                        childRequest!['children_ages']?.join(', ') ?? 'غير محدد'),
+                    if (childRequest!['has_medical_condition'] == true)
+                      buildInfoRow(Icons.warning, 'حالة طبية',
+                          childRequest!['medical_condition_details'] ?? 'مذكورة'),
+                    if (childRequest!['takes_medicine'] == true)
+                      buildInfoRow(Icons.medication, 'أدوية',
+                          childRequest!['medicine_details'] ?? 'مذكورة'),
+                    if (childRequest!['additional_notes'] != null &&
+                        childRequest!['additional_notes'].toString().isNotEmpty)
+                      buildInfoRow(Icons.notes, 'ملاحظات إضافية', childRequest!['additional_notes']),
+                  ] else
+                    const Text('لا توجد معلومات عن الأطفال بعد.', style: TextStyle(color: Colors.grey)),
                 ],
               ),
             ),

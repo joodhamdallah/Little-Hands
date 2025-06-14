@@ -29,3 +29,22 @@ exports.deleteRequest = async (req, res) => {
     res.status(500).json({ success: false, message: 'Delete failed' });
   }
 };
+
+
+exports.getRequestByParentId = async (req, res) => {
+  try {
+    const parentId = req.params.parentId;
+    const request = await BabysitterRequest.findOne({ parent_id: parentId })
+      .sort({ created_at: -1 }) // آخر طلب تم
+      .lean();
+
+    if (!request) {
+      return res.status(404).json({ success: false, message: 'No request found' });
+    }
+
+    res.status(200).json({ success: true, data: request });
+  } catch (error) {
+    console.error("Error fetching request by parent ID:", error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
