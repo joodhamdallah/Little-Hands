@@ -47,7 +47,8 @@ const feedbackRoutes = require('./routes/feedbackRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const fallbackRoutes = require('./routes/fallbackRoutes');
 const messageRoutes = require('./routes/messageRoutes');
-const chatbotRoutes= require ('./routes/chatbotRoutes')
+const chatbotRoutes= require ('./routes/chatbotRoutes');
+const babysitterRequestRoutes = require('./routes/babysitterRequestRoutes');
 
 const scheduleCompleteBookingsJob = require('./services/cron/completeBookingsJob');
 
@@ -80,6 +81,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api', fallbackRoutes);
 app.use('/api/messages', messageRoutes); // ✅ Add message routes
 app.use('/api', chatbotRoutes);
+app.use('/api/babysitter-requests', babysitterRequestRoutes);
 
 
 
