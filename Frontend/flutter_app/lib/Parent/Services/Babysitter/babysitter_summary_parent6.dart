@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_address_parent1.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_animation.dart';
@@ -5,23 +6,90 @@ import 'package:flutter_app/Parent/Services/Babysitter/babysitter_childdage_pare
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_rate_parent4.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_requirments_parent5.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/babysitter_type_parent2.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_app/pages/config.dart';
 
 class BabysitterSummaryPage extends StatelessWidget {
   final Map<String, dynamic> jobDetails;
 
   const BabysitterSummaryPage({super.key, required this.jobDetails});
+
   List<String> normalizeAges(List<String?> ages) {
     return ages.map((age) {
-      if (age == null) return ''; // لو في null خليه سترينغ فاضي مثلا
+      if (age == null) return '';
       if (age.contains('رضيع')) return 'رضيع';
       if (age.contains('طفل صغير')) return 'طفل صغير';
       if (age.contains('ما قبل المدرسة')) return 'ما قبل المدرسة';
       if (age.contains('ابتدائي')) return 'المرحلة الابتدائية';
       if (age.contains('إعدادي')) return 'ما قبل المراهقة';
-
       return age;
     }).toList();
   }
+
+Future<void> submitRequest(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('accessToken');
+
+  if (token == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('الرجاء تسجيل الدخول أولاً')),
+    );
+    return;
+  }
+
+  try {
+    print('🚀 Sending babysitter request...');
+    print('🔍 Job Details: ${jsonEncode({
+      ...jobDetails,
+      'children_ages': normalizeAges(jobDetails['children_ages'] ?? []),
+    })}');
+
+    final response = await http.post(
+      Uri.parse('${url}babysitter-requests'),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        ...jobDetails,
+        'children_ages': normalizeAges(jobDetails['children_ages'] ?? []),
+      }),
+    );
+
+    print('✅ Response status: ${response.statusCode}');
+    print('📦 Response body: ${response.body}');
+
+    if (response.statusCode == 201) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تم إرسال الطلب بنجاح')),
+      );
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => BabysitterSearchAnimationPage(
+            jobDetails: {
+              ...jobDetails,
+              'children_ages': normalizeAges(jobDetails['children_ages'] ?? []),
+            },
+          ),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('فشل في إرسال الطلب: ${response.statusCode}')),
+      );
+    }
+  } catch (e, stackTrace) {
+    print('❌ Exception occurred: $e');
+    print(stackTrace);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('حدث خطأ أثناء الإرسال. حاول مرة أخرى')),
+    );
+  }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +105,7 @@ class BabysitterSummaryPage extends StatelessWidget {
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: const Color(0xFFFF600A),
-          automaticallyImplyLeading: false, // Disable default back
+          automaticallyImplyLeading: false,
           title: const Text(
             'ملخص تفاصيل الجلسة',
             style: TextStyle(color: Colors.black),
@@ -48,7 +116,7 @@ class BabysitterSummaryPage extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
-                  '/parentHome', // or '/caregiverHome'
+                  '/parentHome',
                   (route) => false,
                 );
               },
@@ -77,14 +145,12 @@ class BabysitterSummaryPage extends StatelessWidget {
                     ? 'في منزل ولي الأمر'
                     : '${jobDetails['city'] ?? ''} - ${jobDetails['neighborhood'] ?? ''} - ${jobDetails['street'] ?? ''} - ${jobDetails['building'] ?? ''}',
               ),
-
               _buildInfoRow(
                 context,
                 'نوع الجليسة:',
                 sessionTypeTranslations[jobDetails['session_type']] ??
                     'غير محدد',
               ),
-
               _buildInfoRow(
                 context,
                 'الأطفال الذين يحتاجون للرعاية:',
@@ -93,7 +159,6 @@ class BabysitterSummaryPage extends StatelessWidget {
                     ? (jobDetails['children_ages'] as List).join('، ')
                     : 'لا يوجد أطفال مضافين',
               ),
-
               _buildInfoRow(
                 context,
                 'الحالة الصحية:',
@@ -102,7 +167,6 @@ class BabysitterSummaryPage extends StatelessWidget {
                         'لم يتم ذكر تفاصيل'
                     : 'لا يوجد',
               ),
-
               _buildInfoRow(
                 context,
                 'تناول أدوية:',
@@ -110,7 +174,6 @@ class BabysitterSummaryPage extends StatelessWidget {
                     ? jobDetails['medicine_details'] ?? 'لم يتم ذكر تعليمات'
                     : 'لا يوجد',
               ),
-
               _buildInfoRow(
                 context,
                 'ملاحظات إضافية:',
@@ -118,44 +181,27 @@ class BabysitterSummaryPage extends StatelessWidget {
                     ? jobDetails['additional_notes']
                     : 'لا يوجد',
               ),
-
               _buildInfoRow(
                 context,
                 'نطاق السعر المتوقع:',
                 '₪ ${jobDetails['rate_min'] ?? 0} - ₪ ${jobDetails['rate_max'] ?? 0} / ساعة',
               ),
-
               _buildInfoRow(
                 context,
                 'متطلبات إضافية:',
                 (jobDetails['additional_requirements'] != null &&
                         (jobDetails['additional_requirements'] as List)
                             .isNotEmpty)
-                    ? (jobDetails['additional_requirements'] as List).join('، ')
+                    ? (jobDetails['additional_requirements'] as List)
+                        .join('، ')
                     : 'لا يوجد متطلبات إضافية',
               ),
-
               const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => BabysitterSearchAnimationPage(
-                              jobDetails: {
-                                ...jobDetails,
-                                "children_ages": normalizeAges(
-                                  jobDetails["children_ages"] ?? [],
-                                ),
-                              },
-                            ),
-                      ),
-                    );
-                  },
+                  onPressed: () => submitRequest(context),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFF600A),
                     shape: RoundedRectangleBorder(
@@ -214,22 +260,18 @@ class BabysitterSummaryPage extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => BabysitterSessionAddressPage(
-                          previousData: jobDetails,
-                          isEditing: true,
-                        ),
+                    builder: (context) => BabysitterSessionAddressPage(
+                      previousData: jobDetails,
+                      isEditing: true,
+                    ),
                   ),
                 );
-              } else if (title == 'نوع الجليسة:' ||
-                  title == 'تواريخ وأوقات الجلسة:') {
+              } else if (title == 'نوع الجليسة:') {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => BabysitterTypeSelectionPage(
-                          previousData: jobDetails,
-                        ),
+                    builder: (context) =>
+                        BabysitterTypeSelectionPage(previousData: jobDetails),
                   ),
                 );
               } else if (title == 'الأطفال الذين يحتاجون للرعاية:' ||
@@ -239,28 +281,24 @@ class BabysitterSummaryPage extends StatelessWidget {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            AddChildrenAgePage(previousData: jobDetails),
+                    builder: (context) =>
+                        AddChildrenAgePage(previousData: jobDetails),
                   ),
                 );
-              } else if (title == 'النطاق السعري المتوقع:') {
+              } else if (title == 'نطاق السعر المتوقع:') {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            BabysitterRateRangePage(previousData: jobDetails),
+                    builder: (context) =>
+                        BabysitterRateRangePage(previousData: jobDetails),
                   ),
                 );
               } else if (title == 'متطلبات إضافية:') {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) => ParentOtherRequirementsPage(
-                          previousData: jobDetails,
-                        ),
+                    builder: (context) =>
+                        ParentOtherRequirementsPage(previousData: jobDetails),
                   ),
                 );
               }
