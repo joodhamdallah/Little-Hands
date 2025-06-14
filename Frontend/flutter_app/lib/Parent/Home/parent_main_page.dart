@@ -146,7 +146,7 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  'هل واجهت مشكلة مع جلسة أو جليسة؟ يمكنك التواصل معنا أو تقديم شكوى بسهولة.',
+                  'هل واجهت مشكلة في أي حجز أو مع مقدّم رعاية؟ يمكنك التواصل معنا أو تقديم شكوى بسهولة.',
                   style: TextStyle(fontFamily: 'NotoSansArabic'),
                 ),
                 const SizedBox(height: 12),
@@ -644,9 +644,9 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
         'rating': '4',
       },
       {
-        'name': 'نور ع.',
-        'role': 'خبيرة تربوية',
-        'image': 'assets/images/homepage/maha_test_pic.webp',
+        'name': 'أحمد ع.',
+        'role': 'خبير تربوي',
+        'image': 'assets/images/homepage/ali.jpg',
         'rating': '5',
       },
     ];

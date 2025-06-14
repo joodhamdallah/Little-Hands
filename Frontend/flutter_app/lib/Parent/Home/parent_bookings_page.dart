@@ -303,15 +303,26 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                 children: [
                                   CircleAvatar(
                                     radius: 24,
+                                    backgroundColor: Colors.orange.shade100,
                                     backgroundImage:
-                                        caregiver['profile_image'] != null
+                                        (caregiver['image'] != null &&
+                                                caregiver['image']
+                                                    .toString()
+                                                    .isNotEmpty)
                                             ? NetworkImage(
-                                              caregiver['profile_image'],
+                                              '$baseUrl/${caregiver['image'].toString().replaceAll('\\', '/')}',
                                             )
                                             : null,
                                     child:
-                                        caregiver['profile_image'] == null
-                                            ? const Icon(Icons.person, size: 30)
+                                        (caregiver['image'] == null ||
+                                                caregiver['image']
+                                                    .toString()
+                                                    .isEmpty)
+                                            ? const Icon(
+                                              Icons.person,
+                                              size: 30,
+                                              color: Colors.white,
+                                            )
                                             : null,
                                   ),
                                   const SizedBox(width: 12),
