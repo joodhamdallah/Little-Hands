@@ -14,6 +14,7 @@ import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/special_ne
 import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/specialneeds_Info_page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/specialneeds_finalstep_page.dart';
 import 'package:flutter_app/Parent/Services/Babysitter/Shadow_teacher/specialneeds_type_page.dart';
+import 'package:flutter_app/firebase_options.dart';
 import 'package:flutter_app/pages/FallbackCandidatesPage.dart';
 import 'package:flutter_app/pages/chat_page.dart';
 import 'package:flutter_app/pages/complaint_page.dart';
@@ -96,8 +97,9 @@ void initFCM() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ar', null);
-  await Firebase.initializeApp();
-
+await Firebase.initializeApp(
+  options: DefaultFirebaseOptions.currentPlatform,
+);
   // 🟠 Create the channel
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
