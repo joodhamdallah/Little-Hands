@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_app/models/caregiver_profile_model.dart';
+import 'package:flutter_app/pages/config.dart';
 
 class CaregiverHomeMainPage extends StatelessWidget {
   final CaregiverProfileModel profile;
@@ -43,6 +44,19 @@ class CaregiverHomeMainPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+            if (profile.image != null && profile.image!.isNotEmpty)
+              Center(
+                child: CircleAvatar(
+                  radius: 45,
+                  backgroundColor: Colors.orange.shade100,
+                  backgroundImage: NetworkImage(
+                    profile.image!.replaceAll('\\', '/').startsWith('http')
+                        ? profile.image!
+                        : '$baseUrl/${profile.image!.replaceAll('\\', '/')}',
+                  ),
+                ),
+              ),
+            const SizedBox(height: 20),
 
             _buildCard(
               child: const Text(
@@ -54,19 +68,6 @@ class CaregiverHomeMainPage extends StatelessWidget {
                 ),
               ),
             ),
-
-            const SizedBox(height: 20),
-
-            if (profile.image != null && profile.image!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  profile.image!,
-                  height: 180,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-              ),
 
             const SizedBox(height: 20),
 

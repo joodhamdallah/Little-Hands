@@ -75,9 +75,16 @@ class _OnlineMeetingsPageState extends State<OnlineMeetingsPage> {
     if (token == null) return;
 
     final bookingId = widget.booking['_id'];
-    print('📤 Sending meeting booking request with:');
-    print('bookingId: $bookingId');
-    print('meeting_schedule_id: $scheduleId');
+    final selected = availableMeetings.firstWhere(
+      (m) => m['_id'] == scheduleId,
+    );
+
+    final meetingPayload = {
+      'meeting_schedule_id': scheduleId,
+      'meeting_date': selected['date'],
+      'meeting_start_time': selected['start_time'],
+      'meeting_end_time': selected['end_time'],
+    };
 
     final response = await http.patch(
       Uri.parse('${url}bookings/$bookingId/book-meeting'),
@@ -85,7 +92,7 @@ class _OnlineMeetingsPageState extends State<OnlineMeetingsPage> {
         'Authorization': 'Bearer $token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'meeting_schedule_id': scheduleId}),
+      body: jsonEncode(meetingPayload),
     );
 
     if (response.statusCode == 200) {
@@ -110,7 +117,7 @@ class _OnlineMeetingsPageState extends State<OnlineMeetingsPage> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('اختيار موعد لقاء'),
+          title: const Text('اختيار موعد لقاء إالكتروني'),
           backgroundColor: const Color(0xFFFF600A),
         ),
         body:
@@ -170,37 +177,94 @@ class _OnlineMeetingsPageState extends State<OnlineMeetingsPage> {
                         const Text('لا توجد مواعيد لقاء متاحة قبل وقت الجلسة.')
                       else
                         Expanded(
-                          child: ListView.builder(
-                            itemCount: availableMeetings.length,
-                            itemBuilder: (context, index) {
-                              final m = availableMeetings[index];
-                              final date =
-                                  intl.DateFormat(
-                                    'yyyy-MM-dd',
-                                  ).parse(m['date']).toLocal();
-                              return Card(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: availableMeetings.length,
+                                  itemBuilder: (context, index) {
+                                    final m = availableMeetings[index];
+                                    final date =
+                                        intl.DateFormat(
+                                          'yyyy-MM-dd',
+                                        ).parse(m['date']).toLocal();
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      margin: const EdgeInsets.symmetric(
+                                        vertical: 8,
+                                      ),
+                                      elevation: 3,
+                                      child: ListTile(
+                                        title: Text(
+                                          intl.DateFormat.yMMMMEEEEd(
+                                            'ar',
+                                          ).format(date),
+                                        ),
+                                        subtitle: Text(
+                                          '🕒 من ${m['start_time']} إلى ${m['end_time']}',
+                                        ),
+                                        trailing: ElevatedButton(
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFFFF600A,
+                                            ),
+                                          ),
+                                          onPressed:
+                                              () => bookMeeting(m['_id']),
+                                          child: const Text('احجز'),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                                margin: const EdgeInsets.symmetric(vertical: 8),
-                                elevation: 3,
-                                child: ListTile(
-                                  title: Text(
-                                    '${intl.DateFormat.yMMMMEEEEd('ar').format(date)}',
-                                  ),
-                                  subtitle: Text(
-                                    '🕒 من ${m['start_time']} إلى ${m['end_time']}',
-                                  ),
-                                  trailing: ElevatedButton(
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFFFF600A),
+                              ),
+                              const SizedBox(height: 12),
+                              const Divider(),
+                              const Text(
+                                'هل لم تجد الوقت المناسب؟',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      icon: const Icon(Icons.access_time),
+                                      label: const Text('طلب وقت مخصص'),
+                                      onPressed: () {
+                                        // TODO: Show a dialog or navigate to time request form
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              '📝 سيتم دعم هذه الميزة قريبًا',
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
-                                    onPressed: () => bookMeeting(m['_id']),
-                                    child: const Text('احجز'),
                                   ),
-                                ),
-                              );
-                            },
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      icon: const Icon(Icons.chat),
+                                      label: const Text('الدردشة مع الجليسة'),
+                                      onPressed: () {
+                                        // Navigate to chat with caregiver
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/chat',
+                                          arguments: widget.caregiver,
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                     ],

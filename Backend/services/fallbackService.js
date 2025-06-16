@@ -5,6 +5,7 @@ const SpecificDatePreference = require('../models/SpecificDatePreference');
 const { isCaregiverAvailable } = require('./availabilityUtils');
 const FallbackResponse = require('../models/FallbackResponse');
 const Booking = require('../models/Booking');
+const FallbackOffer = require('../models/FallbackOffer');
 
 const FallbackService = {
   async broadcastFallbackOffer(booking, io) {
@@ -45,6 +46,12 @@ const FallbackService = {
       continue;
     }
 
+        // ✅ Store fallback offer
+    await FallbackOffer.create({
+      caregiver_id: userId,
+      booking_id: booking._id,
+    });
+    
     console.log('✅ Adding as fallback candidate:', userId);
 
     alternatives.push({

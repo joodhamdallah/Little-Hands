@@ -422,8 +422,12 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                           );
                                         },
                                         icon: const Icon(Icons.video_call),
-                                        label: const Text(' حجز اجتماع أولاً'),
+                                        label: const Text(
+                                          ' حجز اجتماع أولاً',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
                                         style: ElevatedButton.styleFrom(
+                                          iconColor: Colors.white,
                                           backgroundColor: Colors.blueAccent,
                                           padding: const EdgeInsets.symmetric(
                                             vertical: 12,
@@ -452,8 +456,12 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                           );
                                         },
                                         icon: const Icon(Icons.payment),
-                                        label: const Text('إتمام الحجز الآن'),
+                                        label: const Text(
+                                          'إتمام الحجز الآن',
+                                          style: TextStyle(color: Colors.white),
+                                        ),
                                         style: ElevatedButton.styleFrom(
+                                          iconColor: Colors.white,
                                           backgroundColor: Colors.green,
                                           padding: const EdgeInsets.symmetric(
                                             vertical: 12,
@@ -501,6 +509,8 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                         icon: const Icon(Icons.video_call),
                                         label: const Text(' تغيير الموعد '),
                                         style: ElevatedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          iconColor: Colors.white,
                                           backgroundColor: Colors.redAccent,
                                           padding: const EdgeInsets.symmetric(
                                             vertical: 12,
@@ -531,6 +541,8 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                         icon: const Icon(Icons.payment),
                                         label: const Text('إتمام الحجز الآن'),
                                         style: ElevatedButton.styleFrom(
+                                          foregroundColor: Colors.white,
+                                          iconColor: Colors.white,
                                           backgroundColor: Colors.green,
                                           padding: const EdgeInsets.symmetric(
                                             vertical: 12,

@@ -21,8 +21,7 @@ class _CaregiverProfilePageState extends State<CaregiverProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    String displayName =
-        "${profile.firstName} ${profile.lastName.isNotEmpty ? profile.lastName[0] : ''}.";
+    String displayName = "${profile.firstName} ${profile.lastName}";
 
     return Padding(
       padding: const EdgeInsets.all(20),

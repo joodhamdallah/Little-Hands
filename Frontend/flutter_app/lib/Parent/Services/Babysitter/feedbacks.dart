@@ -67,6 +67,12 @@ class _BabysitterFeedbacksState extends State<BabysitterFeedbacks> {
   }
 
   Widget _buildHeader() {
+    final String? imagePath = widget.sitter['image'];
+    final String? imageUrl =
+        (imagePath != null && imagePath.isNotEmpty)
+            ? '$baseUrl/${imagePath.replaceAll('\\', '/')}'
+            : null;
+
     return Container(
       padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.all(12),
@@ -79,13 +85,18 @@ class _BabysitterFeedbacksState extends State<BabysitterFeedbacks> {
         children: [
           CircleAvatar(
             radius: 35,
+            backgroundColor: Colors.orange.shade100,
             backgroundImage:
-                widget.sitter['image'] != null
-                    ? NetworkImage(widget.sitter['image'])
+                imageUrl != null
+                    ? NetworkImage(imageUrl)
                     : const AssetImage(
                           'assets/images/homepage/maha_test_pic.webp',
                         )
                         as ImageProvider,
+            child:
+                imageUrl == null
+                    ? const Icon(Icons.person, size: 30, color: Colors.white)
+                    : null,
           ),
           const SizedBox(width: 16),
           Expanded(

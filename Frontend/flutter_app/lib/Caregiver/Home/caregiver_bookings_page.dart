@@ -29,7 +29,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     'pending': Colors.orange,
     'accepted': Colors.blue,
     'rejected': Colors.red,
-    'meeting_booked': Colors.purple,
+    'meeting_booked': Colors.teal,
     'confirmed': Colors.green,
     'cancelled': Colors.grey,
     'completed': Colors.teal,
@@ -120,7 +120,9 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     final isAccepted = status == 'accepted';
     final isCompleted = status == 'completed';
     final isCancelledByParent =
-        status == 'cancelled' && booking['cancelled_by'] == 'parent';
+        status == 'cancelled' &&
+        booking['cancelled_by'] == 'parent' &&
+        booking['cancelled_at_stage'] == 'confirmed';
 
     final isRated = ratedBookings.contains(booking['_id'].toString());
     print("👤 isRated: $isRated");
@@ -426,7 +428,7 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                         );
                       },
                       icon: const Icon(Icons.attach_money),
-                      label: const Text("تحديد السعر"),
+                      label: const Text("تعديل السعر"),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         foregroundColor: Colors.white,

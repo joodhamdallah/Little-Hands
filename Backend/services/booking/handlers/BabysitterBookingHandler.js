@@ -11,6 +11,8 @@ const {
 } = require('../../../utils/emailTemplates/meetingLinkTemplates');
 const CancellationStats = require('../../../models/CancellationStats');
 const FallbackService = require('../../fallbackService');
+const { createZoomMeeting } = require('../../zoomService');
+
 
 class BabysitterBookingHandler {
   static async createBooking(bookingData, io) {
@@ -171,18 +173,30 @@ io.to(updated.parent_id.toString()).emit('newNotification', {
     const booking = await Booking.findById(bookingId);
     if (!booking) throw new Error('Booking not found');
 
-    const meetingLink = `https://meet.jit.si/LittleHands-${uuidv4()}`;
+const zoomMeeting = await createZoomMeeting(`Little Hands - Meetings`);
+const meetingLink = zoomMeeting.join_url;
 
     booking.status = 'meeting_booked';
     booking.meeting_slot_id = meetingData.meeting_schedule_id;
     booking.meeting_link = meetingLink;
+const meetingDate = meetingData.meeting_date;  // should be a string like '2025-06-15'
+const formattedDate = new Date(meetingDate).toLocaleDateString('en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const meetingStartTime = meetingData.meeting_start_time; // e.g. '3:00 PM'
+const meetingEndTime = meetingData.meeting_end_time;     // e.g. '4:30 PM'
+const meetingTime = `${meetingData.meeting_start_time} - ${meetingData.meeting_end_time}`;
 
     await booking.save();
 
     const caregiver = await CareGiver.findById(booking.caregiver_id);
     const parent = await Parent.findById(booking.parent_id);
 
-    const message = `📅 تم حجز اجتماع بتاريخ ${booking.session_start_date.toISOString().split('T')[0]}، من ${booking.session_start_time} إلى ${booking.session_end_time}`;
+const message = `📅 تم حجز اجتماع بتاريخ ${formattedDate}، من ${meetingStartTime} إلى ${meetingEndTime}`;
 
     await NotificationService.sendTypedNotification({
       user_id: parent._id.toString(),
@@ -223,21 +237,21 @@ io.to(updated.parent_id.toString()).emit('newNotification', {
       status: 'meeting_booked',
     });
 // 📨 Send meeting emails
-const meetingDate = booking.session_start_date.toISOString().split('T')[0];
-const meetingTime = `${booking.session_start_time} - ${booking.session_end_time}`;
+// const meetingDate = booking.session_start_date.toISOString().split('T')[0];
+// const meetingTime = `${booking.session_start_time} - ${booking.session_end_time}`;
 
 // Email to parent
 await sendEmail({
   to: parent.email,
   subject: '📞 Your Babysitting Meeting is Scheduled',
-  html: getParentMeetingEmail(meetingLink, meetingDate, meetingTime, caregiver.first_name),
+  html: getParentMeetingEmail(meetingLink, formattedDate, meetingTime, caregiver.first_name),
 });
 
 // Email to babysitter
 await sendEmail({
   to: caregiver.email,
   subject: '📞 Meeting Scheduled with Parent',
-  html: getBabysitterMeetingEmail(meetingLink, meetingDate, meetingTime, parent.firstName),
+  html: getBabysitterMeetingEmail(meetingLink, formattedDate, meetingTime, parent.firstName),
 });
     return booking;
   }

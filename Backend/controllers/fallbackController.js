@@ -1,6 +1,7 @@
 
 const FallbackService = require('../services/fallbackService');
 const FallbackResponse = require('../models/FallbackResponse');
+const FallbackOffer = require('../models/FallbackOffer');
 const CareGiver = require('../models/CareGiver');
 const BabySitter = require('../models/BabySitter');
 
@@ -77,4 +78,23 @@ exports.getFallbackCandidates = async (req, res) => {
     console.error("❌ Error in getFallbackCandidates:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+// GET /fallbacks/unseen
+exports.getUnseenOffers = async (req, res) => {
+  const caregiverId = req.user.id;
+
+  const offers = await FallbackOffer.find({
+    caregiver_id: caregiverId,
+    seen: false,
+  }).populate('booking_id');
+
+  res.json(offers);
+};
+
+// PATCH /fallbacks/:id/seen
+exports.markSeen = async (req, res) => {
+  const offerId = req.params.id;
+  await FallbackOffer.findByIdAndUpdate(offerId, { seen: true });
+  res.json({ success: true });
 };
