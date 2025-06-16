@@ -6,6 +6,7 @@ const { isCaregiverAvailable } = require('./availabilityUtils');
 const FallbackResponse = require('../models/FallbackResponse');
 const Booking = require('../models/Booking');
 const FallbackOffer = require('../models/FallbackOffer');
+const NotificationService = require('./notificationService');
 
 const FallbackService = {
   async broadcastFallbackOffer(booking, io) {
@@ -78,8 +79,31 @@ const FallbackService = {
 
       console.log(`📤 Sent fallback_offer to caregiver ${userId}`);
     } else {
-      console.log(`🕸 Caregiver ${userId} is not online`);
-    }
+  console.log(`🕸 Caregiver ${userId} is not online`);
+
+  const caregiver = await CareGiver.findOne({ user_id: userId });
+
+  await NotificationService.sendTypedNotification({
+    user_id: userId,
+    user_type: 'CareGiver',
+    title: 'جلسة طارئة متاحة! 🔔',
+    message: 'تم إلغاء جلسة مؤكدة ونبحث عن بديل. هل ترغب بتنفيذها؟',
+    fcm_token: caregiver?.fcm_token,
+    type: 'fallback_offer',
+    data: {
+      booking_id: booking._id,
+      session_date: session_start_date,
+      start_time: session_start_time,
+      end_time: session_end_time,
+      city: booking.city,
+      requirements: booking.additional_requirements,
+      children_ages: booking.children_ages,
+    },
+  });
+
+  console.log(`📲 FCM fallback_offer sent to offline caregiver ${userId}`);
+}
+
   } catch (err) {
     console.error('❌ Error while processing sitter:', sitter._id, err);
   }
