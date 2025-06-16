@@ -98,10 +98,26 @@ class _BookingPaymentPageState extends State<BookingPaymentPage> {
                           "عدد ساعات الجلسة:",
                           "$sessionHours ${_pluralHour(sessionHours)}",
                         ),
-                      _infoRow(
-                        " المبلغ الأساسي:\n عدد الساعات × السعر للساعة",
-                        "₪${priceDetails['subtotal'] ?? 0}",
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _infoRow(
+                            "المبلغ الأساسي:",
+                            "₪${priceDetails['subtotal'] ?? 0}",
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8, top: 4),
+                            child: Text(
+                              "عدد الساعات: $sessionHours ساعة \n  السعر للساعة: $pricePerHour شيكل",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+
                       const SizedBox(height: 10),
                       if (additionalFees.isNotEmpty) ...[
                         const Text(
@@ -131,6 +147,72 @@ class _BookingPaymentPageState extends State<BookingPaymentPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _openEditRequirementsDialog,
+                      icon: const Icon(Icons.edit_note),
+                      label: const Text("تعديل المهام الإضافية"),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.grey,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        final currentUserId = prefs.getString('userId');
+                        print("🔹 Current User ID: $currentUserId");
+
+                        final caregiverRaw = widget.booking['caregiver_id'];
+                        print("🔹 Raw Caregiver: $caregiverRaw");
+
+                        final caregiverId = caregiverRaw['_id'];
+                        print("🔹 Extracted Caregiver ID: $caregiverId");
+
+                        final caregiverName =
+                            "${caregiverRaw['first_name'] ?? 'مقدم الرعاية'} ${caregiverRaw['last_name'] ?? ''}";
+                        print("🔹 Caregiver Name: $caregiverName");
+
+                        if (currentUserId != null && caregiverId != null) {
+                          Navigator.pushNamed(
+                            context,
+                            '/chat',
+                            arguments: {
+                              'myId': currentUserId,
+                              'otherId': caregiverId,
+                              'otherUserName': caregiverName,
+                            },
+                          );
+                        } else {
+                          print("❌ Failed to load chat data");
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("تعذر تحميل بيانات المحادثة"),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.chat),
+                      label: const Text("تحدث مع الجليسة"),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Color.fromARGB(255, 255, 96, 10),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
               const SizedBox(height: 30),
               Container(
                 padding: const EdgeInsets.all(20),
@@ -174,8 +256,8 @@ class _BookingPaymentPageState extends State<BookingPaymentPage> {
                             paymentMethod == null ? null : _handlePayment,
                         icon: const Icon(Icons.check_circle_outline),
                         label: const Text(
-                          'إتمام الحجز والدفع',
-                          style: TextStyle(fontSize: 18),
+                          'إتمام الحجز وثبيت طريقة الدفع',
+                          style: TextStyle(fontSize: 18, color: Colors.white),
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFF600A),
@@ -196,11 +278,104 @@ class _BookingPaymentPageState extends State<BookingPaymentPage> {
     );
   }
 
+  void _openEditRequirementsDialog() async {
+    final priceDetails = widget.booking['price_details'] ?? {};
+    final additionalFees = List<Map<String, dynamic>>.from(
+      priceDetails['additional_fees'] ?? [],
+    );
+
+    final selectedFees = Map.fromIterable(
+      additionalFees,
+      key: (fee) => fee['label'],
+      value: (_) => true,
+    );
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('تعديل المهام الإضافية'),
+          content: StatefulBuilder(
+            builder:
+                (context, setState) => Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children:
+                      additionalFees.map((fee) {
+                        return CheckboxListTile(
+                          title: Text(fee['label']),
+                          value: selectedFees[fee['label']],
+                          onChanged: (val) {
+                            setState(() => selectedFees[fee['label']] = val!);
+                          },
+                        );
+                      }).toList(),
+                ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('إلغاء'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: const Text('حفظ'),
+              onPressed: () {
+                final newFees =
+                    additionalFees
+                        .where((fee) => selectedFees[fee['label']] == true)
+                        .toList();
+
+                setState(() {
+                  widget.booking['price_details']['additional_fees'] = newFees;
+                  final subtotal = priceDetails['subtotal'] ?? 0.0;
+                  final total =
+                      subtotal +
+                      newFees.fold<double>(
+                        0.0,
+                        (sum, fee) => sum + (fee['amount'] ?? 0),
+                      );
+                  widget.booking['price_details']['total'] = total;
+                });
+
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   String _pluralHour(int hours) {
     if (hours == 1) return 'ساعة';
     if (hours == 2) return 'ساعتين';
     if (hours >= 3 && hours <= 10) return 'ساعات';
     return 'ساعة';
+  }
+
+  void _startChatWithParent() async {
+    final prefs = await SharedPreferences.getInstance();
+    final myId = prefs.getString('userId');
+    final parent = widget.booking['parent_id'];
+
+    if (myId == null || parent == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("لا يمكن بدء المحادثة مع ولي الأمر")),
+      );
+      return;
+    }
+
+    final parentId = parent['_id'];
+    final parentName = "${parent['firstName']} ${parent['lastName']}";
+
+    Navigator.pushNamed(
+      context,
+      '/chat',
+      arguments: {
+        'myId': myId,
+        'otherId': parentId,
+        'otherUserName': parentName,
+      },
+    );
   }
 
   Widget _infoRow(

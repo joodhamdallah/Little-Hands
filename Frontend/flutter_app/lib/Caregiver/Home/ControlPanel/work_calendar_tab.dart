@@ -21,6 +21,10 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
   Map<String, dynamic> specificOverrides = {};
   Map<String, dynamic> weeklyPreferences = {};
 
+  Set<DateTime> pendingBookings = {};
+  Set<DateTime> acceptedBookings = {};
+  Set<DateTime> confirmedBookings = {};
+
   @override
   void initState() {
     super.initState();
@@ -94,30 +98,43 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
       for (var b in bookings) {
         final date = DateTime.parse(b['session_start_date']);
         final normalized = DateTime(date.year, date.month, date.day);
+        switch (b['status']) {
+          case 'pending':
+            pendingBookings.add(normalized);
+            break;
+          case 'accepted':
+            acceptedBookings.add(normalized);
+            break;
+          case 'confirmed':
+            confirmedBookings.add(normalized);
+            break;
+        }
         final key = _dateKey(normalized);
         grouped.putIfAbsent(key, () => []).add(b);
       }
 
       grouped.forEach((key, list) {
+        // Only count confirmed bookings
+        final confirmedList =
+            list.where((b) => b['status'] == 'confirmed').toList();
+        if (confirmedList.isEmpty) return; // Skip if none confirmed
+
         final parts = key.split('-').map((e) => int.parse(e)).toList();
         final day = DateTime(parts[0], parts[1], parts[2]);
         final weekdayName = _getArabicWeekday(day.weekday);
 
-        // Get the session_type from weekly preferences
         final sessionType = weeklyPreferences[weekdayName]?['session_type'];
 
         if (sessionType == 'single') {
-          // A single session type means one booking is enough to fully book the day
           fullyBookedDates.add(day);
-          print('🔵 FULLY BOOKED (single): $day — ${list.length} session(s)');
+          print(
+            '🔵 FULLY BOOKED (confirmed/single): $day — ${confirmedList.length}',
+          );
         } else if (sessionType == 'multiple') {
-          // Multiple means you can have more than one — so we treat it as partially booked
           partiallyBookedDates.add(day);
           print(
-            '🟡 PARTIALLY BOOKED (multiple): $day — ${list.length} session(s)',
+            '🟡 PARTIALLY BOOKED (confirmed/multiple): $day — ${confirmedList.length}',
           );
-        } else {
-          print('❗ Unknown session_type for $day: $sessionType');
         }
       });
 
@@ -133,84 +150,112 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
       textDirection: TextDirection.rtl,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "اضغط على أي يوم لتعطيله أو لتعديل المعلومات",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'NotoSansArabic',
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "اضغط على أي يوم لتعطيله أو لتعديل المعلومات",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'NotoSansArabic',
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            TableCalendar(
-              locale: 'ar_EG',
-              firstDay: DateTime.now().subtract(const Duration(days: 30)),
-              lastDay: DateTime.now().add(const Duration(days: 90)),
-              focusedDay: DateTime.now(),
-              availableCalendarFormats: const {CalendarFormat.month: 'الشهر'},
-              headerStyle: const HeaderStyle(formatButtonVisible: false),
-              onDaySelected: (selectedDay, _) {
-                final normalized = DateTime(
-                  selectedDay.year,
-                  selectedDay.month,
-                  selectedDay.day,
-                );
-                _showDayOptionsDialog(normalized);
-              },
-              calendarBuilders: CalendarBuilders(
-                defaultBuilder: (context, day, _) {
-                  final normalized = DateTime(day.year, day.month, day.day);
-                  if (disabledDates.contains(normalized)) {
-                    return _buildCircle(day.day, Colors.red, Colors.white);
-                  } else if (fullyBookedDates.contains(normalized)) {
-                    return _buildCircle(
-                      day.day,
-                      Colors.blue.shade700,
-                      Colors.white,
-                    );
-                  } else if (partiallyBookedDates.contains(normalized)) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.blue, width: 2),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        '${day.day}',
-                        style: const TextStyle(color: Colors.blue),
-                      ),
-                    );
-                  } else if (weeklyWorkDays.contains(
-                    _getArabicWeekday(day.weekday),
-                  )) {
-                    return _buildCircle(
-                      day.day,
-                      Colors.orange.shade200,
-                      Colors.black,
-                    );
-                  }
-                  return null;
+              const SizedBox(height: 12),
+              TableCalendar(
+                locale: 'ar_EG',
+                firstDay: DateTime.now().subtract(const Duration(days: 30)),
+                lastDay: DateTime.now().add(const Duration(days: 90)),
+                focusedDay: DateTime.now(),
+                availableCalendarFormats: const {CalendarFormat.month: 'الشهر'},
+                headerStyle: const HeaderStyle(formatButtonVisible: false),
+                onDaySelected: (selectedDay, _) {
+                  final normalized = DateTime(
+                    selectedDay.year,
+                    selectedDay.month,
+                    selectedDay.day,
+                  );
+                  _showDayOptionsDialog(normalized);
                 },
+                calendarBuilders: CalendarBuilders(
+                  defaultBuilder: (context, day, _) {
+                    final normalized = DateTime(day.year, day.month, day.day);
+                    if (pendingBookings.contains(normalized)) {
+                      return _buildCircle(
+                        day.day,
+                        Colors.orange.shade300,
+                        Colors.white,
+                      );
+                    } else if (acceptedBookings.contains(normalized)) {
+                      return _buildCircle(
+                        day.day,
+                        Colors.blue.shade400,
+                        Colors.white,
+                      );
+                    }
+                    // else if (confirmedBookings.contains(normalized)) {
+                    //   return _buildCircle(
+                    //     day.day,
+                    //     Colors.green.shade600,
+                    //     Colors.white,
+                    //   );
+                    // }
+                    if (disabledDates.contains(normalized)) {
+                      return _buildCircle(day.day, Colors.red, Colors.white);
+                    } else if (fullyBookedDates.contains(normalized)) {
+                      return _buildCircle(
+                        day.day,
+                        Colors.blue.shade700,
+                        Colors.white,
+                      );
+                    } else if (partiallyBookedDates.contains(normalized)) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.blue, width: 2),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${day.day}',
+                          style: const TextStyle(color: Colors.blue),
+                        ),
+                      );
+                    } else if (weeklyWorkDays.contains(
+                      _getArabicWeekday(day.weekday),
+                    )) {
+                      return _buildCircle(
+                        day.day,
+                        Colors.orange.shade200,
+                        Colors.black,
+                      );
+                    }
+                    return null;
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                _legendColorBox(Colors.red, 'يوم معطّل'),
-                const SizedBox(width: 12),
-                _legendColorBox(Colors.blue.shade700, 'محجوز بالكامل'),
-                const SizedBox(width: 12),
-                _legendBorderBox(Colors.blue, 'محجوز جزئياً'),
-                const SizedBox(width: 12),
-                _legendColorBox(Colors.orangeAccent, 'يوم عمل أسبوعي'),
-              ],
-            ),
-          ],
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                children: [
+                  _legendColorBox(Colors.orange.shade300, 'بانتظار ردك'),
+                  _legendColorBox(
+                    Colors.blue.shade400,
+                    'مقبول بانتظار تأكيد الأهل',
+                  ),
+                  // _legendColorBox(Colors.green.shade600, 'مؤكد'),
+                  _legendColorBox(Colors.red, 'يوم معطّل'),
+                  _legendColorBox(Colors.blue.shade700, 'محجوز بالكامل'),
+                  _legendBorderBox(Colors.blue, 'محجوز جزئياً'),
+                  _legendColorBox(
+                    const Color.fromARGB(255, 241, 177, 93),
+                    'يوم عمل أسبوعي',
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

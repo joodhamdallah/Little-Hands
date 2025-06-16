@@ -12,7 +12,8 @@ exports.getParentBookings = async (req, res) => {
 exports.getBookingsForCaregiver = async (req, res) => {
   const caregiverId = req.user._id;
 
-  const bookings = await Booking.find({ caregiver_id: caregiverId,  status: { $in: ['accepted', 'confirmed','meeting_booked'] }
+  const bookings = await Booking.find({ caregiver_id: caregiverId
+    // , status: { $in: ['accepted', 'confirmed','meeting_booked'] }
  })
     .populate('parent_id', 'firstName lastName email phone')  // ✅ populate parent info
     .sort({ createdAt: -1 });

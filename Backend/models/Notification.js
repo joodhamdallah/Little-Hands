@@ -27,7 +27,10 @@ type: {
     'system',
     'alert',
     'welcome',
-    'general'
+    'general',
+    'fallback_offer',
+    'emergency_fallback_started',
+    'fallback_candidates_ready'
   ],
   default: 'alert',
 },

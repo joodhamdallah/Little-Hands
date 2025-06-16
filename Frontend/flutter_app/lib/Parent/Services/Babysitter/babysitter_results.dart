@@ -437,9 +437,18 @@ class _BabysitterResultsPageState extends State<BabysitterResultsPage> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['address']['suburb'] ??
-          data['address']['neighbourhood'] ??
-          'موقع غير معروف';
+      final address = data['address'];
+      if (address != null) {
+        return address['suburb'] ??
+            address['neighbourhood'] ??
+            address['village'] ??
+            address['town'] ??
+            address['city'] ??
+            address['road'] ??
+            'موقع غير معروف';
+      } else {
+        return 'موقع غير معروف';
+      }
     } else {
       return 'موقع غير معروف';
     }

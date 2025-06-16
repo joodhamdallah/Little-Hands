@@ -28,10 +28,11 @@ class _SendPricePageState extends State<SendPricePage> {
   final Map<String, TextEditingController> _requirementControllers = {};
   double? total;
   double? subtotal;
-  late bool isHourly;
+  late bool hasRateRange;
   late double sessionHours;
   late double? minRate;
   late double? maxRate;
+
   final List<String> readonlyExcluded = [];
 
   final List<String> excludedRequirements = [
@@ -46,7 +47,7 @@ class _SendPricePageState extends State<SendPricePage> {
     super.initState();
     minRate = (widget.babysitter.ratePerHour?['min'] ?? 0).toDouble();
     maxRate = (widget.babysitter.ratePerHour?['max'] ?? 0).toDouble();
-    isHourly = minRate != maxRate;
+    hasRateRange = minRate != maxRate;
 
     print("🔹 Raw start time: ${widget.booking['session_start_time']}");
     print("🔹 Raw end time: ${widget.booking['session_end_time']}");
@@ -70,25 +71,18 @@ class _SendPricePageState extends State<SendPricePage> {
   }
 
   double _calculateDuration(String start, String end) {
-    try {
-      final startTime = _parseTime(start);
-      final endTime = _parseTime(end);
+    final startTime = _parseTime(start);
+    final endTime = _parseTime(end);
+    if (startTime == null || endTime == null) return 0.0;
 
-      final startMinutes = startTime.hour * 60 + startTime.minute;
-      final endMinutes = endTime.hour * 60 + endTime.minute;
+    final startMinutes = startTime.hour * 60 + startTime.minute;
+    final endMinutes = endTime.hour * 60 + endTime.minute;
+    final durationMinutes = endMinutes - startMinutes;
 
-      int durationMinutes = endMinutes - startMinutes;
-      if (durationMinutes < 0) {
-        durationMinutes += 24 * 60; // Handle overnight sessions
-      }
+    double hours = durationMinutes / 60.0;
 
-      final durationHours = durationMinutes / 60.0;
-      print("⏱️ Start: $startTime, End: $endTime, Duration: $durationHours");
-      return durationHours;
-    } catch (e) {
-      print("❌ Error parsing time: $e");
-      return 0;
-    }
+    // Round to the nearest 0.5 (e.g., 1.25 → 1.5, 2.74 → 2.5)
+    return (hours * 2).roundToDouble() / 2;
   }
 
   TimeOfDay _parseTime(String rawTime) {
@@ -111,14 +105,14 @@ class _SendPricePageState extends State<SendPricePage> {
   }
 
   void calculateTotal() {
-    double base = 0;
-
-    if (isHourly) {
-      final rate = double.tryParse(_hourlyRateController.text) ?? 0;
-      base = rate * sessionHours;
+    double rate;
+    if (hasRateRange) {
+      rate = double.tryParse(_hourlyRateController.text) ?? 0;
     } else {
-      base = minRate ?? 0;
+      rate = minRate ?? 0;
     }
+
+    double base = rate * sessionHours;
 
     double extra = 0;
     for (var ctrl in _requirementControllers.values) {
@@ -163,8 +157,10 @@ class _SendPricePageState extends State<SendPricePage> {
           child: ListView(
             children: [
               _buildSectionTitle("📅 تفاصيل الجلسة"),
-              _infoRow("اسم ولي الأمر:", booking['parent_name']),
-              _infoRow("البريد الإلكتروني:", booking['parent_email']),
+              _infoRow(
+                "اسم ولي الأمر:",
+                "${booking['parent_id']['firstName']} ${booking['parent_id']['lastName']}",
+              ),
               _infoRow(
                 "التاريخ:",
                 booking['session_start_date']?.substring(0, 10),
@@ -175,8 +171,7 @@ class _SendPricePageState extends State<SendPricePage> {
               ),
               _infoRow("المدة:", "${sessionHours.toStringAsFixed(1)} ساعة"),
               _infoRow("المدينة:", booking['city']),
-              _infoRow("الحي:", booking['neighborhood']),
-              _infoRow("عدد الأطفال:", "${booking['number_of_children']}"),
+              _infoRow("عدد الأطفال:", "${booking['children_ages'].length}"),
               _infoRow(
                 "أعمار الأطفال:",
                 (booking['children_ages'] ?? []).join(', '),
@@ -248,7 +243,7 @@ class _SendPricePageState extends State<SendPricePage> {
               const Divider(),
 
               _buildSectionTitle("💰 السعر المطلوب"),
-              isHourly
+              hasRateRange
                   ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -266,7 +261,7 @@ class _SendPricePageState extends State<SendPricePage> {
                     ],
                   )
                   : _infoRow(
-                    "السعر الثابت للجلسة:",
+                    " السعر الثابت للجلسة/الساعة:",
                     "₪${minRate?.toStringAsFixed(2)}",
                   ),
 
@@ -275,10 +270,8 @@ class _SendPricePageState extends State<SendPricePage> {
                 _buildSectionTitle("💵 تفاصيل الحساب"),
                 _infoRow(
                   "الإجمالي الفرعي:",
-                  isHourly
-                      ? "₪ ${intl.NumberFormat('#,##0.00').format(subtotal)} "
-                          "(المدة: ${sessionHours.toStringAsFixed(1)} ساعة × السعر: ₪${_hourlyRateController.text})"
-                      : "₪ ${intl.NumberFormat('#,##0.00').format(subtotal)}",
+                  "₪ ${intl.NumberFormat('#,##0.00').format(subtotal)} "
+                      "(المدة: ${sessionHours.toStringAsFixed(1)} ساعة × السعر: ₪${_getRateText()})",
                 ),
 
                 _infoRow(
@@ -316,7 +309,10 @@ class _SendPricePageState extends State<SendPricePage> {
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-                  child: const Text("إرسال السعر"),
+                  child: const Text(
+                    "إرسال السعر",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ],
@@ -324,6 +320,16 @@ class _SendPricePageState extends State<SendPricePage> {
         ),
       ),
     );
+  }
+
+  String _getRateText() {
+    if (hasRateRange) {
+      return _hourlyRateController.text.isNotEmpty
+          ? _hourlyRateController.text
+          : '0';
+    } else {
+      return minRate?.toStringAsFixed(2) ?? '0';
+    }
   }
 
   Future<void> sendPriceToBackend() async {
@@ -337,11 +343,15 @@ class _SendPricePageState extends State<SendPricePage> {
       'Authorization': 'Bearer $token',
     };
 
+    final double hourlyRate =
+        hasRateRange
+            ? double.tryParse(_hourlyRateController.text) ?? 0
+            : (minRate ?? 0);
+
     final body = {
-      'is_hourly': isHourly,
-      'hourly_rate':
-          isHourly ? double.tryParse(_hourlyRateController.text) : null,
-      'fixed_rate': !isHourly ? subtotal : null,
+      'is_hourly': hasRateRange,
+      'hourly_rate': hourlyRate, // ✅ always send this
+      'fixed_rate': !hasRateRange ? subtotal : null,
       'session_hours': sessionHours,
       'subtotal': subtotal,
       'total': total,
