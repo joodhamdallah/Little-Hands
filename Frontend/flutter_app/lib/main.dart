@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Home/ControlPanel/fallback_offers.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_posts_page.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_provider.dart';
 import 'package:flutter_app/Caregiver/WorkCategories/Expert/expert_qualification_page.dart';
@@ -97,9 +98,7 @@ void initFCM() async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ar', null);
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // 🟠 Create the channel
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -170,8 +169,6 @@ class MyApp extends StatelessWidget {
         '/expertPostsPage': (context) => const ExpertPostsPage(),
         '/chatbot': (context) => const ChatbotPage(),
 
-
-
         '/babysitter': (context) => const BabySitterPage(),
         '/babysitteraddresspage': (context) => const BabySitterCityPage(),
 
@@ -221,6 +218,7 @@ class MyApp extends StatelessWidget {
           );
         },
         '/complaint': (context) => const ComplaintPage(),
+        '/fallback-offers': (context) => const FallbackOffersPage(),
 
         //         '/send_price': (context) {
         //   final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

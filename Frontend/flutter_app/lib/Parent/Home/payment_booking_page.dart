@@ -352,32 +352,6 @@ class _BookingPaymentPageState extends State<BookingPaymentPage> {
     return 'ساعة';
   }
 
-  void _startChatWithParent() async {
-    final prefs = await SharedPreferences.getInstance();
-    final myId = prefs.getString('userId');
-    final parent = widget.booking['parent_id'];
-
-    if (myId == null || parent == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("لا يمكن بدء المحادثة مع ولي الأمر")),
-      );
-      return;
-    }
-
-    final parentId = parent['_id'];
-    final parentName = "${parent['firstName']} ${parent['lastName']}";
-
-    Navigator.pushNamed(
-      context,
-      '/chat',
-      arguments: {
-        'myId': myId,
-        'otherId': parentId,
-        'otherUserName': parentName,
-      },
-    );
-  }
-
   Widget _infoRow(
     String label,
     String value, {

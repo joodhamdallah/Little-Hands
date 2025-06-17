@@ -92,6 +92,8 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     'expert': 'خبير',
   };
 
+  get data => null;
+
   @override
   void initState() {
     super.initState();
@@ -658,11 +660,14 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
                                       ),
                                     ),
                                     onPressed: () {
+                                      // Navigator.pop(context);
                                       Navigator.pushNamed(
                                         context,
                                         '/fallback-candidates',
                                         arguments:
-                                            booking['id'], // Or booking['_id'] depending on your model
+                                            booking['_id'] is Map
+                                                ? booking['_id']['\$oid']
+                                                : booking['_id'],
                                       );
                                     },
                                     child: const Text(
@@ -788,7 +793,7 @@ class _ParentBookingsPageState extends State<ParentBookingsPage>
     final bool showWarning = ['meeting_booked', 'confirmed'].contains(status);
 
     if (!shouldAskForReason) {
-      final confirm = await showDialog<bool>(
+      await showDialog<bool>(
         context: context,
         builder:
             (context) => AlertDialog(

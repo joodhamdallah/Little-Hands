@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_app/Caregiver/Home/CaregiverFeedbacksPage.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_bookings_page.dart';
 import 'package:flutter_app/Caregiver/Home/ControlPanel/caregiver_control_panel_page.dart';
 import 'package:flutter_app/Caregiver/Home/caregiver_main_page.dart';
@@ -41,6 +42,10 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
   @override
   void initState() {
     super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   final fallbackProvider = context.read<FallbackOfferProvider>();
+    //   fallbackProvider.loadCount();
+    // });
     _currentIndex = widget.initialTabIndex;
 
     final notifProvider = Provider.of<NotificationProvider>(
@@ -49,6 +54,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     );
 
     notifProvider.loadUnreadCount(); // load once on start
+    // context.read<FallbackOfferProvider>().loadCount();
 
     // 👇 Remove this — no more polling!
     // notifProvider.startAutoRefresh();
@@ -71,6 +77,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
 
     SocketService().onFallbackOffer((data) {
       if (!mounted) return;
+      // context.read<FallbackOfferProvider>().increment();
 
       print("📩 Fallback offer received: $data");
 
@@ -205,6 +212,7 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
             onMarkedRead: () => notifProvider.loadUnreadCount(),
           ),
           CaregiverBookingsPage(profile: widget.profile),
+          // CaregiverFeedbacksPage(caregiverId: widget.profile.userId),
           CaregiverControlPanelPage(),
           if (isExpert) ExpertPostsPage(),
           SingleChildScrollView(
@@ -225,6 +233,10 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
             icon: Icon(Icons.calendar_today),
             label: 'الحجوزات',
           ),
+          // const BottomNavigationBarItem(
+          //   icon: Icon(Icons.feedback_sharp),
+          //   label: 'التقييمات ',
+          // ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_customize),
             label: 'لوحة التحكم',

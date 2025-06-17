@@ -38,7 +38,7 @@ exports.getFallbackCandidates = async (req, res) => {
 
         const formattedName = `${caregiver.first_name} ${caregiver.last_name}`;
         const sitterSkills = sitter.skills_and_services?.slice(0, 3) ?? [];
-        const shortBio = sitter.bio?.substring(0, 100) + '...';
+        const shortBio = sitter.bio;
 
         let priceText = "غير محدد";
         if (sitter.fixed_rate_per_hour) {

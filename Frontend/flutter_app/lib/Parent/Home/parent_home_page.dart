@@ -40,29 +40,30 @@ class _ParentHomePageState extends State<ParentHomePage> {
 
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
-          title: const Text('جلسة بديلة متاحة'),
-          content: const Text(
-            'يوجد جليسات أطفال مستعدون لاستلام الجلسة بعد الإلغاء.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('لاحقًا'),
+        builder:
+            (_) => AlertDialog(
+              title: const Text('جلسة بديلة متاحة'),
+              content: const Text(
+                'يوجد جليسات أطفال مستعدون لاستلام الجلسة بعد الإلغاء.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('لاحقًا'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(
+                      context,
+                      '/fallback-candidates',
+                      arguments: data['booking_id'],
+                    );
+                  },
+                  child: const Text('عرض البدائل'),
+                ),
+              ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                Navigator.pushNamed(
-                  context,
-                  '/fallback-candidates',
-                  arguments: data['booking_id'],
-                );
-              },
-              child: const Text('عرض البدائل'),
-            ),
-          ],
-        ),
       );
     });
 
@@ -123,19 +124,20 @@ class _ParentHomePageState extends State<ParentHomePage> {
         ),
 
         // ✅ Add chatbot FAB only on home tab
-        floatingActionButton: _selectedIndex == 0
-            ? FloatingActionButton(
-                backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/chatbot');
-                },
-                child: Image.asset(
-                  'assets/images/icons/assistance.png', 
-                  height: 30,
-                  width: 30,
-                ),
-              )
-            : null,
+        floatingActionButton:
+            _selectedIndex == 0
+                ? FloatingActionButton(
+                  backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/chatbot');
+                  },
+                  child: Image.asset(
+                    'assets/images/icons/assistance.png',
+                    height: 30,
+                    width: 30,
+                  ),
+                )
+                : null,
       ),
     );
   }
