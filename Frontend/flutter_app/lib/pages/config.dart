@@ -15,3 +15,8 @@ final String specialNeedsDetails = "${url}special-needs/details";
 final String expertDetails = "${url}experts/details";
 final saveWeeklyWorkPrefrences = "${url}weekly-preferences";
 final String baseUrl = 'http://10.0.2.2:3000';
+
+
+
+// localhost:3000   for web 
+// 10.0.2.2:3000    for mobile 

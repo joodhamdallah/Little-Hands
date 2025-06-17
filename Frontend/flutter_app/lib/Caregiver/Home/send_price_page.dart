@@ -73,7 +73,7 @@ class _SendPricePageState extends State<SendPricePage> {
   double _calculateDuration(String start, String end) {
     final startTime = _parseTime(start);
     final endTime = _parseTime(end);
-    if (startTime == null || endTime == null) return 0.0;
+    if (endTime == null) return 0.0;
 
     final startMinutes = startTime.hour * 60 + startTime.minute;
     final endMinutes = endTime.hour * 60 + endTime.minute;

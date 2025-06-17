@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class FirstPage extends StatefulWidget {
@@ -27,8 +28,7 @@ class _FirstPageState extends State<FirstPage> {
     {
       'image': 'assets/images/im1.jpeg',
       'title': 'نَصِلُك مع مقدم الرعاية المناسب',
-      'desc':
-          'انشر وظيفة، قارن الملفات الشخصية واقرأ التقييمات والأبحاث من ذوي الخبرات.',
+      'desc': 'انشر وظيفة، قارن الملفات الشخصية واقرأ التقييمات والأبحاث من ذوي الخبرات.',
     },
   ];
 
@@ -61,185 +61,276 @@ class _FirstPageState extends State<FirstPage> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        body: Stack(
-          children: [
-            PageView.builder(
-              controller: _controller,
-              itemCount: _pages.length,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.asset(_pages[index]['image']!, fit: BoxFit.cover),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            // ignore: deprecated_member_use
-                            Colors.black.withOpacity(0.6),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 40,
-                      left: 20,
-                      child: Text(
-                        'Little Hands',
-                        style: TextStyle(
-                          fontSize: 27,
-                          fontWeight: FontWeight.w900,
-                          color: Color.fromARGB(255, 255, 96, 10),
-                          shadows: [
-                            Shadow(
-                              color: Colors.black38,
-                              offset: Offset(1, 1),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            _pages[index]['title']!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w900,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 4,
-                                  color: Colors.black54,
-                                  offset: Offset(1, 1),
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            _pages[index]['desc']!,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 17,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 3,
-                                  color: Colors.black45,
-                                  offset: Offset(0.5, 0.5),
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 40),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(
-                              _pages.length,
-                              (dotIndex) => Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                ),
-                                width: _currentPage == dotIndex ? 12 : 8,
-                                height: _currentPage == dotIndex ? 12 : 8,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color:
-                                      _currentPage == dotIndex
-                                          ? const Color.fromARGB(
-                                            255,
-                                            255,
-                                            96,
-                                            10,
-                                          )
-                                          : Colors.white54,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 40),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/register');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                255,
-                                96,
-                                10,
-                              ),
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 60,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: const Text(
-                              'إنشاء حساب',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          OutlinedButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/login');
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 14,
-                                horizontal: 60,
-                              ),
-                              side: const BorderSide(
-                                color: Color.fromARGB(255, 255, 96, 10),
-                                width: 2,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              backgroundColor: Colors.white,
-                            ),
-                            child: const Text(
-                              'تسجيل الدخول',
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 255, 96, 10),
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
+        body: kIsWeb ? _buildWebLayout() : _buildMobileLayout(),
       ),
     );
   }
+
+  Widget _buildWebLayout() {
+    return Column(
+      children: [
+        // 🔶 Top AppBar for branding
+       
+
+        // 🔶 Main Body: Split screen layout
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: _pages.length,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    return Image.asset(
+                      _pages[index]['image']!,
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                    );
+                  },
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+                    margin: const EdgeInsets.all(40),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 12,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _pages[_currentPage]['title']!,
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          _pages[_currentPage]['desc']!,
+                          style: const TextStyle(fontSize: 18, color: Colors.black54),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 30),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            _pages.length,
+                            (dotIndex) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: _currentPage == dotIndex ? 12 : 8,
+                              height: _currentPage == dotIndex ? 12 : 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentPage == dotIndex
+                                    ? const Color(0xFFFF600A)
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pushNamed(context, '/register'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFF600A),
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 70),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          ),
+                          child: const Text(
+                            'إنشاء حساب',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () => Navigator.pushNamed(context, '/login'),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 70),
+                            side: const BorderSide(color: Color(0xFFFF600A), width: 2),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          ),
+                          child: const Text(
+                            'تسجيل الدخول',
+                            style: TextStyle(
+                              color: Color(0xFFFF600A),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+Widget _buildMobileLayout() {
+  return Stack(
+    fit: StackFit.expand,
+    children: [
+      PageView.builder(
+        controller: _controller,
+        itemCount: _pages.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentPage = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          return Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(
+                _pages[index]['image']!,
+                fit: BoxFit.cover,
+                filterQuality: FilterQuality.high,
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black.withOpacity(0.6)],
+                  ),
+                ),
+              ),
+              // ✅ App title at the top
+              const Positioned(
+                top: 40,
+                left: 20,
+                child: Text(
+                  'Little Hands',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFFF600A),
+                    shadows: [
+                      Shadow(
+                        color: Colors.black38,
+                        offset: Offset(1, 1),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _pages[_currentPage]['title']!,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(blurRadius: 4, color: Colors.black54, offset: Offset(1, 1)),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                _pages[_currentPage]['desc']!,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  shadows: [
+                    Shadow(blurRadius: 3, color: Colors.black45, offset: Offset(0.5, 0.5)),
+                  ],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 30),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _pages.length,
+                  (dotIndex) => Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentPage == dotIndex ? 12 : 8,
+                    height: _currentPage == dotIndex ? 12 : 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: _currentPage == dotIndex
+                          ? const Color(0xFFFF600A)
+                          : Colors.white54,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () => Navigator.pushNamed(context, '/register'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFF600A),
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 60),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                ),
+                child: const Text(
+                  'إنشاء حساب',
+                  style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 10),
+              OutlinedButton(
+                onPressed: () => Navigator.pushNamed(context, '/login'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 60),
+                  side: const BorderSide(color: Color(0xFFFF600A), width: 2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  backgroundColor: Colors.white,
+                ),
+                child: const Text(
+                  'تسجيل الدخول',
+                  style: TextStyle(
+                    color: Color(0xFFFF600A),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
 }

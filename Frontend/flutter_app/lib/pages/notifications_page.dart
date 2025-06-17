@@ -170,8 +170,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               icon: const Icon(Icons.more_vert),
                               onSelected: (value) {
                                 if (value == 'read') markAsRead(n['_id']);
-                                if (value == 'delete')
+                                if (value == 'delete') {
                                   deleteNotification(n['_id']);
+                                }
                               },
                               itemBuilder:
                                   (_) => [
