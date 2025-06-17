@@ -158,7 +158,7 @@ class _ExpertSpecialistTypePageState extends State<ExpertSpecialistTypePage> {
                           const SizedBox(height: 30),
                         ],
                       );
-                    }).toList(),
+                    }),
                   ],
                 ),
               ),

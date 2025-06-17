@@ -11,10 +11,10 @@ class AvailableAppointmentsPage extends StatefulWidget {
   final Map<String, dynamic> jobDetails;
 
   const AvailableAppointmentsPage({
-    Key? key,
+    super.key,
     required this.babysitterId,
     required this.jobDetails,
-  }) : super(key: key);
+  });
 
   @override
   State<AvailableAppointmentsPage> createState() =>

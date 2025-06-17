@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_app/Parent/Home/my_feedbacks_page.dart';
 import 'package:flutter_app/Parent/Home/parent_bookings_page.dart';
@@ -34,36 +35,31 @@ class _ParentHomePageState extends State<ParentHomePage> {
     notifProvider.startAutoRefresh();
 
     SocketService().onFallbackCandidatesReady((data) {
-      print('⚡️ بدائل جديدة للجلسة: $data');
-
       if (!mounted) return;
-
       showDialog(
         context: context,
-        builder:
-            (_) => AlertDialog(
-              title: const Text('جلسة بديلة متاحة'),
-              content: const Text(
-                'يوجد جليسات أطفال مستعدون لاستلام الجلسة بعد الإلغاء.',
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('لاحقًا'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(
-                      context,
-                      '/fallback-candidates',
-                      arguments: data['booking_id'],
-                    );
-                  },
-                  child: const Text('عرض البدائل'),
-                ),
-              ],
+        builder: (_) => AlertDialog(
+          title: const Text('جلسة بديلة متاحة'),
+          content: const Text(
+              'يوجد جليسات أطفال مستعدون لاستلام الجلسة بعد الإلغاء.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('لاحقًا'),
             ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(
+                  context,
+                  '/fallback-candidates',
+                  arguments: data['booking_id'],
+                );
+              },
+              child: const Text('عرض البدائل'),
+            ),
+          ],
+        ),
       );
     });
 
@@ -88,57 +84,120 @@ class _ParentHomePageState extends State<ParentHomePage> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        appBar: CustomAppBar(title: 'Little Hands'),
-        body: _pages[_selectedIndex],
-        bottomNavigationBar: CustomBottomNavBar(
-          currentIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              label: 'الرئيسية',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.notifications),
-              label: 'الإشعارات',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today_outlined),
-              label: 'الحجوزات',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.feedback),
-              label: 'تقييماتي',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
-              label: 'المحتوى',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              label: 'حسابي',
-            ),
-          ],
-        ),
+      child: kIsWeb
+          ? _buildWebLayout()
+          : _buildMobileLayout(),
+    );
+  }
 
-        // ✅ Add chatbot FAB only on home tab
-        floatingActionButton:
-            _selectedIndex == 0
-                ? FloatingActionButton(
-                  backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/chatbot');
-                  },
-                  child: Image.asset(
-                    'assets/images/icons/assistance.png',
-                    height: 30,
-                    width: 30,
-                  ),
-                )
-                : null,
+  /// 🖥️ Web Layout
+  Widget _buildWebLayout() {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFFF600A),
+        title: const Text(
+          'Little Hands',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        centerTitle: true,
       ),
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+            labelType: NavigationRailLabelType.all,
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.home_outlined),
+                label: Text('الرئيسية'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.notifications),
+                label: Text('الإشعارات'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.calendar_today_outlined),
+                label: Text('الحجوزات'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.feedback),
+                label: Text('تقييماتي'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.menu_book_outlined),
+                label: Text('المحتوى'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.person_outline),
+                label: Text('حسابي'),
+              ),
+            ],
+          ),
+          const VerticalDivider(width: 1),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: _pages[_selectedIndex],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📱 Mobile Layout
+  Widget _buildMobileLayout() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: CustomAppBar(title: 'Little Hands'),
+      body: _pages[_selectedIndex],
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'الرئيسية',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.notifications),
+            label: 'الإشعارات',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            label: 'الحجوزات',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.feedback),
+            label: 'تقييماتي',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book_outlined),
+            label: 'المحتوى',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'حسابي',
+          ),
+        ],
+      ),
+      floatingActionButton: _selectedIndex == 0
+          ? FloatingActionButton(
+              backgroundColor: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/chatbot');
+              },
+              child: Image.asset(
+                'assets/images/icons/assistance.png',
+                height: 30,
+                width: 30,
+              ),
+            )
+          : null,
     );
   }
 }

@@ -263,8 +263,9 @@ class _WeeklyWorkScheduleTabState extends State<WeeklyWorkScheduleTab> {
                                   context: context,
                                   initialTime: TimeOfDay.now(),
                                 );
-                                if (picked != null)
+                                if (picked != null) {
                                   setState(() => day['startTime'] = picked);
+                                }
                               },
                               child: Text(
                                 day['startTime'] != null

@@ -83,7 +83,7 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
                   children: [
                     _buildParentHeader(),
                     const SizedBox(height: 12),
-                    ...feedbacks.map((f) => _buildFeedbackCard(f)).toList(),
+                    ...feedbacks.map((f) => _buildFeedbackCard(f)),
                   ],
                 ),
       ),
@@ -227,7 +227,7 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
                 const SizedBox(height: 8),
               ],
             );
-          }).toList(),
+          }),
         ],
       ),
     );

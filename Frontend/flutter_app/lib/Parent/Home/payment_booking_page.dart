@@ -284,11 +284,7 @@ class _BookingPaymentPageState extends State<BookingPaymentPage> {
       priceDetails['additional_fees'] ?? [],
     );
 
-    final selectedFees = Map.fromIterable(
-      additionalFees,
-      key: (fee) => fee['label'],
-      value: (_) => true,
-    );
+    final selectedFees = { for (var fee in additionalFees) fee['label'] : true };
 
     await showDialog(
       context: context,
