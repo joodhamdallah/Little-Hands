@@ -145,11 +145,9 @@ class CaregiverHomeMainPage extends StatelessWidget {
                       "👶 الأعمار: ${(profile.todaySessionInfo!['children_ages'] as List).join(', ')}",
                     ),
                     Text(
-                      "📍 العنوان: ${profile.todaySessionInfo!['address']['city']}, ${profile.todaySessionInfo!['address']['neighborhood']}",
+                      "📍 العنوان: ${profile.todaySessionInfo!['address']['city']}",
                     ),
-                    Text(
-                      "💰 الدفع: ${profile.todaySessionInfo!['payment']['method']}",
-                    ),
+                    Text("💰 الدفع: cash"),
                     if (profile.todaySessionInfo!['parent'] != null)
                       Text(
                         "👨‍👩‍👧‍👦 ولي الأمر: ${profile.todaySessionInfo!['parent']['first_name']} ${profile.todaySessionInfo!['parent']['last_name']}",

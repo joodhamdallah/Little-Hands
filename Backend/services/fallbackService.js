@@ -1,16 +1,16 @@
 const CareGiver = require('../models/CareGiver');
 const BabySitter = require('../models/BabySitter');
-const WeeklyWorkPreference = require('../models/WeeklyWorkPreference');
 const SpecificDatePreference = require('../models/SpecificDatePreference');
 const { isCaregiverAvailable } = require('./availabilityUtils');
 const FallbackResponse = require('../models/FallbackResponse');
 const Booking = require('../models/Booking');
 const FallbackOffer = require('../models/FallbackOffer');
 const NotificationService = require('./notificationService');
+const Parent = require('../models/Parent'); // ✅ make sure this is required at the top
 
 const FallbackService = {
   async broadcastFallbackOffer(booking, io) {
-    const { session_start_date, session_start_time, session_end_time, city, caregiver_id } = booking;
+    const { session_start_date, session_start_time, session_end_time, city, caregiver_id, parent_id } = booking;
 
     const babysitters = await BabySitter.find({ city }).populate('user_id');
 
@@ -63,45 +63,83 @@ const FallbackService = {
       image: sitter.image,
     });
 
-    const socketId = global.onlineUsersMap[userId];
-    console.log('🔌 SocketId for fallback caregiver:', socketId);
+const socketId = global.onlineUsersMap[userId];
+console.log('🔌 SocketId for fallback caregiver:', socketId);
 
-    if (socketId) {
-      io.to(socketId).emit('fallback_offer', {
-        booking_id: booking._id,
-        session_date: session_start_date,
-        start_time: session_start_time,
-        end_time: session_end_time,
-        city: booking.city,
-        requirements: booking.additional_requirements,
-        children_ages: booking.children_ages,
-      });
+// Always fetch caregiver data (for FCM token)
+const caregiver = await CareGiver.findById(userId);
+console.log('📱 Caregiver Token:', caregiver?.fcm_token);
 
-      console.log(`📤 Sent fallback_offer to caregiver ${userId}`);
-    } else {
-  console.log(`🕸 Caregiver ${userId} is not online`);
+const fallbackPayload = {
+  booking_id: booking._id,
+  session_date: session_start_date,
+  start_time: session_start_time,
+  end_time: session_end_time,
+  city: booking.city,
+  requirements: booking.additional_requirements,
+  children_ages: booking.children_ages,
+};
 
-  const caregiver = await CareGiver.findOne({ user_id: userId });
+if (socketId) {
+  io.to(socketId).emit('fallback_offer', fallbackPayload);
+  console.log(`📤 Sent fallback_offer via socket to caregiver ${userId}`);
+}
 
+// Always send FCM, even if online
+if (caregiver?.fcm_token) {
   await NotificationService.sendTypedNotification({
     user_id: userId,
     user_type: 'CareGiver',
     title: 'جلسة طارئة متاحة! 🔔',
     message: 'تم إلغاء جلسة مؤكدة ونبحث عن بديل. هل ترغب بتنفيذها؟',
-    fcm_token: caregiver?.fcm_token,
+    fcm_token: caregiver.fcm_token,
     type: 'fallback_offer',
-    data: {
-      booking_id: booking._id,
-      session_date: session_start_date,
-      start_time: session_start_time,
-      end_time: session_end_time,
-      city: booking.city,
-      requirements: booking.additional_requirements,
-      children_ages: booking.children_ages,
-    },
+    data: fallbackPayload,
   });
 
-  console.log(`📲 FCM fallback_offer sent to offline caregiver ${userId}`);
+  console.log(`📲 FCM fallback_offer sent to caregiver ${userId}`);
+} else {
+  console.warn(`⚠️ No FCM token found for caregiver ${userId}`);
+}
+
+
+  const parentId = booking.parent_id.toString();
+const parentSocket = global.onlineUsersMap?.[parentId];
+const parent = await Parent.findById(parentId);
+
+// Format session date
+const formattedDate = new Date(session_start_date).toLocaleDateString('en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const emergencyMessage = {
+  booking_id: booking._id.toString(),
+  status: 'fallback_initiated',
+  session_date: formattedDate,
+};
+
+if (parentSocket) {
+  io.to(parentSocket).emit('emergency_fallback_started', emergencyMessage);
+  console.log(`📡 Sent emergency_fallback_started to parent ${parentId}`);
+}
+
+if (parent?.fcm_token) {
+  await NotificationService.sendTypedNotification({
+    user_id: parentId,
+    user_type: 'Parent',
+    title: 'تم إلغاء الجلسة من قبل مقدم الرعاية 🚨',
+    message: `تم إلغاء جلستك من قبل مقدم الرعاية بتاريخ ${formattedDate}. سنرسل لك مقدمي رعاية بدلاء في أسرع وقت.`,
+    fcm_token: parent.fcm_token,
+    type: 'emergency_fallback_started',
+    data: emergencyMessage,
+  });
+
+  console.log(`📲 FCM fallback notification sent to parent ${parentId}`);
+} else {
+  console.warn(`⚠️ No FCM token found for parent ${parentId}`);
 }
 
   } catch (err) {
@@ -134,9 +172,24 @@ async respondToFallback(booking_id, caregiver_id, io) {
 
   const parentId = booking.parent_id.toString();
   const parentSocket = global.onlineUsersMap?.[parentId];
+const parent = await Parent.findById(parentId);
 
   console.log(`🧑‍🍼 Parent ID: ${parentId}`);
   console.log(`🔌 Parent Socket ID: ${parentSocket}`);
+
+  // ✂️ inside FallbackService.respondToFallback AFTER socket branch
+if ( parent?.fcm_token) {
+  await NotificationService.sendTypedNotification({
+    user_id: parentId,
+    user_type: 'Parent',
+    title: '🟢 مرشح جديد للجلسة البديلة',
+    message: 'أحد مقدمي الرعاية وافق على تنفيذ الجلسة. يمكنك الآن استعراض الخيارات.',
+    fcm_token: parent.fcm_token,
+    type: 'fallback_candidates_ready',
+    data: { booking_id: booking_id.toString() },
+  });
+  console.log(`📲 Sent FCM fallback_candidates_ready to offline parent ${parentId}`);
+}
 
   if (parentSocket) {
     console.log(`📡 Sending fallback_candidates_ready to parent ${parentId}`);

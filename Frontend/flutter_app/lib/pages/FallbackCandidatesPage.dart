@@ -41,6 +41,7 @@ class _FallbackCandidatesPageState extends State<FallbackCandidatesPage> {
         if (sitter['location'] != null) {
           final lat = sitter['location']['lat'];
           final lng = sitter['location']['lng'];
+
           sitter['locationLabel'] = await getLocationLabel(lat, lng);
         } else {
           sitter['locationLabel'] = 'موقع غير معروف';
@@ -71,7 +72,7 @@ class _FallbackCandidatesPageState extends State<FallbackCandidatesPage> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['address']['suburb'] ??
+      return data['address']['village'] ??
           data['address']['neighbourhood'] ??
           'موقع غير معروف';
     } else {
@@ -100,6 +101,12 @@ class _FallbackCandidatesPageState extends State<FallbackCandidatesPage> {
                   itemCount: candidates.length,
                   itemBuilder: (context, index) {
                     final sitter = candidates[index];
+                    final String? imagePath = sitter['image'];
+                    final String? imageUrl =
+                        (imagePath != null && imagePath.isNotEmpty)
+                            ? '$baseUrl/${imagePath.replaceAll('\\', '/')}'
+                            : null;
+
                     return Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: Card(
@@ -116,14 +123,21 @@ class _FallbackCandidatesPageState extends State<FallbackCandidatesPage> {
                                 children: [
                                   CircleAvatar(
                                     radius: 30,
+                                    backgroundColor: Colors.orange.shade100,
                                     backgroundImage:
-                                        sitter['image'] != null
-                                            ? NetworkImage(sitter['image'])
-                                            : const AssetImage(
-                                                  'assets/images/homepage/maha_test_pic.webp',
-                                                )
-                                                as ImageProvider,
+                                        imageUrl != null
+                                            ? NetworkImage(imageUrl)
+                                            : null,
+                                    child:
+                                        imageUrl == null
+                                            ? const Icon(
+                                              Icons.person,
+                                              size: 30,
+                                              color: Colors.white,
+                                            )
+                                            : null,
                                   ),
+
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Column(
@@ -204,9 +218,10 @@ class _FallbackCandidatesPageState extends State<FallbackCandidatesPage> {
                                 ),
                               ),
                               Text(
-                                sitter['shortBio'] ?? '',
+                                sitter['shortBio'],
                                 style: const TextStyle(fontSize: 14),
                               ),
+
                               const SizedBox(height: 10),
                               Text(
                                 "المهارات والميّزات الإضافية:",
