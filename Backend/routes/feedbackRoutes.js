@@ -10,7 +10,7 @@ router.post('/', auth, feedbackController.submitFeedback);
 // router.put('/:id', auth, feedbackController.updateFeedback);
 
 // ✅ Get feedback given to caregiver
-router.get('/caregiver/:id', auth, feedbackController.getForCaregiver);
+router.get('/caregiver', auth, feedbackController.getForCaregiver);
 
 // ✅ Get feedback given to parent
 router.get('/parent/:id', auth, feedbackController.getForParent);

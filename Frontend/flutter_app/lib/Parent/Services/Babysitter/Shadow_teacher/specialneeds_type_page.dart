@@ -8,7 +8,8 @@ class SpecialNeedsServiceTypePage extends StatefulWidget {
       _SpecialNeedsServiceTypePageState();
 }
 
-class _SpecialNeedsServiceTypePageState extends State<SpecialNeedsServiceTypePage> {
+class _SpecialNeedsServiceTypePageState
+    extends State<SpecialNeedsServiceTypePage> {
   final Color primaryColor = const Color(0xFFFF600A);
 
   final List<String> serviceOptions = [
@@ -72,7 +73,7 @@ class _SpecialNeedsServiceTypePageState extends State<SpecialNeedsServiceTypePag
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'ماذا يحتاج طفلك من معلم الظل؟',
+                      'ماذا يحتاج طفلك من مقدّم الرعاية؟',
                       style: TextStyle(
                         fontSize: 19,
                         fontWeight: FontWeight.w800,
@@ -87,45 +88,49 @@ class _SpecialNeedsServiceTypePageState extends State<SpecialNeedsServiceTypePag
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
                       childAspectRatio: 1.3,
-                      children: serviceOptions.map((service) {
-                        final selected = selectedServices.contains(service);
-                        return GestureDetector(
-                          onTap: () => toggleSelection(service),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: selected
-                                  ? primaryColor.withOpacity(0.1)
-                                  : Colors.white,
-                              border: Border.all(
-                                color:
-                                    selected ? primaryColor : Colors.grey.shade400,
-                                width: 1.5,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 4,
-                                  offset: const Offset(2, 2),
+                      children:
+                          serviceOptions.map((service) {
+                            final selected = selectedServices.contains(service);
+                            return GestureDetector(
+                              onTap: () => toggleSelection(service),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color:
+                                      selected
+                                          ? primaryColor.withOpacity(0.1)
+                                          : Colors.white,
+                                  border: Border.all(
+                                    color:
+                                        selected
+                                            ? primaryColor
+                                            : Colors.grey.shade400,
+                                    width: 1.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 4,
+                                      offset: const Offset(2, 2),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                            padding: const EdgeInsets.all(12),
-                            child: Center(
-                              child: Text(
-                                service,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                 fontWeight: FontWeight.w800,
+                                padding: const EdgeInsets.all(12),
+                                child: Center(
+                                  child: Text(
+                                    service,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w800,
 
-                                  fontFamily: 'NotoSansArabic',
+                                      fontFamily: 'NotoSansArabic',
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                            );
+                          }).toList(),
                     ),
                   ],
                 ),

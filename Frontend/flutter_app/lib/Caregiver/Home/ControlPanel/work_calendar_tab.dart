@@ -204,11 +204,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                     if (disabledDates.contains(normalized)) {
                       return _buildCircle(day.day, Colors.red, Colors.white);
                     } else if (fullyBookedDates.contains(normalized)) {
-                      return _buildCircle(
-                        day.day,
-                        Colors.blue.shade700,
-                        Colors.white,
-                      );
+                      return _buildCircle(day.day, Colors.green, Colors.white);
                     } else if (partiallyBookedDates.contains(normalized)) {
                       return Container(
                         decoration: BoxDecoration(
@@ -246,7 +242,7 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                   ),
                   // _legendColorBox(Colors.green.shade600, 'مؤكد'),
                   _legendColorBox(Colors.red, 'يوم معطّل'),
-                  _legendColorBox(Colors.blue.shade700, 'محجوز بالكامل'),
+                  _legendColorBox(Colors.green, 'محجوز بالكامل'),
                   _legendBorderBox(Colors.blue, 'محجوز جزئياً'),
                   _legendColorBox(
                     const Color.fromARGB(255, 241, 177, 93),

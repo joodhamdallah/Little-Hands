@@ -441,7 +441,11 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
                   ].contains(status))
                     ElevatedButton.icon(
                       onPressed:
-                          () => showCancelDialog(context, booking['_id']),
+                          () => showCancelDialog(
+                            context,
+                            booking['_id'],
+                            status: booking['status'],
+                          ),
                       icon: const Icon(Icons.cancel),
                       label: const Text("إلغاء الحجز"),
                       style: ElevatedButton.styleFrom(
@@ -518,7 +522,11 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
     );
   }
 
-  void showCancelDialog(BuildContext context, String bookingId) {
+  void showCancelDialog(
+    BuildContext context,
+    String bookingId, {
+    String status = '',
+  }) {
     final TextEditingController reasonController = TextEditingController();
     String selectedReason = '';
 
@@ -527,34 +535,53 @@ class _CaregiverBookingsPageState extends State<CaregiverBookingsPage>
       builder:
           (_) => AlertDialog(
             title: const Text("سبب الإلغاء"),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: "اختر سببًا"),
-                  items:
-                      [
-                            'الوقت غير مناسب',
-                            'ظرف طارئ',
-                            'الطلب غير مناسب',
-                            'سبب آخر',
-                          ]
-                          .map(
-                            (reason) => DropdownMenuItem(
-                              value: reason,
-                              child: Text(reason),
-                            ),
-                          )
-                          .toList(),
-                  onChanged: (value) => selectedReason = value ?? '',
-                ),
-                TextField(
-                  controller: reasonController,
-                  decoration: const InputDecoration(
-                    labelText: "سبب إضافي (اختياري)",
+            content: Directionality(
+              textDirection: TextDirection.rtl,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (status == 'confirmed') ...[
+                    const Text(
+                      '⚠️ هذا الحجز مؤكد. تكرار الإلغاء في هذه المرحلة يؤدي إلى:',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      '– تقليل تقييمك وموثوقيتك داخل النظام\n– تقليل فرص ظهورك في نتائج البحث للأهل مؤقتًا',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: "اختر سببًا"),
+                    items:
+                        [
+                              'الوقت غير مناسب',
+                              'ظرف طارئ',
+                              'الطلب غير مناسب',
+                              'سبب آخر',
+                            ]
+                            .map(
+                              (reason) => DropdownMenuItem(
+                                value: reason,
+                                child: Text(reason),
+                              ),
+                            )
+                            .toList(),
+                    onChanged: (value) => selectedReason = value ?? '',
                   ),
-                ),
-              ],
+                  TextField(
+                    controller: reasonController,
+                    decoration: const InputDecoration(
+                      labelText: "سبب إضافي (اختياري)",
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(

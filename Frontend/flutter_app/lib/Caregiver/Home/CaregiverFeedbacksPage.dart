@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CaregiverFeedbacksPage extends StatefulWidget {
-  final String caregiverId;
-  const CaregiverFeedbacksPage({super.key, required this.caregiverId});
+  const CaregiverFeedbacksPage({super.key});
 
   @override
   State<CaregiverFeedbacksPage> createState() => _CaregiverFeedbacksPageState();
@@ -25,7 +24,7 @@ class _CaregiverFeedbacksPageState extends State<CaregiverFeedbacksPage> {
   Future<void> fetchFeedbacks() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('accessToken');
-    final urll = Uri.parse('$url/feedback/caregiver/${widget.caregiverId}');
+    final urll = Uri.parse('${url}feedback/caregiver');
 
     final res = await http.get(
       urll,
@@ -48,30 +47,44 @@ class _CaregiverFeedbacksPageState extends State<CaregiverFeedbacksPage> {
     }
   }
 
-  String _translateRatingKey(String key) {
-    switch (key) {
-      case 'punctuality':
-        return 'الالتزام بالوقت';
-      case 'communication':
-        return 'التواصل';
-      case 'safety':
-        return 'السلامة';
-      case 'price_fairness':
-        return 'الأسعار';
-      case 'additional_reqs':
-        return 'تنفيذ المتطلبات';
-      case 'satisfaction':
-        return 'الرضا العام';
-      default:
-        return key;
-    }
-  }
-
   Widget _buildFeedbackCard(Map<String, dynamic> f) {
-    final rating = f['overall_rating']?.toDouble() ?? 0.0;
-    final comments = Map<String, dynamic>.from(f['comments'] ?? {});
+    final parent = f['from_user_id'];
+    final parentName =
+        parent != null
+            ? "${parent['firstName']} ${parent['lastName'][0]}."
+            : "ولي أمر";
+
+    final createdAt = f['created_at'];
+    final formattedDate =
+        createdAt != null
+            ? DateFormat(
+              'y/MM/dd – hh:mm a',
+              'ar',
+            ).format(DateTime.parse(createdAt).toLocal())
+            : '';
+
+    final generalComment = f['comments']?['general'];
     final ratings = Map<String, dynamic>.from(f['ratings'] ?? {});
-    final type = f['type'] == 'cancelled' ? 'إلغاء' : 'جلسة مكتملة';
+    final overallRating = (f['overall_rating'] ?? 0).toDouble();
+
+    String _translateRatingKey(String key) {
+      switch (key) {
+        case 'punctuality':
+          return 'الالتزام بالوقت';
+        case 'communication':
+          return 'التواصل';
+        case 'safety':
+          return 'السلامة';
+        case 'price_fairness':
+          return 'الأسعار';
+        case 'additional_reqs':
+          return 'تنفيذ المتطلبات';
+        case 'satisfaction':
+          return 'الرضا العام';
+        default:
+          return key;
+      }
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -82,42 +95,116 @@ class _CaregiverFeedbacksPageState extends State<CaregiverFeedbacksPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ⭐ Overall Rating
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const Icon(Icons.star, color: Colors.amber),
+                const SizedBox(width: 6),
+                Text(
+                  overallRating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            // 💬 General comment
+            if (generalComment != null &&
+                generalComment.toString().trim().isNotEmpty)
+              Text(generalComment, style: const TextStyle(fontSize: 15))
+            else
+              const Text(
+                "لا يوجد تعليق عام.",
+                style: TextStyle(color: Colors.grey),
+              ),
+
+            const SizedBox(height: 12),
+
+            // 🌟 Category Ratings
+            ...ratings.entries.map((e) {
+              final key = e.key;
+              final value = e.value ?? 0;
+              final translated = _translateRatingKey(key);
+              final commentText = f['comments']?[key];
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(translated, style: const TextStyle(fontSize: 14)),
+                      Row(
+                        children: List.generate(5, (i) {
+                          return Icon(
+                            i < value ? Icons.star : Icons.star_border,
+                            size: 18,
+                            color: Colors.amber,
+                          );
+                        }),
+                      ),
+                    ],
+                  ),
+                  if (commentText != null &&
+                      commentText.toString().trim().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4, bottom: 8),
+                      child: Text(
+                        commentText,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 6),
+                ],
+              );
+            }),
+
+            const SizedBox(height: 12),
+            Divider(),
+
+            // 👤 Parent & 📅 Date
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '⭐ ${rating.toStringAsFixed(1)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                Row(
+                  children: [
+                    const Icon(Icons.person, size: 20, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    Text(
+                      parentName,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(type, style: const TextStyle(color: Colors.grey)),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_today,
+                      size: 18,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      formattedDate,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
               ],
-            ),
-            const SizedBox(height: 8),
-            if (comments['general'] != null)
-              Text(comments['general'], style: const TextStyle(fontSize: 15)),
-            const SizedBox(height: 10),
-            ...ratings.entries.map(
-              (e) => Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _translateRatingKey(e.key),
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  Row(
-                    children: List.generate(5, (i) {
-                      return Icon(
-                        i < (e.value ?? 0) ? Icons.star : Icons.star_border,
-                        size: 18,
-                        color: Colors.amber,
-                      );
-                    }),
-                  ),
-                ],
-              ),
             ),
           ],
         ),

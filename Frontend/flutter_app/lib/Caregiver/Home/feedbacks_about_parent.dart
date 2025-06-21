@@ -102,10 +102,10 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
         children: [
           const CircleAvatar(
             radius: 30,
-            backgroundImage: AssetImage(
-              'assets/images/homepage/default_parent_avatar.webp',
-            ),
+            backgroundColor: Color(0xFFFFE4C9),
+            child: Icon(Icons.person, size: 32, color: Color(0xFFFF600A)),
           ),
+
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -147,6 +147,13 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
     final sessionDate =
         f['booking']?['session_start_date']?.substring(0, 10) ?? '';
 
+    final caregiver = f['from_user_id'];
+    final caregiverName =
+        caregiver != null
+            ? "${caregiver['first_name']} ${caregiver['last_name']}"
+            : "مقدم الخدمة";
+    final caregiverImage = caregiver?['image'];
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -168,25 +175,23 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🔶 Date & Session Info
           Text(
             f['created_at'] != null
                 ? DateTime.parse(
                   f['created_at'],
                 ).toLocal().toString().substring(0, 10)
                 : '',
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 13, color: Colors.grey),
           ),
-          const SizedBox(height: 4),
           if (sessionDate.isNotEmpty)
             Text(
               "📅 تاريخ الجلسة: $sessionDate",
               style: const TextStyle(fontSize: 13, color: Colors.black87),
             ),
           const SizedBox(height: 8),
+
+          // 🔶 Overall Rating
           Row(
             children: [
               RatingBarIndicator(
@@ -201,7 +206,13 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
             ],
           ),
           const SizedBox(height: 10),
+
+          // 🔶 Ratings and Comments
           ...ratings.entries.map((entry) {
+            final key = entry.key;
+            final value = entry.value;
+            final comment = f['comments']?[key];
+
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -209,25 +220,91 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
                   children: [
                     Expanded(
                       child: Text(
-                        _translateRatingKey(entry.key),
+                        _translateRatingKey(key),
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ),
-                    Text("${entry.value}/5"),
+                    Text("$value/5"),
                   ],
                 ),
                 RatingBarIndicator(
-                  rating: (entry.value as num).toDouble(),
+                  rating: (value as num).toDouble(),
                   itemBuilder:
                       (context, _) =>
                           const Icon(Icons.star, color: Colors.amber),
                   itemCount: 5,
                   itemSize: 18.0,
                 ),
+                if (comment != null && comment.toString().trim().isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Text(
+                      comment,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
                 const SizedBox(height: 8),
               ],
             );
-          }),
+
+          }).toList(),
+
+          // 🔶 Divider
+          const SizedBox(height: 12),
+          const Divider(),
+
+          const SizedBox(height: 12),
+          const SizedBox(height: 16),
+
+          // Line with label
+          const Text(
+            "تم التقييم بواسطة الجليسة",
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Row with image + name
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: Colors.orange.shade100,
+                backgroundImage:
+                    caregiverImage != null && caregiverImage.isNotEmpty
+                        ? NetworkImage(
+                          caregiverImage
+                                  .replaceAll('\\', '/')
+                                  .startsWith('http')
+                              ? caregiverImage
+                              : '$baseUrl/${caregiverImage.replaceAll('\\', '/')}',
+                        )
+                        : const AssetImage(
+                              'assets/images/homepage/default_user.png',
+                            )
+                            as ImageProvider,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  caregiverName,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+
         ],
       ),
     );
@@ -239,6 +316,8 @@ class _FeedbackAboutParentPageState extends State<FeedbackAboutParentPage> {
         return 'الالتزام بالوقت';
       case 'respect':
         return 'الاحترام والتقدير';
+      case 'communication':
+        return 'التواصل';
       case 'payment':
         return 'الالتزام بالدفع';
       case 'overall':
