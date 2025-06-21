@@ -9,7 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../pages/config.dart';
 
 class ParentBookingsPage extends StatefulWidget {
-  const ParentBookingsPage({Key? key}) : super(key: key);
+  const ParentBookingsPage({super.key});
 
   @override
   State<ParentBookingsPage> createState() => _ParentBookingsPageState();

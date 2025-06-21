@@ -42,8 +42,9 @@ class _ChatPageState extends State<ChatPage> {
             child: StreamBuilder<QuerySnapshot>(
               stream: ChatService.getMessages(widget.myId, widget.otherId),
               builder: (context, snapshot) {
-                if (!snapshot.hasData)
+                if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
 
                 final messages = snapshot.data!.docs;
 

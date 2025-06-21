@@ -104,7 +104,7 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
               icon: const Icon(Icons.picture_as_pdf),
               label: const Text(
                 'اختيار ملف PDF',
-                style: TextStyle(fontFamily: 'NotoSansArabic'),
+                style: TextStyle(fontFamily: 'NotoSansArabic', color: Color.fromARGB(255, 255, 255, 255) , fontWeight:FontWeight.w800,fontSize: 18),
               ),
             ),
             if (_pdfFile != null)
@@ -134,7 +134,7 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
               icon: const Icon(Icons.image),
               label: const Text(
                 'اختيار صورة للبطاقة',
-                style: TextStyle(fontFamily: 'NotoSansArabic'),
+                style: TextStyle(fontFamily: 'NotoSansArabic', color: Color.fromARGB(255, 255, 255, 255) , fontWeight:FontWeight.w800,fontSize: 18),
               ),
             ),
             if (_imageFile != null)
@@ -175,7 +175,7 @@ class _UploadExpertPostPageState extends State<UploadExpertPostPage> {
                       )
                       : const Text(
                         'رفع النصيحة',
-                        style: TextStyle(fontFamily: 'NotoSansArabic'),
+                        style: TextStyle(fontFamily: 'NotoSansArabic', color: Color.fromARGB(255, 255, 255, 255) , fontWeight:FontWeight.w800,fontSize: 18),
                       ),
             ),
           ],

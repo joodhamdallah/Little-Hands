@@ -389,8 +389,9 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                                       context: context,
                                       initialTime: startTime,
                                     );
-                                    if (picked != null)
+                                    if (picked != null) {
                                       setState(() => startTime = picked);
+                                    }
                                   },
                                   child: Text(
                                     'وقت البدء: ${startTime.format(context)}',
@@ -405,8 +406,9 @@ class _WorkCalendarTabState extends State<WorkCalendarTab> {
                                       context: context,
                                       initialTime: endTime,
                                     );
-                                    if (picked != null)
+                                    if (picked != null) {
                                       setState(() => endTime = picked);
+                                    }
                                   },
                                   child: Text(
                                     'وقت الانتهاء: ${endTime.format(context)}',
