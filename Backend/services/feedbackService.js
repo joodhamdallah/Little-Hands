@@ -111,8 +111,20 @@ async submitFeedback(req) {  console.log("📥 Feedback submission initiated..."
 
   // ✅ 2. Get all feedback *received* by caregiver (admin/internal use)
   async getForCaregiver(caregiverId) {
-    return await Feedback.find({ to_user_id: caregiverId, to_role: 'caregiver' })
-      .sort({ created_at: -1 });
+     const feedbacks = await Feedback.find({
+    to_user_id: caregiverId,
+    to_role: 'caregiver',
+    type: { $in: ['completed'] },
+    from_role: 'parent'
+  })
+    .populate({
+      path: 'from_user_id',
+      model: 'Parent', // ✅ make sure this matches your model name
+      select: 'firstName lastName ',
+    })
+    .sort({ overall_rating: -1 });
+
+  return feedbacks;
   },
 
   // ✅ 3. Get all feedback *received* by parent (admin/internal use)
@@ -143,8 +155,6 @@ type: { $in: ['completed', 'cancelled'] },
   return feedbacks;
 }
 ,
-
-  // ✅ 5. Public feedback for parent (seen by caregivers before accepting)
 async getPublicFeedbackForParent(parentId) {
   return await Feedback.find({
     to_user_id: parentId,
@@ -156,9 +166,14 @@ async getPublicFeedbackForParent(parentId) {
       model: 'Parent',
       select: 'firstName lastName'
     })
-    .select('-from_user_id')
+    .populate({
+      path: 'from_user_id',
+      model: 'CareGiver',
+      select: 'first_name last_name image'
+    })
     .sort({ overall_rating: -1 });
 }
+
 
 ,
   // ✅ 6. Check if current user already submitted feedback for a booking

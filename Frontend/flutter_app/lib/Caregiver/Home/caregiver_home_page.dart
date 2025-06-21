@@ -204,6 +204,9 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
     SharedPreferences.getInstance().then((prefs) {
       final role = prefs.getString('caregiverRole');
       final isExpert = role == 'expert';
+      final caregiverId = prefs.getString(
+        'userId',
+      ); // 👈 read from SharedPreferences
 
       setState(() {
         _pages = [
@@ -212,7 +215,8 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
             onMarkedRead: () => notifProvider.loadUnreadCount(),
           ),
           CaregiverBookingsPage(profile: widget.profile),
-          // CaregiverFeedbacksPage(caregiverId: widget.profile.userId),
+          CaregiverFeedbacksPage(), // ✅ no args needed
+
           CaregiverControlPanelPage(),
           if (isExpert) ExpertPostsPage(),
           SingleChildScrollView(
@@ -233,10 +237,10 @@ class _CaregiverHomePageState extends State<CaregiverHomePage> {
             icon: Icon(Icons.calendar_today),
             label: 'الحجوزات',
           ),
-          // const BottomNavigationBarItem(
-          //   icon: Icon(Icons.feedback_sharp),
-          //   label: 'التقييمات ',
-          // ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.feedback_sharp),
+            label: 'التقييمات ',
+          ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.dashboard_customize),
             label: 'لوحة التحكم',

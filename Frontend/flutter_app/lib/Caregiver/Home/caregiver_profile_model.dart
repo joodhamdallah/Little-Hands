@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/config.dart';
 import '../../models/caregiver_profile_model.dart';
 
 class CaregiverProfilePage extends StatefulWidget {
@@ -29,18 +30,18 @@ class _CaregiverProfilePageState extends State<CaregiverProfilePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.orange.shade100,
-            backgroundImage:
-                profile.image != null && profile.image!.isNotEmpty
-                    ? NetworkImage(profile.image!)
-                    : null,
-            child:
-                profile.image == null || profile.image!.isEmpty
-                    ? const Icon(Icons.person, size: 50, color: Colors.white)
-                    : null,
-          ),
+          if (profile.image != null && profile.image!.isNotEmpty)
+            Center(
+              child: CircleAvatar(
+                radius: 45,
+                backgroundColor: Colors.orange.shade100,
+                backgroundImage: NetworkImage(
+                  profile.image!.replaceAll('\\', '/').startsWith('http')
+                      ? profile.image!
+                      : '$baseUrl/${profile.image!.replaceAll('\\', '/')}',
+                ),
+              ),
+            ),
           const SizedBox(height: 15),
           Text(
             displayName,

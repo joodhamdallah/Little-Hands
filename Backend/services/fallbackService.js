@@ -125,13 +125,19 @@ if (parentSocket) {
   io.to(parentSocket).emit('emergency_fallback_started', emergencyMessage);
   console.log(`📡 Sent emergency_fallback_started to parent ${parentId}`);
 }
+let parentMessage = `تم إلغاء جلستك من قبل مقدم الرعاية بتاريخ ${formattedDate}.  سنرسل لك مقدمي رعاية بدلاء في أسرع وقت -في حال توفّرهم- إذا أردت اختيار بديل منهم`;
+
+// 🔁 Add refund note if paid online
+if (booking.payment_status === 'paid' && booking.payment_method === 'online') {
+  parentMessage += '\n💳 نظرًا لأنك دفعت عبر البطاقة، سيتم إعادة المبلغ إلى بطاقتك تلقائيًا خلال أيام قليلة.';
+}
 
 if (parent?.fcm_token) {
   await NotificationService.sendTypedNotification({
     user_id: parentId,
     user_type: 'Parent',
     title: 'تم إلغاء الجلسة من قبل مقدم الرعاية 🚨',
-    message: `تم إلغاء جلستك من قبل مقدم الرعاية بتاريخ ${formattedDate}. سنرسل لك مقدمي رعاية بدلاء في أسرع وقت.`,
+    message: parentMessage,
     fcm_token: parent.fcm_token,
     type: 'emergency_fallback_started',
     data: emergencyMessage,
