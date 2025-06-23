@@ -20,6 +20,7 @@ import 'package:flutter_app/pages/FallbackCandidatesPage.dart';
 import 'package:flutter_app/pages/chat_page.dart';
 import 'package:flutter_app/pages/complaint_page.dart';
 import 'package:flutter_app/pages/my_messages_page.dart';
+import 'package:flutter_app/pages/rolePage.dart';
 import 'package:flutter_app/providers/notification_provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -219,6 +220,7 @@ class MyApp extends StatelessWidget {
         },
         '/complaint': (context) => const ComplaintPage(),
         '/fallback-offers': (context) => const FallbackOffersPage(),
+        '/selectRole': (context) => const SelectRolePage(),
 
         //         '/send_price': (context) {
         //   final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;

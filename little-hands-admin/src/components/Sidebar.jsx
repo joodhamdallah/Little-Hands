@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Dashboard, People, EventNote, PostAdd } from '@mui/icons-material';
+import { Dashboard, People, EventNote, PostAdd, ReportProblem } from '@mui/icons-material';
 
 const Sidebar = () => {
   const location = useLocation();
@@ -9,7 +9,9 @@ const Sidebar = () => {
     { to: '/', label: 'Dashboard', icon: <Dashboard fontSize="small" /> },
     { to: '/users', label: 'Users', icon: <People fontSize="small" /> },
     { to: '/bookings', label: 'Bookings', icon: <EventNote fontSize="small" /> },
-    { to: '/posts', label: 'Expert Posts', icon: <PostAdd fontSize="small" /> },
+    { to: '/posts', label: 'Expert Posts', icon: <PostAdd fontSize="small" /> },   
+    { to: '/complaints', label: 'Complaints', icon: <ReportProblem fontSize="small" /> }, // ✅ Added
+
   ];
 
   return (

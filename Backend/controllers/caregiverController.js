@@ -4,6 +4,7 @@ const BabySitter = require('../models/BabySitter');
 const Expert = require('../models/Expert');
 const Booking = require('../models/Booking');
 const Feedback = require('../models/Feedback');
+const Parent = require('../models/Parent');
 
 
 exports.register = async (req, res, next) => {
@@ -331,4 +332,30 @@ comments: topComments,
   }
 };
   
-  
+exports.getCaregiversInSameCity = async (req, res) => {
+  try {
+    const parentId = req.user._id;
+    const parent = await Parent.findById(parentId);
+
+    if (!parent || !parent.city) {
+      return res.status(400).json({ success: false, message: 'Parent city not found' });
+    }
+
+    const caregivers = await CaregiverServices.getCaregiversByCity(parent.city);
+    res.json(caregivers);
+  } catch (err) {
+    console.error('❌ Error fetching caregivers by city:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};
+
+exports.getCaregiversByRole = async (req, res) => {
+  try {
+    const role = req.params.role;
+    const caregivers = await CaregiverServices.fetchCaregiversByRole(role);
+    res.json({ success: true, data: caregivers });
+  } catch (error) {
+    console.error('❌ Error fetching caregivers by role:', error);
+    res.status(500).json({ success: false, message: 'خطأ أثناء جلب مقدمي الرعاية' });
+  }
+};

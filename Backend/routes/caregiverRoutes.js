@@ -17,5 +17,10 @@ router.post("/updateRole", authMiddleware, caregiverController.updateRole);
 
 router.get('/profile', authMiddleware, caregiverController.getProfile);
 
+router.get('/nearby-city', authMiddleware, caregiverController.getCaregiversInSameCity);
+
+// GET /caregivers/by-role/:role
+router.get('/by-role/:role', caregiverController.getCaregiversByRole);
+
 
 module.exports = router;

@@ -86,6 +86,25 @@ class CaregiverServices {
     return caregiver;
   }
   
+
+ static async getCaregiversByCity(city) {
+    const caregivers = await CareGiverModel.find({ city });
+
+    return caregivers.map(c => ({
+      id: c._id,
+      first_name: c.first_name,
+      last_name: c.last_name?.charAt(0) + '.' || '',
+      role: c.role,
+      image: c.image || null,
+    }));
+  }
+
+static async fetchCaregiversByRole(role) {
+  return await CareGiverModel.find({ role })
+    .select('first_name last_name image city user_id') // Only fetch necessary fields
+    .sort({ createdAt: -1 }); // Most recent caregivers first
+}
+
 }
 
 module.exports = CaregiverServices;
