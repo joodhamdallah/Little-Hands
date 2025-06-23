@@ -1,7 +1,11 @@
 // lib/pages/parent/home_main_content.dart
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/config.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ParentHomeMainContent extends StatefulWidget {
   const ParentHomeMainContent({super.key});
@@ -14,6 +18,7 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
   final PageController _pageController = PageController(viewportFraction: 1.0);
   int _currentPage = 0;
   Timer? _timer;
+  List<Map<String, dynamic>> nearbyCaregivers = [];
 
   final List<Map<String, String>> sliderData = [
     {
@@ -42,6 +47,7 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
         setState(() {});
       }
     });
+    fetchNearbyCaregivers(); // fetch from backend using parent’s location
   }
 
   @override
@@ -49,6 +55,12 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
     _timer?.cancel();
     _pageController.dispose();
     super.dispose();
+  }
+
+  String formatImageUrl(String? imagePath) {
+    if (imagePath == null) return '';
+    final cleaned = imagePath.replaceAll('\\', '/');
+    return cleaned.startsWith('http') ? cleaned : '$baseUrl/$cleaned';
   }
 
   @override
@@ -123,6 +135,8 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
             ],
           ),
           const SizedBox(height: 20),
+          if (nearbyCaregivers.isNotEmpty) buildNearbyCaregiversSection(),
+
           buildSectionTitle('تواصل معنا '),
 
           Container(
@@ -302,9 +316,12 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
                     Row(
                       children: [
                         CircleAvatar(
-                          backgroundImage: AssetImage(t['image']!),
+                          backgroundImage: NetworkImage(
+                            '$baseUrl/${t['image'].toString().replaceAll('\\', '/')}',
+                          ),
                           radius: 18,
                         ),
+
                         const SizedBox(width: 8),
                         Text(
                           '${t['name']} - ${t['title']}',
@@ -737,5 +754,137 @@ class _ParentHomeMainContentState extends State<ParentHomeMainContent> {
         ),
       ],
     );
+  }
+
+  Future<void> fetchNearbyCaregivers() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('accessToken');
+
+      if (token == null) {
+        print("❗ Missing token");
+        return;
+      }
+
+      final response = await http.get(
+        Uri.parse('${url}caregiver/nearby-city'), // city-based endpoint
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        setState(() {
+          nearbyCaregivers = List<Map<String, dynamic>>.from(data);
+        });
+      } else {
+        print("❌ Failed to load caregivers: ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Error fetching caregivers: $e");
+    }
+  }
+
+  Widget buildNearbyCaregiversSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        buildSectionTitle('مقدمو الرعاية الأقرب إليك'),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 170,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: nearbyCaregivers.length,
+            itemBuilder: (context, index) {
+              final c = nearbyCaregivers[index];
+              final fullName = "${c['first_name']} ${c['last_name']}";
+              final image = c['image'];
+
+              return Container(
+                width: 210,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFF3E8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFFF600A), width: 1),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 22,
+                          backgroundImage:
+                              image != null
+                                  ? NetworkImage(image)
+                                  : const AssetImage(
+                                        'assets/images/default_user.png',
+                                      )
+                                      as ImageProvider,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            fullName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              fontFamily: 'NotoSansArabic',
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "الخدمة: ${getServiceArabic(c['role'])}",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontFamily: 'NotoSansArabic',
+                      ),
+                    ),
+                    const Spacer(),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/caregiverProfile',
+                            arguments: c['id'],
+                          );
+                        },
+                        child: const Text('عرض الملف الشخصي'),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String getServiceArabic(String? role) {
+    switch (role) {
+      case 'babysitter':
+        return 'جليسة أطفال';
+      case 'expert':
+        return 'استشاري/ة أطفال';
+      case 'special_needs':
+        return 'مساعد/ة ذوي احتياجات';
+      case 'tutor':
+        return 'مدرّس خصوصي';
+      default:
+        return 'مقدّم رعاية';
+    }
   }
 }
