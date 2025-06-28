@@ -6,10 +6,10 @@
   <p>
     A trusted childcare platform connecting parents with qualified caregivers, experts, and support services.
     <br />
-    <a href="https://github.com/<your-repo>/wiki"><strong>Explore the docs »</strong></a>
+    <a href="https://drive.google.com/file/d/1HdgHVlIvfhqvtjf5WU8bYEOUm3HcusE4/view?usp=sharing"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://drive.google.com/file/d/<your-demo-link>/view?usp=sharing">View Demo</a>
+    <a href="https://drive.google.com/file/d/1swX8PHSV4piy3lnkelU0F_jcxpdGNYqN/view?usp=sharing">View Demo</a>
   </p>
 </div>
 
